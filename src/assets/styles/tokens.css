@@ -1,0 +1,14 @@
+:root {
+  --bb-elevation-1: 0 2px 6px rgba(0, 0, 0, 0.14), 0 0 2px rgba(0, 0, 0, 0.08);
+  --bb-elevation-card: 0 10px 40px rgba(0, 0, 0, 0.08);
+  --g-kit-font-family-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+/* Fallback flex utility for Kitvue internal templates */
+.flex {
+  display: flex !important;
+}
+
+.flex-column {
+  flex-direction: column !important;
+}

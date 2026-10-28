@@ -1,0 +1,9 @@
+interface:
+  display_name: "Kitvue Plugin"
+  short_description: "Build Pegadaian Vue CMS Figma screens with kitvue tokens"
+  icon_small: "./assets/kitvue-figma-small.svg"
+  icon_large: "./assets/kitvue-figma-logo.svg"
+  brand_color: "#004D43"
+  default_prompt: "Use $kitvue-plugin to implement this Figma design with kitvue-public components and --g-kit design tokens."
+policy:
+  allow_implicit_invocation: true

@@ -1,0 +1,5 @@
+export { default as StarterLogo } from './StarterLogo.vue'
+export { default as ArrumZadaLogoLandscape } from './StarterLogo.vue'
+export { default as ArrumZadaLogoPortrait } from './StarterLogo.vue'
+export { default as ArrumZadaLogoSquare } from './StarterLogo.vue'
+export { default as ArrumZadaMark } from './StarterLogo.vue'

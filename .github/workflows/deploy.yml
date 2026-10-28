@@ -1,0 +1,79 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    # Sinkronisasi harian otomatis (menggunakan off-peak minute agar tidak terhambat antrean GitHub):
+    # 01:47 UTC = 08:47 WIB (saat Galeri 24 merilis harga harian baru)
+    # 02:47 UTC = 09:47 WIB (pengecekan kedua jika rilis Galeri 24 tertunda)
+    # 06:17 UTC = 13:17 WIB (verifikasi update siang)
+    - cron: '47 1 * * *'
+    - cron: '47 2 * * *'
+    - cron: '17 6 * * *'
+  workflow_dispatch:
+
+# Permissions needed to deploy to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow one concurrent deployment
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Fetch Live Gold Prices from Galeri 24 Server
+        run: node scripts/fetch-gold-price.mjs
+
+      - name: Type check (TypeScript)
+        run: pnpm type-check
+
+      - name: Run unit tests
+        run: pnpm test
+
+      - name: Build application
+        run: pnpm build
+
+      - name: Setup GitHub Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./dist
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
