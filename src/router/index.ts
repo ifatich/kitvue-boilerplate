@@ -15,6 +15,7 @@ const router = createRouter({
       name: 'home',
       component: HomeView,
       alias: ['/entry', '/homescreen'],
+      meta: { requiresAuth: true },
     },
     {
       path: '/login',
@@ -23,10 +24,11 @@ const router = createRouter({
       alias: ['/dashboard/login'],
     },
     {
-      path: '/admin',
-      name: 'admin-dashboard',
-      component: () => import('../views/AdminDashboardView.vue'),
-      alias: ['/dashboard', '/dashboard/admin'],
+      path: '/pengajuan-rahn',
+      name: 'pengajuan-rahn',
+      component: () => import('../views/PengajuanRahnView.vue'),
+      alias: ['/pengajuan/rahn', '/rahn'],
+      meta: { requiresAuth: true },
     },
     // Fallback redirect ke Home
     {

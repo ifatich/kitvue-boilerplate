@@ -1,9 +1,4 @@
 <script setup lang="ts">
-/**
- * @file AdminLoginView.vue
- * @description Halaman Login Portal CMS Administrator Arrum Zada.
- * Mengikuti arsitektur, layout, dan styling 1:1 dari bullion-bank-cms.
- */
 import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import LoginHero from '@/components/modules/auth/login/LoginHero.vue'
@@ -14,7 +9,7 @@ const router = useRouter()
 
 onMounted(() => {
   if (isAdminAuthenticated()) {
-    router.replace('/admin')
+    router.replace('/')
   }
 })
 </script>
@@ -50,17 +45,8 @@ onMounted(() => {
   overflow: hidden;
 }
 
-.left-side {
-  display: flex;
-  min-width: 0;
-}
-
-.right-side {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  min-width: 0;
-}
+.left-side { display: flex; min-width: 0; }
+.right-side { display: flex; align-items: center; justify-content: flex-end; min-width: 0; }
 
 footer {
   position: absolute;
@@ -73,43 +59,14 @@ footer {
 }
 
 @media (max-width: 1200px) {
-  .login-page {
-    grid-template-columns: 1fr;
-    padding: 32px 24px 56px;
-    overflow: auto;
-  }
-
-  .left-side {
-    display: none;
-  }
-
-  .right-side {
-    min-height: calc(100svh - 88px);
-    align-items: center;
-    justify-content: center;
-  }
-
-  footer {
-    right: 50%;
-    bottom: 20px;
-    width: max-content;
-    transform: translateX(50%);
-  }
+  .login-page { grid-template-columns: 1fr; padding: 32px 24px 56px; overflow: auto; }
+  .left-side { display: none; }
+  .right-side { min-height: calc(100svh - 88px); align-items: center; justify-content: center; }
+  footer { right: 50%; bottom: 20px; width: max-content; transform: translateX(50%); }
 }
 
 @media (max-width: 768px) {
-  .login-page {
-    display: flex;
-    flex-direction: column;
-    padding: 20px 16px;
-  }
-
-  footer {
-    position: static;
-    width: calc(100% - 32px);
-    margin: 20px auto 0;
-    text-align: center;
-    transform: none;
-  }
+  .login-page { display: flex; flex-direction: column; padding: 20px 16px; }
+  footer { position: static; width: calc(100% - 32px); margin: 20px auto 0; text-align: center; transform: none; }
 }
 </style>

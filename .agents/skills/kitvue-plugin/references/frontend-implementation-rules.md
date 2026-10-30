@@ -1,18 +1,36 @@
 # Frontend Implementation Rules — Vue 3 & Design System
 
-Dokumen ini adalah aturan kerja standar saat mengubah desain Figma menjadi implementasi Vue 3 di ekosistem web Pegadaian (termasuk Bullion Bank CMS dan portal internal lainnya). Fokus utama: optimalkan Figma MCP, utamakan reusabilitas komponen library (`@pegadaian/kitvue` / `kitvue-public`), dan tegakkan penggunaan design token `--g-kit-*` serta Bootstrap 5.3.2 utilities.
+Dokumen ini adalah aturan kerja standar saat mengubah desain Figma menjadi implementasi Vue 3 di ekosistem web Pegadaian (termasuk SPRINT Single UI, Pinjaman Rahn, Tabungan Emas, Waskat, dan Bullion Bank CMS). Fokus utama: optimalkan Figma MCP, pisahkan layer Cangkang (Shell) dan Modul Bisnis, utamakan reusabilitas komponen library (`@pegadaian/kitvue` / `kitvue-public`), dan tegakkan penggunaan design token `--g-kit-*` serta Bootstrap 5.3.2 utilities.
 
 ---
 
-## 1. Prinsip Utama
+## 1. Prinsip Arsitektur SPRINT Single UI (Shell vs Modul)
 
-1. **Figma MCP sebagai Sumber Desain**: Layout, hierarki visual, spacing, dan typography bersumber dari Figma.
-2. **Variable-First Architecture**: Seluruh nilai visual warna dan tipografi di Figma dipetakan secara deterministik ke CSS variables `--g-kit-*`.
-3. **Fondasi Bootstrap 5.3.2**: Library `@pegadaian/kitvue` dibangun di atas Bootstrap 5.3.2 (`$prefix: "g-bs-"`). Gunakan utility classes Bootstrap 5 untuk spacing (`p-*`, `m-*`, `gap-*`), alignment (`d-flex`, `justify-content-*`), dan grid layout.
-4. **Tidak Ada Token Spacing/Radius CSS Variable**: CSS variable `:root` di library **hanya** mendefinisikan warna (`--g-kit-{palette}-{shade}`) dan tipografi (`--g-kit-font-*`). **Dilarang keras** mengarang token fiktif seperti `var(--g-kit-space-*)` atau `var(--g-kit-radius-*)`.
-5. **Pustaka Komponen Library**: Cek komponen yang tersedia di `@pegadaian/kitvue` atau `kitvue-public` sebelum membuat komponen kustom.
-6. **Scoped CSS untuk Custom Layout**: Gunakan Scoped CSS semata-mata untuk styling kontainer spesifik atau gap yang tidak ter-cover Bootstrap, bukan untuk meng-override paksa internal style komponen library.
-7. **Domain-Specific Rules**: Jika sedang mengerjakan modul khusus perbankan/emas, rujuk dokumen tambahan [domain-bullion-bank.md](domain-bullion-bank.md).
+Untuk memastikan kode tidak bloated, mudah dipelihara, dan memiliki UX yang mulus, struktur layar dipecah secara ketat:
+
+### A. Layer Cangkang Reusable (`SprintModuleShell.vue`)
+- **Tanggung Jawab:** Mengelola seluruh layout pembungkus halaman (agnostik terhadap modul bisnis):
+  1. **SPRINT Navbar:** Header hijau dengan pattern SPRINT, back button di mobile, icon info, dan profil peran.
+  2. **Breadcrumb & NavBack:** Navigasi hirarki desktop.
+  3. **Canvas Responsif:** Lebar desktop dibatasi maksimal 1152px (`width: min(calc(100% - 32px), 1152px)`), sedangkan mobile dibuat full-bleed edge-to-edge (`width: 100%; padding: 0;`).
+  4. **Flexbox Sticky Footer:** Menggunakan flexbox layout (`display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh;`) dengan `margin-top: auto;` pada elemen `<footer>`. Menjamin footer selalu menempel di dasar layar dan tidak pernah melayang di tengah layar (*floating footer*), bahkan jika konten form sangat pendek.
+  5. **Fixed Bottom Action Sheet (`#actions`):** Bar aksi melayang di bagian bawah dengan drop shadow dan sudut melengkung di mobile (`border-radius: 12px 12px 0 0;`). Footer secara otomatis diberi dynamic padding-bottom clearance (88px untuk 1 tombol, 136px untuk 2 tombol bertumpuk pada mobile via selector `:has()`) agar teks footer selalu terbaca penuh.
+  6. **Slots Standar:** `#mobile-stepper`, `#notice`, `#default`, `#actions`.
+
+### B. Indikator Langkah Mobile (`MobileStepperBanner.vue`)
+- Banner abu-abu edge-to-edge (`#f8f8f8`) di bawah navbar mobile yang menampilkan *"Langkah X dari Y"* dan *"Tahap X - [Nama Step]"*.
+
+### C. Collapsible Card Container (`ModuleSectionCard.vue`)
+- **Mobile Cardless Standard (< 768px):** Konten modul di mobile **TIDAK BOLEH** dibungkus oleh outer card atau container ber-border/padding. Setiap section adalah blok putih edge-to-edge (`width: 100%; border: none; border-radius: 0; padding: 16px;`) yang dipisahkan oleh gap/margin 8px menampilkan background abu-abu `#f8f8f8` (1:1 sesuai acuan Figma).
+- **Desktop Standard (≥ 768px):** Section tampil sebagai card berbingkai (`border: 1px solid var(--g-kit-black-20); border-radius: 8px; padding: 24px; margin-bottom: 16px; background: #fff;`).
+- **Animasi Collapse Bebas Glitch/Flicker:** Menggunakan CSS Grid (`grid-template-rows: 0fr ↔ 1fr`) dengan transisi `cubic-bezier(0.4, 0, 0.2, 1)` dan inner `overflow: hidden; min-height: 0;`. Menghindari abrupt height pop atau layout flicker.
+- **WAI-ARIA Accessibility:** Tombol heading semantik dengan atribut `aria-expanded`, `aria-controls`, dan chevron yang berputar 180° saat terbuka/tertutup.
+
+### D. Layer Modul Domain (`src/views/[NamaModul]View.vue`)
+- Hanya mengelola logika domain murni:
+  - State form reaktif (`fields`, validasi).
+  - Alur stepper (`activeStep`, `canContinue`, `nextStep`, `prevStep`).
+  - Injeksi konten ke slot shell (`#notice`, grid form di `<ModuleSectionCard>`, dan tombol aksi di `#actions`).
 
 ---
 
@@ -28,9 +46,9 @@ Untuk setiap screen, modal, bottomsheet, atau komponen dari Figma:
    - Dapatkan nama variabel dari koleksi desain (misal: `color/lime/50`, `black/80`, `font-size/omicron`).
 3. **Resolusi Deterministik ke Token `--g-kit-*`**:
    - Ubah nama variabel Figma langsung ke token CSS resmi:
-     - `lime/50` atau `lime-50` ➔ `var(--g-kit-lime-50)`
-     - `black/80` ➔ `var(--g-kit-black-80)`
-     - `omicron` ➔ font size `var(--g-kit-font-size-omicron)` & line height `var(--g-kit-line-height-omicron)`
+     - `lime/50` atau `lime-50` ➔ `var(--g-kit-lime-50, #00ab4e)`
+     - `black/80` ➔ `var(--g-kit-black-80, #252528)`
+     - `omicron` ➔ font size `var(--g-kit-font-size-omicron, 16px)` & line height `var(--g-kit-line-height-omicron, 24px)`
 4. **Spacing & Layout Resolution (Bootstrap 5 Utilities)**:
    - Gunakan utility classes Bootstrap 5 pada template HTML:
      - Spacing 4px ➔ `p-1` / `m-1` / `gap-1`
@@ -38,44 +56,42 @@ Untuk setiap screen, modal, bottomsheet, atau komponen dari Figma:
      - Spacing 16px ➔ `p-3` / `m-3` / `gap-3`
      - Spacing 24px ➔ `p-4` / `m-4` / `gap-4`
      - Spacing 32px ➔ `p-5` / `m-5` / `gap-5`
-   - Jika membutuhkan spacing kustom pada scoped CSS, tuliskan nilai piksel langsung mengacu pada baseline:
-     ```css
-     .custom-card-container {
-       padding: 24px;
-       border-radius: 8px; /* Standard card radius */
-     }
-     ```
    - Radius resmi:
      - Input/Form control: `border-radius: 6px;` (sesuai `$input-border-radius`)
-     - Card / Container / Modal: `border-radius: 8px;`
+     - Card / Container / Modal Desktop: `border-radius: 8px;`
+     - Sheet Bottom Action Mobile: `border-radius: 12px 12px 0 0;`
 
 ---
 
-## 3. Kebijakan Iconography & SVGs Resmi Pegadaian
-
-Pustaka `@pegadaian/kitvue` memiliki ratusan asset icon SVG resmi di `src/assets/icon/`. Ikuti hierarki berikut:
+## 3. Kebijakan Iconography & Asset Hygiene
 
 1. **Prioritas 1: Asset Icon Resmi Library**:
    - Cek apakah icon tersedia di direktori asset library:
-     - System Icons: `@pegadaian/kitvue/src/assets/icon/icon-system/` (contoh: `icon-arrow-up.svg`, `icon-calendar.svg`, `icon-profile-fill.svg`, `icon-transaction.svg`, `icon-search.svg`).
-     - Product Icons: `@pegadaian/kitvue/src/assets/icon/icon-product/` (contoh: `icon-submenu_gadai-gadai.svg`, `icon-submenu_cicil_emas-*.svg`, `icon-submenu_pembiayaan-haji.svg`).
-   - Gunakan komponen `LabelIcon.vue` jika menampilkan teks dengan ikon.
+     - System Icons: `kitvue-public/src/assets/icon/icon-system/`
+     - Product Icons: `kitvue-public/src/assets/icon/icon-product/`
+     - SPRINT Navbar Icons: `@/assets/images/sprint/`
 2. **Prioritas 2: Clean Inline SVG Component**:
-   - Jika icon di Figma merupakan vector kustom yang belum ada di library, ekspor node vector tersebut sebagai **clean inline SVG**.
-   - Pastikan atribut warna pada path menggunakan `currentColor` atau token `--g-kit-*`:
-     ```html
-     <svg class="icon-inline" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-       <path d="..." fill="currentColor" />
-     </svg>
-     ```
+   - Jika icon di Figma merupakan vector kustom, ekspor node vector sebagai **clean inline SVG** dengan `fill="currentColor"`.
 3. **Larangan Keras (Strict Ban)**:
    - **Dilarang keras** mengasumsikan atau meng-install package icon eksternal (seperti `lucide-vue-next`, `@heroicons/vue`, `@tabler/icons-vue`, atau `font-awesome`).
+4. **Efisiensi Penyimpanan Aset**:
+   - **Dilarang keras** menyematkan raster PNG beresolusi raksasa (misal 2000x4000px base64) di dalam file SVG untuk icon berukuran kecil (80x80px).
+   - Selalu kompres atau resize gambar raster sebelum dibungkus SVG agar bobot file hemat (>90% kompresi).
+
+## 3.5 Pola Card Grouping & Alert Feedback
+1. **Grouping Section Card (`.form-card`)**:
+   - Pada desktop: Sections form dalam 1 tahap (misal `Informasi Rahn` & `Beneficial Owner`) **harus dibungkus dalam 1 container `.form-card`** (`border: 1px solid var(--g-kit-black-20); border-radius: 8px; background: var(--g-kit-white)`). Antar section dipisahkan dengan pembatas divider `border-top: 8px solid var(--g-kit-black-10)`. Jangan memecahnya menjadi kartu-kartu terisolasi yang mengambang.
+   - Pada mobile (`< 768px`): `.form-card` bertransformasi menjadi flex column transparan dengan `gap: 8px`. Setiap `<ModuleSectionCard>` di dalamnya menjadi section putih edge-to-edge tanpa border/radius, sehingga background `#f8f8f8` muncul sebagai pemisah 8px yang bersih.
+2. **GAlert Styling & Positioning**:
+   - Selalu gunakan `class="... variant"` (contoh: `class="rahn-notice variant"`) saat memanggil `GAlert` dengan `color="light-blue"` dan `variant="info"`.
+   - Hal ini memastikan style resmi `_alert-varian.scss` aktif dengan background `--g-kit-blue-10` dan ilustrasi `aksen-blue.svg`. Jangan menghilangkan kelas `.variant` agar tidak jatuh ke override Bootstrap solid dark blue (`--g-kit-blue-50`).
+   - Pada mobile, beri margin horizontal `12px 16px` agar alert tidak menempel pada tepi layar.
+3. **Spasi Footer Mobile Entry Point**:
+   - Pastikan ada spasi pemisah minimal 16px–24px (menggunakan `padding-bottom: 24px` pada `.mobile-entry-view` atau `margin-top: 16px` pada `footer`) agar footer tidak menempel langsung pada batas bawah card modul terakhir ("Laporan").
 
 ---
 
 ## 4. Pemetaan Variabel Figma ke Token `--g-kit-*`
-
-Gunakan tabel resolusi berikut sebagai acuan utama:
 
 | Figma Variable / Value | CSS Token Resmi | Kategori |
 | :--- | :--- | :--- |
@@ -101,84 +117,53 @@ Gunakan tabel resolusi berikut sebagai acuan utama:
 | `line-height/omega` (18px) | `var(--g-kit-line-height-omega)` | Line height Helper |
 | `font-weight/normal` (600) | `var(--g-kit-font-weight-normal)` | Regular / Normal Weight |
 | `font-weight/bold` (800) | `var(--g-kit-font-weight-bold)` | Bold Weight |
-| `font-style/normal` | `var(--g-kit-font-style-normal)` | Normal Style |
-| `font-style/italic` | `var(--g-kit-font-style-italic)` | Italic Style |
 
 > [!WARNING]
 > Token font-weight resmi di pustaka `kitvue` hanya `normal` (`600`) dan `bold` (`800`). Jangan pernah menggunakan `--g-kit-font-weight-semibold` atau `--g-kit-font-weight-extrabold`.
 
 ---
 
-## 5. Komponen First Rule
-
-Sebelum membuat komponen UI baru dari nol, lakukan pengecekan dengan urutan berikut:
-
-1. `src/components.ts` (alias project yang sudah terdaftar)
-2. `node_modules/@pegadaian/kitvue/src/components` atau `node_modules/kitvue-public/src/components`
-3. [kitvue-public-design-system.md](kitvue-public-design-system.md)
-
-### Perintah Cepat untuk Eksplorasi:
-```bash
-# Cek alias komponen yang sudah ada di project
-grep -E "export const G" src/components.ts 2>/dev/null || true
-
-# Cek komponen yang tersedia di pustaka kitvue
-find node_modules/@pegadaian/kitvue/src/components node_modules/kitvue-public/src/components -maxdepth 2 -type f -name '*.vue' 2>/dev/null | sort
-
-# Cek asset icon resmi
-ls node_modules/@pegadaian/kitvue/src/assets/icon/icon-system 2>/dev/null || true
-```
-
-Jika komponen tersedia di library namun belum memiliki alias project, **tambahkan alias di `src/components.ts`** alih-alih mengimpor path panjang berulang-ulang di setiap berkas SFC.
-
----
-
-## 6. Mapping Komponen Standar
+## 5. Komponen First Rule & Mapping Standar
 
 | Kebutuhan Antarmuka | Komponen Pilihan Utama |
 | :--- | :--- |
+| **Shell Halaman SPRINT** | `SprintModuleShell` (`@/components/shared/admin-layout/SprintModuleShell.vue`) |
+| **Header SPRINT** | `SprintNavbar` (`@/components/shared/admin-layout/SprintNavbar.vue`) |
+| **Mobile Stepper Header** | `MobileStepperBanner` (`@/components/shared/stepper/MobileStepperBanner.vue`) |
+| **Collapsible Section Card** | `ModuleSectionCard` (`@/components/shared/card/ModuleSectionCard.vue`) |
 | **Button / Aksi Utama** | `GButton` (`Button/Button.vue`) |
-| **Input Text** | `GInputText` (`Input/InputText.vue` / `InputSmallText.vue`) |
-| **Text Area** | `GTextArea` (`Input/InputTextArea.vue`) |
-| **Dropdown / Select** | `GDropdown` (`Dropdown/InputDropdown.vue`) |
-| **Auto Complete** | `AutoComplete` (`SelectOption/AutoComplete.vue`) |
-| **Date / Time Picker** | `GDatePicker`, `InputTimePicker`, `TimePickerResponsive` |
-| **Camera & QR** | `NewInputCamera`, `InputSearchQR` |
-| **Filter CMS** | `FilterCMS`, `InputFilter` |
+| **Input Text** | `GInputText` (`Input/InputText.vue`) |
+| **Input Nominal (Mulai Rp)** | `GInputNominalStart` (`Input/InputNominalStart.vue`) |
+| **Input Nominal (Akhir Rp)** | `GInputNominalEnd` (`Input/InputNominalEnd.vue`) |
+| **Dropdown / Select** | `GDropdown` (`Dropdown/InputDropdown.vue`) / `GTeleportDropdown` |
 | **Alert / Feedback Box** | `GAlert` (`Alert/AlertVarian.vue`) |
 | **Badge / Tag Status** | `GBadge` (`Badge/Badge.vue`) |
 | **Breadcrumb** | `GBreadcrumb` (`Breadcrumb/Breadcrumb.vue`) |
-| **Navigasi Back** | `GNavBackNavigator` (`Navbar/NavBackNavigator.vue`) |
-| **Header Beranda / CMS** | `GBerandaHeader`, `HeaderCMS`, `NavbarCorporate` |
-| **Sidebar CMS** | `SideNavCMS`, `ItemSideNav` |
-| **Tabel Data & Paginasi** | `GTable`, `GTablePagination`, `TableSticky`, `DataTable` |
-| **Modal Dialog** | `GModal` (`Modal/ModalComponent.vue`), `CustomModal` |
-| **Mobile Drawer / Bottomsheet** | `BottomSheet/GOffCanvas.vue`, `ModalBottomSheet` |
-| **Tracking Status** | `TrackingStatus`, `ModalTrackingStatus` |
-| **Financial Charts** | `BarChart`, `LineChart`, `StackedBarChart`, `DoughnutChart` |
-| **Accordion / Collapsible** | `GAccordion`, `GAccordionItem` |
+| **Navigasi Back** | `GNavBackNavigator` / `NavBack` (`@/components/shared/navBack/navBack.vue`) |
+| **Modal / Bottomsheet Hybrid**| `ModalBottomSheet` (`@/components/shared/modal/ModalBottomSheet.vue`) |
+| **Stepper Desktop** | `GStepper` (`Stepper/Stepper.vue`) |
 
 ---
 
-## 7. Responsive & Layout Rules
+## 6. Clean Code & Kebijakan Hapus Dead Code
 
-1. **Table vs Mobile Card**: Tabel horizontal pada layar desktop harus bertransformasi menjadi daftar Card ringkas pada tampilan mobile jika jumlah kolom melebihi lebar layar.
-2. **Modal vs Bottomsheet**: Dialog modal desktop wajib berubah menjadi **Bottomsheet** (`BottomSheet/GOffCanvas.vue` atau `ModalBottomSheet.vue`) pada viewport mobile (`< 768px`).
-3. **Overlay & Z-Index**: Bottomsheet harus memiliki overlay latar belakang gelap dengan pengaturan z-index yang terisolasi.
-4. **Sticky Action Area**: Pastikan container halaman memiliki `padding-bottom` ekstra (minimal 80px - 100px) agar tombol sticky di mobile tidak menutupi konten utama.
-5. **Navbar Adaptif**: Header mobile hanya menampilkan elemen navigasi esensial (logo dan profil/menu trigger) dan menjadi sticky saat halaman di-scroll.
+- **Hapus tuntas kode mati:** Jika suatu komponen, helper, utilitas, atau mock data tidak digunakan oleh routing atau komponen aktif, **langsung hapus**. Jangan meninggalkan placeholder mati atau file terlantar di dalam repositori.
+- **Strict TypeScript:** Hindari `any`. Selalu berikan type definition lengkap pada form fields, props, dan emits.
 
 ---
 
-## 8. Definition of Done (DoD)
+## 7. Definition of Done (DoD)
 
 Implementasi dianggap tuntas hanya jika:
 
 - [ ] Figma variable definitions dan visual screenshot telah diverifikasi.
+- [ ] Layar mengadopsi arsitektur terpisah: `SprintModuleShell` (layer shell) dan `[Module]View` (layer bisnis).
+- [ ] Section card collapsible menggunakan `ModuleSectionCard` dengan animasi CSS grid bebas flicker.
+- [ ] Layout mobile mematuhi standar cardless: blok putih edge-to-edge dengan gap 8px pada background `#f8f8f8`.
+- [ ] Flexbox sticky footer (`margin-top: auto`) mencegah footer melayang di tengah layar.
+- [ ] Action bar sticky di mobile memiliki clearance dynamic padding pada footer.
 - [ ] Seluruh nilai styling warna & tipografi dipetakan ke token `--g-kit-*` (tidak ada arbitrary hex).
-- [ ] Spacing dan layout memanfaatkan utility Bootstrap 5 (`p-*`, `m-*`, `gap-*`, `d-flex`) atau piksel SCSS presisi (tanpa token fiktif `--g-kit-space-*`).
+- [ ] Spacing dan layout memanfaatkan utility Bootstrap 5 (`p-*`, `m-*`, `gap-*`, `d-flex`) atau piksel SCSS presisi.
 - [ ] Komponen library `@pegadaian/kitvue` / `kitvue-public` digunakan sebagai prioritas utama.
-- [ ] Iconography mematuhi aturan asset resmi library atau clean inline SVG (tanpa package luar fiktif).
-- [ ] Responsivitas desktop dan mobile (termasuk konversi bottomsheet) berfungsi dengan mulus.
-- [ ] Aksi interaktif dasar (modal open/close, copy, filter, toggle) telah terpasang.
-- [ ] Pengecekan tipe TypeScript (`vue-tsc --noEmit`) dan build project berhasil tanpa error.
+- [ ] Iconography mematuhi aturan asset resmi library atau clean inline SVG (tanpa package luar).
+- [ ] Pengecekan tipe TypeScript (`vue-tsc --noEmit`), pengujian (`vitest run`), dan build project berhasil tanpa error.

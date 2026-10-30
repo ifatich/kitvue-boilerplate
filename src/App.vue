@@ -1,24 +1,14 @@
 <script setup lang="ts">
 /**
  * @file App.vue
- * @description Root application component with global minimalist navbar and view outlet.
+ * @description Root application component with view outlet and global alert host.
  */
-import { computed } from 'vue'
-import { RouterView, useRoute } from 'vue-router'
-import AppNavbar from '@/components/shared/AppNavbar.vue'
+import { RouterView } from 'vue-router'
 import AppAlertHost from '@/components/shared/alert/AppAlertHost.vue'
-
-const route = useRoute()
-// Halaman SPRINT (Home Entry Point, Admin Base Container, Login) memiliki navbar sendiri
-const isPublicPage = computed(() => {
-  const p = route.path || (typeof window !== 'undefined' ? window.location.pathname : '')
-  return p !== '/' && p !== '/entry' && !p.startsWith('/admin') && !p.startsWith('/dashboard') && !p.startsWith('/login')
-})
 </script>
 
 <template>
   <div class="app-root">
-    <AppNavbar v-if="isPublicPage" />
     <RouterView />
     <AppAlertHost />
   </div>
@@ -35,13 +25,18 @@ body {
   width: 100%;
   max-width: 100vw;
   overflow-x: hidden;
+  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 #app,
 .app-root {
+  display: flex;
+  flex-direction: column;
   width: 100%;
   max-width: 100vw;
   overflow-x: hidden;
   min-height: 100vh;
+  min-height: 100dvh;
 }
 </style>

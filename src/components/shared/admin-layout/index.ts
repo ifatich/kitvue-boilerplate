@@ -1,9 +1,7 @@
 /**
  * @file index.ts
- * @description Barrel export untuk komponen Admin CMS Layout.
+ * @description Barrel export untuk komponen SPRINT Single UI Layout.
  */
-export { default as AdminShell } from './AdminShell.vue'
-export { default as AdminTopNav } from './AdminTopNav.vue'
-export { default as AdminSideNav } from './AdminSideNav.vue'
-export { default as AdminFooter } from './AdminFooter.vue'
-export * from './types'
+export { default as SprintNavbar } from './SprintNavbar.vue'
+export { default as SprintModuleShell } from './SprintModuleShell.vue'
+export type { BreadcrumbItem } from './SprintModuleShell.vue'

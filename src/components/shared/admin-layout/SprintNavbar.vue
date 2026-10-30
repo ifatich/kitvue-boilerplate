@@ -5,32 +5,153 @@
  * Features SPRINT branding, global search bar, history/notifications with badge, profile dropdown,
  * and integrated Dummy Auth toggle for convenient prototyping.
  */
-import { ref } from 'vue'
+import { computed, getCurrentInstance, onBeforeUnmount, onMounted, ref } from 'vue'
+import headerPatternAsset from '@/assets/images/sprint/header-pattern.svg'
+import sprintMarkAsset from '@/assets/images/sprint/sprint-mark.svg'
+import sprintWordmarkAsset from '@/assets/images/sprint/sprint-wordmark.svg'
+import searchIconAsset from '@/assets/images/sprint/search.svg'
+import historyIconAsset from '@/assets/images/sprint/history.svg'
+import notificationIconAsset from '@/assets/images/sprint/notification.svg'
+import chevronIconAsset from '@/assets/images/sprint/chevron.svg'
+import arrowLeftAsset from '@/assets/images/sprint/arrow-left.svg'
+import mobileHistoryIdleAsset from 'kitvue-public/src/assets/icon/icon-system/icon-history-idle.svg'
+import mobileNotificationIdleAsset from 'kitvue-public/src/assets/icon/icon-system/icon-notif-idle.svg'
+import mobileProfileIdleAsset from 'kitvue-public/src/assets/icon/icon-system/icon-profile-idle.svg'
+import mobileInfoAsset from 'kitvue-public/src/assets/icon/icon-system/icon-info.svg'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
 
+const props = withDefaults(defineProps<{
+  embedded?: boolean
+  profileRole?: string
+  showAuthToggle?: boolean
+  searchPlaceholder?: string
+  mobileTitle?: string
+  mobileBackTo?: string
+  showMobileBottomNav?: boolean
+}>(), {
+  embedded: false,
+  profileRole: 'Pimpinan Cabang',
+  showAuthToggle: true,
+  searchPlaceholder: 'Cari (contoh: pengajuan kredit)',
+  mobileTitle: '',
+  mobileBackTo: '/',
+  showMobileBottomNav: false,
+})
+
+const emit = defineEmits<{
+  (e: 'back'): void
+  (e: 'info'): void
+}>()
+
+const instance = getCurrentInstance()
+const headerPattern = headerPatternAsset as unknown as string
+const sprintMark = sprintMarkAsset as unknown as string
+const sprintWordmark = sprintWordmarkAsset as unknown as string
+const searchIcon = searchIconAsset as unknown as string
+const historyIcon = historyIconAsset as unknown as string
+const notificationIcon = notificationIconAsset as unknown as string
+const chevronIcon = chevronIconAsset as unknown as string
+const arrowLeft = arrowLeftAsset as unknown as string
+const mobileHistoryIdle = mobileHistoryIdleAsset as unknown as string
+const mobileNotificationIdle = mobileNotificationIdleAsset as unknown as string
+const mobileProfileIdle = mobileProfileIdleAsset as unknown as string
+const mobileInfo = mobileInfoAsset as unknown as string
 const router = useRouter()
 const authStore = useAuthStore()
 
+const handleBack = () => {
+  if (instance?.vnode.props?.onBack) {
+    emit('back')
+  } else {
+    router.push(props.mobileBackTo)
+  }
+}
+
 const searchQuery = ref('')
-const isProfileOpen = ref(false)
+const navbarElement = ref<HTMLElement | null>(null)
+const activePopover = ref<'history' | 'notifications' | 'profile' | null>(null)
+const isProfileOpen = computed(() => activePopover.value === 'profile')
 
 const handleBrandClick = () => {
   router.push('/')
 }
 
-const toggleProfile = () => {
-  isProfileOpen.value = !isProfileOpen.value
+const togglePopover = (popover: 'history' | 'notifications' | 'profile') => {
+  activePopover.value = activePopover.value === popover ? null : popover
+}
+
+const closePopover = () => {
+  activePopover.value = null
+}
+
+const goToPengajuan = () => {
+  closePopover()
+  router.push('/pengajuan-rahn')
+}
+
+const submitSearch = () => {
+  if (!searchQuery.value.trim()) return
+  goToPengajuan()
+}
+
+const handleDocumentClick = (event: MouseEvent) => {
+  if (!navbarElement.value?.contains(event.target as Node)) closePopover()
+}
+
+const handleDocumentKeydown = (event: KeyboardEvent) => {
+  if (event.key === 'Escape') closePopover()
 }
 
 const handleLogout = () => {
+  closePopover()
   authStore.logout()
   router.push('/login')
 }
+
+onMounted(() => {
+  document.addEventListener('click', handleDocumentClick)
+  document.addEventListener('keydown', handleDocumentKeydown)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleDocumentClick)
+  document.removeEventListener('keydown', handleDocumentKeydown)
+})
 </script>
 
 <template>
-  <header class="sprint-navbar" role="banner">
+  <header
+    ref="navbarElement"
+    :class="['sprint-navbar', { 'sprint-navbar--floating': props.embedded, 'sprint-navbar--mobile-module': props.mobileTitle }]"
+    role="banner"
+  >
+    <div v-if="props.embedded" class="sprint-navbar-pattern" :style="{ backgroundImage: `url(${headerPattern})` }" aria-hidden="true" />
+    <div v-if="props.mobileTitle" class="sprint-mobile-module-bar">
+      <div class="sprint-mobile-module-bar__left">
+        <button
+          type="button"
+          class="sprint-mobile-back"
+          :aria-label="`Kembali dari ${props.mobileTitle}`"
+          @click="handleBack"
+        >
+          <img :src="arrowLeft" alt="" aria-hidden="true" />
+        </button>
+        <span class="sprint-mobile-module-bar__title">{{ props.mobileTitle }}</span>
+      </div>
+      <button
+        type="button"
+        class="sprint-mobile-info"
+        aria-label="Informasi Pengajuan"
+        @click="emit('info')"
+      >
+        <img :src="mobileInfo" alt="" aria-hidden="true" />
+      </button>
+    </div>
+    <form v-else class="sprint-mobile-entry-search" role="search" @submit.prevent="submitSearch">
+      <img :src="searchIcon" alt="" aria-hidden="true" />
+      <input v-model="searchQuery" type="search" :placeholder="props.searchPlaceholder" aria-label="Cari pengajuan kredit atau dokumen" />
+    </form>
     <div class="sprint-navbar__container">
       <!-- Left: SPRINT Brand Logo -->
       <button
@@ -40,34 +161,21 @@ const handleLogout = () => {
         aria-label="SPRINT Single UI"
         @click="handleBrandClick"
       >
-        <svg class="sprint-logo-mark" viewBox="0 0 36 36" fill="none" aria-hidden="true">
-          <!-- SPRINT Geometric Emblem -->
-          <rect width="36" height="36" rx="8" fill="#003429" />
-          <path
-            d="M8 24L18 8L28 24H20L18 19L16 24H8Z"
-            fill="#E2B93B"
-          />
-          <path
-            d="M13 24L18 14L23 24H19.5L18 20.5L16.5 24H13Z"
-            fill="#00A651"
-          />
-        </svg>
-        <span class="sprint-brand-text">SPRINT</span>
+        <img :src="sprintMark" class="sprint-logo-mark" alt="" aria-hidden="true" />
+        <img :src="sprintWordmark" class="sprint-brand-wordmark" alt="SPRINT" />
       </button>
 
       <!-- Center: Global Search Input -->
       <div class="sprint-search-wrapper" role="search">
         <div class="sprint-search-input-group">
-          <svg class="sprint-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <circle cx="11" cy="11" r="8" />
-            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
+          <img :src="searchIcon" class="sprint-search-icon" alt="" aria-hidden="true" />
           <input
             v-model="searchQuery"
             type="text"
             class="sprint-search-input"
-            placeholder="Cari (contoh: pengajuan kredit)"
+            :placeholder="props.searchPlaceholder"
             aria-label="Cari pengajuan kredit atau dokumen"
+            @keydown.enter.prevent="submitSearch"
           />
         </div>
       </div>
@@ -75,43 +183,51 @@ const handleLogout = () => {
       <!-- Right: Action Icons & User Profile -->
       <div class="sprint-nav-actions">
         <!-- History Action -->
-        <button
-          type="button"
-          class="sprint-action-btn"
-          title="Riwayat Transaksi"
-          aria-label="Lihat riwayat"
-        >
-          <svg class="sprint-action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-            <polyline points="14 2 14 8 20 8" />
-            <line x1="16" y1="13" x2="8" y2="13" />
-            <line x1="16" y1="17" x2="8" y2="17" />
-            <line x1="10" y1="9" x2="8" y2="9" />
-          </svg>
-          <span class="sprint-action-label">Riwayat</span>
-        </button>
+        <div class="sprint-action-wrapper">
+          <button
+            type="button"
+            class="sprint-action-btn"
+            title="Riwayat Transaksi"
+            aria-label="Lihat riwayat"
+            :aria-expanded="activePopover === 'history'"
+            @click="togglePopover('history')"
+          >
+            <img :src="historyIcon" class="sprint-action-icon" alt="" aria-hidden="true" />
+            <span class="sprint-action-label">Riwayat</span>
+          </button>
+          <div v-if="activePopover === 'history'" class="sprint-dropdown-menu sprint-dropdown-menu--action" role="menu">
+            <strong class="sprint-dropdown-title">Riwayat</strong>
+            <button type="button" class="sprint-menu-item" role="menuitem" @click="goToPengajuan">Pengajuan Rahn terakhir</button>
+          </div>
+        </div>
 
         <!-- Notification Action with Badge -->
-        <button
-          type="button"
-          class="sprint-action-btn"
-          title="Notifikasi Masuk (48 Baru)"
-          aria-label="48 notifikasi belum dibaca"
-        >
-          <div class="notif-icon-box">
-            <svg class="sprint-action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-              <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-            </svg>
-            <span class="sprint-notif-badge">48</span>
+        <div class="sprint-action-wrapper">
+          <button
+            type="button"
+            class="sprint-action-btn"
+            title="Notifikasi Masuk (48 Baru)"
+            aria-label="48 notifikasi belum dibaca"
+            :aria-expanded="activePopover === 'notifications'"
+            @click="togglePopover('notifications')"
+          >
+            <div class="notif-icon-box">
+              <img :src="notificationIcon" class="sprint-action-icon" alt="" aria-hidden="true" />
+              <span class="sprint-notif-badge">48</span>
+            </div>
+            <span class="sprint-action-label">Notifikasi</span>
+          </button>
+          <div v-if="activePopover === 'notifications'" class="sprint-dropdown-menu sprint-dropdown-menu--action" role="menu">
+            <strong class="sprint-dropdown-title">Notifikasi</strong>
+            <button type="button" class="sprint-menu-item" role="menuitem" @click="goToPengajuan">4 pengajuan Rahn menunggu diproses</button>
           </div>
-          <span class="sprint-action-label">Notifikasi</span>
-        </button>
+        </div>
 
         <span class="sprint-divider" aria-hidden="true" />
 
         <!-- Dummy Toggle Auth Quick Switch -->
         <button
+          v-if="props.showAuthToggle"
           type="button"
           class="sprint-auth-pill"
           :class="{ 'is-auth': authStore.isAuthenticated, 'is-guest': !authStore.isAuthenticated }"
@@ -129,15 +245,13 @@ const handleLogout = () => {
             class="sprint-profile-trigger"
             :aria-expanded="isProfileOpen"
             aria-label="Menu profil pengguna"
-            @click="toggleProfile"
+            @click="togglePopover('profile')"
           >
             <div class="sprint-profile-text">
               <span class="sprint-user-name">THORIQ SADAD</span>
-              <span class="sprint-user-role">Pimpinan Cabang</span>
+              <span class="sprint-user-role">{{ props.profileRole }}</span>
             </div>
-            <svg class="sprint-chevron" :class="{ 'is-open': isProfileOpen }" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-              <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-            </svg>
+            <img :src="chevronIcon" class="sprint-chevron" :class="{ 'is-open': isProfileOpen }" alt="" aria-hidden="true" />
           </button>
 
           <!-- Dropdown Card -->
@@ -164,6 +278,40 @@ const handleLogout = () => {
         </div>
       </div>
     </div>
+
+    <nav v-if="props.showMobileBottomNav" class="sprint-mobile-bottom-nav" aria-label="Navigasi utama">
+      <button type="button" class="is-active" aria-current="page" @click="handleBrandClick">
+        <img :src="sprintMark" class="sprint-bottom-nav-mark" alt="" aria-hidden="true" />
+        <span>Beranda</span>
+      </button>
+      <button type="button" @click="togglePopover('history')">
+        <img :src="mobileHistoryIdle" alt="" aria-hidden="true" />
+        <span>Riwayat</span>
+      </button>
+      <button type="button" class="sprint-mobile-notification" @click="togglePopover('notifications')">
+        <img :src="mobileNotificationIdle" alt="" aria-hidden="true" />
+        <span class="sprint-notif-dot" />
+        <span>Notifikasi</span>
+      </button>
+      <button type="button" @click="togglePopover('profile')">
+        <img :src="mobileProfileIdle" alt="" aria-hidden="true" />
+        <span>Profil</span>
+      </button>
+    </nav>
+    <div v-if="props.showMobileBottomNav && activePopover" class="sprint-mobile-popover" role="dialog" aria-modal="false">
+      <template v-if="activePopover === 'history'">
+        <strong>Riwayat</strong>
+        <button type="button" @click="goToPengajuan">Pengajuan Rahn terakhir</button>
+      </template>
+      <template v-else-if="activePopover === 'notifications'">
+        <strong>Notifikasi</strong>
+        <button type="button" @click="goToPengajuan">4 pengajuan Rahn menunggu diproses</button>
+      </template>
+      <template v-else>
+        <strong>THORIQ SADAD</strong>
+        <button type="button" @click="handleLogout">Keluar / Logout</button>
+      </template>
+    </div>
   </header>
 </template>
 
@@ -171,13 +319,54 @@ const handleLogout = () => {
 .sprint-navbar {
   width: 100%;
   height: 64px;
-  background-color: #004D43;
-  color: #ffffff;
+  background-color: var(--g-kit-broccoli-50);
+  color: var(--g-kit-white);
   position: sticky;
   top: 0;
   z-index: 1000;
   box-shadow: 0 2px 10px rgba(0, 40, 32, 0.15);
 }
+
+.sprint-navbar--floating {
+  width: min(calc(100% - 32px), 1152px);
+  height: 76px;
+  margin: 16px auto 0;
+  border-radius: 16px;
+  position: relative;
+  top: auto;
+  background-color: var(--g-kit-broccoli-50);
+  background-size: cover;
+  background-position: center;
+  box-shadow: var(--bb-elevation-1);
+  overflow: visible;
+}
+
+.sprint-navbar-pattern {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-size: cover;
+  background-position: center;
+  opacity: 0.2;
+  pointer-events: none;
+}
+
+.sprint-navbar--floating .sprint-navbar__container {
+  max-width: none;
+  padding: 0 32px;
+  gap: 24px;
+  position: relative;
+  z-index: 1;
+}
+
+.sprint-navbar--floating .sprint-brand { gap: 8px; }
+.sprint-navbar--floating .sprint-logo-mark { width: 31px; height: 43px; }
+.sprint-navbar--floating .sprint-brand-wordmark { width: 98px; height: 20px; object-fit: contain; }
+.sprint-navbar--floating .sprint-search-wrapper { flex: 0 1 360px; max-width: 360px; }
+.sprint-navbar--floating .sprint-search-input { height: 44px; border-radius: 6px; }
+.sprint-navbar--floating .sprint-nav-actions { gap: 24px; }
+.sprint-navbar--floating .sprint-action-btn { padding: 0; font-size: 16px; }
+.sprint-navbar--floating .sprint-action-icon { width: 24px; height: 24px; }
 
 .sprint-navbar__container {
   max-width: 1360px;
@@ -199,7 +388,7 @@ const handleLogout = () => {
   border: none;
   cursor: pointer;
   padding: 0;
-  color: #ffffff;
+  color: var(--g-kit-white);
   user-select: none;
 }
 
@@ -209,12 +398,7 @@ const handleLogout = () => {
   flex-shrink: 0;
 }
 
-.sprint-brand-text {
-  font-size: 1.35rem;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  color: #ffffff;
-}
+.sprint-brand-wordmark { width: 98px; height: 20px; object-fit: contain; }
 
 /* Search */
 .sprint-search-wrapper {
@@ -233,7 +417,7 @@ const handleLogout = () => {
   left: 14px;
   width: 18px;
   height: 18px;
-  color: #64748b;
+  color: var(--g-kit-black-60);
   pointer-events: none;
 }
 
@@ -242,8 +426,8 @@ const handleLogout = () => {
   height: 40px;
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.2);
-  background: #ffffff;
-  color: #1e293b;
+  background: var(--g-kit-white);
+  color: var(--g-kit-black-80);
   padding: 0 16px 0 42px;
   font-size: 13px;
   outline: none;
@@ -251,12 +435,19 @@ const handleLogout = () => {
 }
 
 .sprint-search-input:focus {
-  border-color: #00A651;
+  border-color: var(--g-kit-lime-50);
   box-shadow: 0 0 0 3px rgba(0, 166, 81, 0.25);
 }
 
 .sprint-search-input::placeholder {
-  color: #94a3b8;
+  color: var(--g-kit-black-50);
+}
+
+.sprint-mobile-entry-search,
+.sprint-mobile-module-bar,
+.sprint-mobile-bottom-nav,
+.sprint-mobile-popover {
+  display: none;
 }
 
 /* Nav Actions */
@@ -266,13 +457,17 @@ const handleLogout = () => {
   gap: 16px;
 }
 
+.sprint-action-wrapper {
+  position: relative;
+}
+
 .sprint-action-btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   background: transparent;
   border: none;
-  color: #ffffff;
+  color: var(--g-kit-white);
   padding: 6px 10px;
   border-radius: 6px;
   font-size: 13px;
@@ -300,8 +495,8 @@ const handleLogout = () => {
   position: absolute;
   top: -8px;
   right: -10px;
-  background-color: #ef4444;
-  color: #ffffff;
+  background-color: var(--g-kit-red-50);
+  color: var(--g-kit-white);
   font-size: 10px;
   font-weight: 800;
   padding: 1px 5px;
@@ -330,13 +525,13 @@ const handleLogout = () => {
 }
 
 .sprint-auth-pill.is-auth {
-  background: #10b981;
-  color: #ffffff;
+  background: var(--g-kit-lime-50);
+  color: var(--g-kit-white);
 }
 
 .sprint-auth-pill.is-guest {
   background: rgba(255, 255, 255, 0.2);
-  color: #ffffff;
+  color: var(--g-kit-white);
 }
 
 .auth-dot {
@@ -357,7 +552,7 @@ const handleLogout = () => {
   gap: 8px;
   background: transparent;
   border: none;
-  color: #ffffff;
+  color: var(--g-kit-white);
   padding: 4px 8px;
   border-radius: 6px;
   cursor: pointer;
@@ -387,8 +582,8 @@ const handleLogout = () => {
 }
 
 .sprint-chevron {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   transition: transform 0.2s ease;
 }
 
@@ -402,12 +597,24 @@ const handleLogout = () => {
   top: calc(100% + 8px);
   right: 0;
   width: 220px;
-  background: #ffffff;
+  background: var(--g-kit-white);
   border-radius: 8px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--g-kit-black-20);
   padding: 8px;
-  z-index: 1010;
+  z-index: 1200;
+}
+
+.sprint-dropdown-menu--action {
+  width: 264px;
+}
+
+.sprint-dropdown-title {
+  display: block;
+  padding: 8px;
+  color: var(--g-kit-black-80);
+  font-size: var(--g-kit-font-size-sigma);
+  font-weight: var(--g-kit-font-weight-bold);
 }
 
 .sprint-dropdown-header {
@@ -417,19 +624,19 @@ const handleLogout = () => {
 }
 
 .text-dark {
-  color: #0f172a;
+  color: var(--g-kit-black-80);
   font-size: 13px;
 }
 
 .text-muted {
-  color: #64748b;
+  color: var(--g-kit-black-60);
   font-size: 11px;
 }
 
 .sprint-menu-hr {
   margin: 6px 0;
   border: 0;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid var(--g-kit-black-20);
 }
 
 .sprint-menu-item {
@@ -449,18 +656,211 @@ const handleLogout = () => {
 }
 
 .sprint-menu-item:hover {
-  background-color: #f1f5f9;
+  background-color: var(--g-kit-black-10);
 }
 
 .text-danger {
-  color: #ef4444;
+  color: var(--g-kit-red-50);
 }
 
 @media (max-width: 900px) {
+  .sprint-navbar--floating { width: calc(100% - 24px); height: 64px; margin-top: 12px; border-radius: 12px; }
+  .sprint-navbar--floating .sprint-navbar__container { padding: 0 16px; gap: 14px; }
+  .sprint-navbar--floating .sprint-nav-actions { gap: 14px; }
   .sprint-search-wrapper,
   .sprint-action-label,
   .sprint-user-role {
     display: none;
+  }
+}
+
+@media (max-width: 767px) {
+  .sprint-navbar--floating {
+    width: 100%;
+    height: 120px;
+    margin: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .sprint-navbar--floating .sprint-navbar__container {
+    display: none;
+  }
+
+  .sprint-navbar-pattern {
+    border-radius: 0;
+    opacity: 0.2;
+  }
+
+  .sprint-mobile-entry-search {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    width: calc(100% - 32px);
+    height: 48px;
+    margin: 36px auto 0;
+  }
+
+  .sprint-mobile-entry-search img {
+    position: absolute;
+    left: 12px;
+    width: 24px;
+    height: 24px;
+    pointer-events: none;
+  }
+
+  .sprint-mobile-entry-search input {
+    width: 100%;
+    height: 100%;
+    padding: 0 16px 0 44px;
+    border: 0;
+    border-radius: 6px;
+    color: var(--g-kit-black-80);
+    background: var(--g-kit-black-10);
+    font: inherit;
+    font-size: var(--g-kit-font-size-sigma);
+    outline: none;
+  }
+
+  .sprint-navbar--mobile-module {
+    height: 58px;
+    border-bottom: 1px solid #eeeeef;
+  }
+
+  .sprint-navbar--mobile-module .sprint-mobile-entry-search {
+    display: none;
+  }
+
+  .sprint-mobile-module-bar {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 100%;
+    padding: 0 16px;
+    color: var(--g-kit-white);
+  }
+
+  .sprint-mobile-module-bar__left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .sprint-mobile-module-bar__title {
+    color: var(--g-kit-white);
+    font-size: 18px;
+    font-weight: 800;
+    line-height: 26px;
+  }
+
+  .sprint-mobile-back,
+  .sprint-mobile-info {
+    display: grid;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: 0;
+    place-items: center;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .sprint-mobile-back img,
+  .sprint-mobile-info img {
+    width: 24px;
+    height: 24px;
+    filter: brightness(0) invert(1);
+  }
+
+  .sprint-mobile-bottom-nav {
+    position: fixed;
+    z-index: 1100;
+    right: 8px;
+    bottom: 8px;
+    left: 8px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    height: 56px;
+    border-radius: 8px;
+    background: var(--g-kit-broccoli-50);
+    box-shadow: var(--bb-elevation-1);
+  }
+
+  .sprint-mobile-bottom-nav button {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    align-content: center;
+    gap: 3px;
+    padding: 6px 0 5px;
+    border: 0;
+    color: var(--g-kit-white);
+    background: transparent;
+    font: inherit;
+    font-size: 12px;
+    font-weight: var(--g-kit-font-weight-normal);
+  }
+
+  .sprint-mobile-bottom-nav button.is-active {
+    color: #bfd730;
+    font-weight: var(--g-kit-font-weight-bold);
+  }
+
+  .sprint-bottom-nav-mark {
+    width: 17px;
+    height: 24px;
+    object-fit: contain;
+  }
+
+  .sprint-mobile-bottom-nav img {
+    width: 24px;
+    height: 24px;
+  }
+
+  .sprint-notif-dot {
+    position: absolute;
+    top: 6px;
+    right: calc(50% - 15px);
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--g-kit-red-50);
+  }
+
+  .sprint-mobile-popover {
+    position: fixed;
+    z-index: 1201;
+    right: 12px;
+    bottom: 72px;
+    left: 12px;
+    display: grid;
+    gap: 8px;
+    padding: 12px;
+    border: 1px solid var(--g-kit-black-20);
+    border-radius: 8px;
+    color: var(--g-kit-black-80);
+    background: var(--g-kit-white);
+    box-shadow: var(--bb-elevation-1);
+    font-size: var(--g-kit-font-size-sigma);
+  }
+
+  .sprint-mobile-popover strong {
+    font-weight: var(--g-kit-font-weight-bold);
+  }
+
+  .sprint-mobile-popover button {
+    min-height: 36px;
+    padding: 8px;
+    border: 0;
+    border-radius: 4px;
+    color: var(--g-kit-broccoli-50);
+    background: var(--g-kit-black-10);
+    font: inherit;
+    font-weight: var(--g-kit-font-weight-bold);
+    text-align: left;
   }
 }
 </style>

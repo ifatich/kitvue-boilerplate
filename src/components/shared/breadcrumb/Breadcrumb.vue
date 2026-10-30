@@ -59,16 +59,11 @@ const handleClick = (event: MouseEvent) => {
 .app-breadcrumb {
   display: flex;
   align-items: center;
-  padding: 16px 0;
   width: 100%;
+  height: 100%;
   min-width: 0;
   box-sizing: border-box;
-}
-
-@media (max-width: 760px) {
-  .app-breadcrumb {
-    padding: 8px 0;
-  }
+  border-bottom: 1px solid var(--g-kit-black-20);
 }
 
 .app-breadcrumb :deep(.breadcrumb) {

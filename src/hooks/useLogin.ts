@@ -27,7 +27,7 @@ export function useLogin() {
     ) {
       router.push(target)
     } else {
-      router.push('/admin')
+      router.push('/')
     }
   }
 
