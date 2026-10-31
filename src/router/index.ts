@@ -24,10 +24,13 @@ const router = createRouter({
       alias: ['/dashboard/login'],
     },
     {
-      path: '/pengajuan-rahn',
+      path: '/pengajuan-rahn/:step?/:action?/:id?',
       name: 'pengajuan-rahn',
       component: () => import('../views/PengajuanRahnView.vue'),
-      alias: ['/pengajuan/rahn', '/rahn'],
+      alias: [
+        '/pengajuan/rahn/:step?/:action?/:id?',
+        '/rahn/:step?/:action?/:id?',
+      ],
       meta: { requiresAuth: true },
     },
     // Fallback redirect ke Home

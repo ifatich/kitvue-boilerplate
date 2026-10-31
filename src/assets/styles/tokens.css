@@ -12,3 +12,187 @@
 .flex-column {
   flex-direction: column !important;
 }
+
+/*
+ * SPRINT & KitVue Universal Infotip Alert (views/alerts/infotips - Figma Node 12920:311810 & 12920:311900)
+ * Ensures 100% consistent typography, padding, color, and background across ALL alerts.
+ */
+.rahn-notice,
+.gkit-infotip-alert,
+.variant {
+  width: 100%;
+}
+
+.rahn-notice .alert,
+.gkit-infotip-alert .alert,
+.variant .alert,
+.alert.variant {
+  margin-bottom: 0 !important;
+  border: none !important;
+  border-radius: 6px !important;
+  background-color: var(--g-kit-blue-10, #e8f1f9) !important;
+  color: var(--g-kit-black-80, #252528) !important;
+  background-image: url('../images/alerts/aksen-blue.svg') !important;
+  background-repeat: no-repeat !important;
+  background-position: right center !important;
+  background-size: contain !important;
+  font-family: 'Nunito Sans', sans-serif !important;
+  font-size: var(--g-kit-font-size-omicron, 16px) !important;
+  font-weight: 600 !important;
+  line-height: var(--g-kit-line-height-omicron, 24px) !important;
+  padding: 12px 16px !important;
+  min-height: 48px !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.rahn-notice .alert .row,
+.gkit-infotip-alert .alert .row,
+.variant .alert .row,
+.alert.variant .row {
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  align-items: center !important;
+  color: inherit !important;
+}
+
+.rahn-notice .alert .col-10,
+.rahn-notice .alert .col-12,
+.gkit-infotip-alert .alert .col-10,
+.gkit-infotip-alert .alert .col-12,
+.variant .alert .col-10,
+.variant .alert .col-12 {
+  color: inherit !important;
+  font-family: inherit !important;
+  font-size: inherit !important;
+  font-weight: inherit !important;
+  line-height: inherit !important;
+}
+
+/* SPRINT & KitVue Alert Variants (conforms 1:1 with _alert-varian.scss & Figma) */
+.rahn-notice .alert.alert-info,
+.gkit-infotip-alert .alert.alert-info,
+.rahn-notice .alert.alert-light-blue,
+.gkit-infotip-alert .alert.alert-light-blue,
+.variant .alert.alert-info,
+.variant .alert.alert-light-blue,
+.alert.alert-info.variant,
+.alert.alert-light-blue.variant {
+  background-color: var(--g-kit-blue-10, #e8f1f9) !important;
+  color: var(--g-kit-black-80, #252528) !important;
+  background-image: url('../images/alerts/aksen-blue.svg') !important;
+}
+
+.rahn-notice .alert.alert-danger,
+.gkit-infotip-alert .alert.alert-danger,
+.rahn-notice .alert.alert-red,
+.gkit-infotip-alert .alert.alert-red,
+.variant .alert.alert-danger,
+.variant .alert.alert-red,
+.alert.alert-danger.variant,
+.alert.alert-red.variant {
+  background-color: var(--g-kit-red-10, #fee4e2) !important;
+  color: var(--g-kit-black-80, #252528) !important;
+  background-image: url('../images/alerts/aksen-red.svg') !important;
+}
+
+.rahn-notice .alert.alert-warning,
+.gkit-infotip-alert .alert.alert-warning,
+.rahn-notice .alert.alert-yellow,
+.gkit-infotip-alert .alert.alert-yellow,
+.variant .alert.alert-warning,
+.variant .alert.alert-yellow,
+.alert.alert-warning.variant,
+.alert.alert-yellow.variant {
+  background-color: var(--g-kit-yellow-10, #fef0c7) !important;
+  color: var(--g-kit-black-80, #252528) !important;
+  background-image: url('../images/alerts/aksen-yellow.svg') !important;
+}
+
+.rahn-notice .alert.alert-success,
+.gkit-infotip-alert .alert.alert-success,
+.rahn-notice .alert.alert-green,
+.gkit-infotip-alert .alert.alert-green,
+.variant .alert.alert-success,
+.variant .alert.alert-green,
+.alert.alert-success.variant,
+.alert.alert-green.variant {
+  background-color: var(--g-kit-lime-10, #e8f8ef) !important;
+  color: var(--g-kit-black-80, #252528) !important;
+  background-image: url('../images/alerts/aksen-green.svg') !important;
+}
+
+/*
+ * SPRINT & KitVue Universal Disabled Field Styles (neutrals/black-20 #eeeeef)
+ * Ensures 100% consistent disabled appearance across GDropdown, GInputText, and GTextArea.
+ */
+.btn.gkit-dd:disabled,
+.btn.gkit-dd.disabled,
+button.gkit-dd:disabled,
+.gkit-dd button:disabled,
+.group-input:has(button:disabled) .btn.gkit-dd,
+.dropdown:has(button:disabled) .btn.gkit-dd,
+.btn:disabled.prevent-zero {
+  background-color: var(--g-kit-black-20, #eeeeef) !important;
+  border-color: var(--g-kit-black-20, #eeeeef) !important;
+  color: var(--g-kit-black-60, #58585b) !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+}
+
+.btn.gkit-dd:disabled .dropdown-placeholder,
+.btn.gkit-dd.disabled .dropdown-placeholder,
+button.gkit-dd:disabled .dropdown-placeholder,
+.gkit-dd button:disabled .dropdown-placeholder,
+.group-input:has(button:disabled) .btn.gkit-dd .dropdown-placeholder {
+  color: var(--g-kit-black-60, #58585b) !important;
+}
+
+.btn.gkit-dd:disabled svg,
+.btn.gkit-dd.disabled svg,
+button.gkit-dd:disabled svg,
+.gkit-dd button:disabled svg {
+  color: var(--g-kit-black-40, #bbbdc0) !important;
+}
+
+textarea:disabled,
+input:disabled,
+.form-control:disabled {
+  background-color: var(--g-kit-black-20, #eeeeef) !important;
+  border-color: var(--g-kit-black-20, #eeeeef) !important;
+  color: var(--g-kit-black-60, #58585b) !important;
+  cursor: not-allowed !important;
+}
+
+/* Universal Disabled State for Custom Input Groups (e.g. GInputDatePicker, GInputNIK) */
+.custom-input-group-icon:has(input:disabled),
+.custom-input-group-icon:has(.form-control:disabled) {
+  background-color: var(--g-kit-black-20, #eeeeef) !important;
+  border-color: var(--g-kit-black-20, #eeeeef) !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+}
+
+.custom-input-group-icon:has(input:disabled) input,
+.custom-input-group-icon:has(.form-control:disabled) .form-control {
+  background-color: transparent !important;
+  border: none !important;
+  color: var(--g-kit-black-60, #58585b) !important;
+  cursor: not-allowed !important;
+}
+
+.custom-input-group-icon:has(input:disabled) .input-group-icon img,
+.custom-input-group-icon:has(.form-control:disabled) .input-group-icon img {
+  opacity: 0.6;
+}
+
+/* Universal GDropdown Elevation & Stacking */
+.gkit-dd .dropdown-menu,
+.dropdown-menu {
+  z-index: 1050 !important;
+  background-color: var(--g-kit-white, #ffffff) !important;
+  border: 1px solid var(--g-kit-black-20, #eeeeef) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12) !important;
+}

@@ -90,17 +90,20 @@ const handleBack = () => {
 
 <style scoped lang="scss">
 .sprint-module-shell {
-  flex: 1 0 auto;
-  min-height: 100vh;
-  min-height: 100dvh;
   display: flex;
   flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 100vh;
+  min-height: 100dvh;
   box-sizing: border-box;
   background: var(--g-kit-white);
+  position: relative;
 }
 
 .sprint-module-shell__content {
-  flex: 1 0 auto;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
   width: min(calc(100% - 32px), 1152px);
   margin: 0 auto;
 }
@@ -119,6 +122,7 @@ const handleBack = () => {
 
 .sprint-module-shell__footer {
   margin-top: auto;
+  flex-shrink: 0;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -150,7 +154,7 @@ const handleBack = () => {
   padding: 24px 0;
 
   :deep(.btn) {
-    min-width: 120px;
+    width: 200px;
     height: 40px;
     border-radius: 6px;
     font-size: 16px;

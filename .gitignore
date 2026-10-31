@@ -34,3 +34,6 @@ graphify-out/
 
 # Local Dev API Server database
 server/.data/
+
+# Agent temporary and team workspaces
+.agents/teamwork/

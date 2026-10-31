@@ -2,63 +2,101 @@
 /**
  * @file PengajuanRahnView.vue
  * @description SPRINT Module View for Pengajuan Pinjaman Rahn.
- * Responsible strictly for business logic, form state, and step data.
- * Page layout and generic interactive containers are delegated to reusable components:
- * - SprintModuleShell: universal navbar, breadcrumb, sticky footer, sticky bottom action sheet
- * - MobileStepperBanner: mobile step progression indicator
- * - ModuleSectionCard: collapsible, accessible card container with zero-flicker CSS grid animation
- * - RahnReadonlyInfoGrid: domain module component for displaying readonly akad/verification data
+ * Responsible strictly for root stepper orchestration, route navigation,
+ * and high-level notifications.
+ *
+ * Conforms 1:1 with Figma frames:
+ * - Step 1: Data Pengajuan (Node 12920:311792, 12920:307127, 12920:314583, 11347:151906)
+ * - Step 2: Data Rahin (Node 11347:148654)
+ * - Step 3+: Data Jaminan, Fasilitas Pinjaman, Data Review
  */
-import { computed, ref } from 'vue'
+import { onUnmounted, ref, watch } from 'vue'
 import { useMediaQuery } from '@vueuse/core'
-import { useRouter } from 'vue-router'
-import { GAlert, GButton, GDropdown, GInputNominalStart, GInputText, GStepper } from '@/components'
+import { useRoute, useRouter } from 'vue-router'
+import {
+  GAlert,
+  GButton,
+  GStepper,
+} from '@/components'
 import SprintModuleShell from '@/components/shared/admin-layout/SprintModuleShell.vue'
 import MobileStepperBanner from '@/components/shared/stepper/MobileStepperBanner.vue'
 import ModuleSectionCard from '@/components/shared/card/ModuleSectionCard.vue'
-import { RahnReadonlyInfoGrid, type ReadonlyInfoItem } from '@/components/modules/rahn'
-
-type Option = { value: string; label: string }
+import {
+  type BeneficialOwnerState,
+  type RahnFields,
+  type RahinFields,
+  Step1PengajuanContent,
+  Step2RahinContent,
+} from '@/components/modules/rahn'
+import {
+  type UsecaseAction,
+  buildRahnPath,
+  parseRahnRouteParams,
+} from '@/router/rahnRouting'
+import {
+  MOCK_BENEFICIAL_OWNERS,
+  findBeneficialOwnerById,
+} from '@/components/modules/rahn/mockBeneficialOwnerData'
+import {
+  MOCK_RAHIN_CIF_DATABASE,
+  findRahinCifById,
+} from '@/components/modules/rahn/mockRahinData'
 
 const router = useRouter()
+const route = useRoute()
 const isMobile = useMediaQuery('(max-width: 767px)')
-const activeStep = ref(1)
 
-// Step 1 collapsible sections
-const isInformasiRahnOpen = ref(true)
-const isBeneficialOwnerOpen = ref(true)
+// Initialize state from current route
+const initialRouteState = parseRahnRouteParams(route?.params)
+const activeStep = ref(initialRouteState.stepNumber)
+const activeAction = ref<UsecaseAction>(initialRouteState.action)
+const activeRecordId = ref<string | undefined>(initialRouteState.id)
 
-// Step 2 collapsible sections
-const isInformasiRahinOpen = ref(true)
-const isHubunganOpen = ref(true)
+// Step 1 sub-view state ('search' | 'detail' | 'tambah')
+const step1SubView = ref<'search' | 'detail' | 'tambah'>('search')
+// Step 2 sub-view state ('search' | 'detail')
+const step2SubView = ref<'search' | 'detail'>('search')
+const step1Ref = ref<InstanceType<typeof Step1PengajuanContent> | null>(null)
+const step2Ref = ref<InstanceType<typeof Step2RahinContent> | null>(null)
 
-const fields = ref({
-  tujuanPengajuan: 'pilihan-1',
-  tujuanTransaksi: 'pilihan-1',
-  pekerjaanTerkini: 'pilihan-1',
-  rubrikMarhun: 'pilihan-1',
-  skemaTarif: 'pilihan-1',
-  produk: 'pilihan-1',
-  jangkaWaktu: 'pilihan-1',
-  beneficialOwner: 'pilihan-1',
+// Root validation alert state
+const validationAlert = ref<string | null>(null)
+
+// Step 1 Form Fields: Informasi Rahn (All empty by default matching Figma)
+const fields = ref<RahnFields>({
+  tujuanPengajuan: '',
+  tujuanTransaksi: '',
+  pekerjaanTerkini: '',
+  rubrikMarhun: '',
+  skemaTarif: '',
+  produk: '',
+  jangkaWaktu: '',
 })
 
-const fieldsRahin = ref({
-  nik: '3171012345670001',
-  nama: 'Budi Santoso',
-  noHp: '081298765432',
-  pekerjaan: 'pilihan-1',
-  nominal: '15000000',
-  alamat: 'Jl. Kramat Raya No. 162, Senen, Jakarta Pusat',
-  hubungan: 'pilihan-1',
+// Step 1 Form Fields: Beneficial Owner (All empty by default matching Figma)
+const boState = ref<BeneficialOwnerState>({
+  type: '',
+  tipeRahin: '',
+  identityType: '',
+  identityNumber: '',
+  relationship: '',
+  selectedBO: null,
+  document: null,
+  isAlamatSesuaiKtp: false,
 })
 
-const options: Option[] = [
-  { value: 'pilihan-1', label: 'Pilihan 1' },
-  { value: 'pilihan-2', label: 'Pilihan 2' },
-  { value: 'pilihan-3', label: 'Pilihan 3' },
-]
+// Step 2 Form Fields: Data Rahin (Empty by default)
+const fieldsRahin = ref<RahinFields>({
+  nik: '',
+  nama: '',
+  noHp: '',
+  pekerjaan: '',
+  nominal: '',
+  alamat: '',
+  hubungan: '',
+})
 
+// Step definitions (1:1 with Figma Stepper)
 const steps = [
   'Data Pengajuan',
   'Data Rahin',
@@ -67,50 +105,273 @@ const steps = [
   'Data Review',
 ]
 
-// Step 1 Readonly Data: Informasi Akad
-const akadItems: ReadonlyInfoItem[] = [
-  { label: 'Tanggal Akad', value: 'Terisi otomatis' },
-  { label: 'Tanggal Jatuh Tempo', value: 'Terisi otomatis' },
-  { label: 'Tanggal Lelang', value: 'Terisi otomatis' },
-]
+// Bidirectional Synchronization & Infinite Loop Guard (Requirement R2)
+let isSyncingFromRoute = false
 
-// Step 2 Readonly Data: Verifikasi & Data Dukung
-const verifikasiItems: ReadonlyInfoItem[] = [
-  { label: 'Nomor CIF', value: 'CIF-990214' },
-  { label: 'Status Dukcapil', value: 'Terverifikasi (KTP Aktif)' },
-  { label: 'Kolektibilitas SLIK', value: 'Lancar (Kolektibilitas 1)' },
-]
+const syncStateFromRoute = (params?: any) => {
+  const parsed = parseRahnRouteParams(params || route?.params)
+  isSyncingFromRoute = true
+  activeStep.value = parsed.stepNumber
+  activeAction.value = parsed.action
+  activeRecordId.value = parsed.id
 
-const canContinue = computed(() => {
-  if (activeStep.value === 1) {
-    return Boolean(fields.value.tujuanPengajuan && fields.value.tujuanTransaksi)
+  if (parsed.stepNumber === 1) {
+    if (parsed.id) {
+      const foundBO = findBeneficialOwnerById(parsed.id)
+      if (foundBO) {
+        boState.value.selectedBO = foundBO
+        boState.value.type = 'orang_lain'
+        boState.value.identityType = foundBO.pasporNumber ? 'paspor' : 'ktp'
+        boState.value.identityNumber = foundBO.pasporNumber || foundBO.nik
+      }
+    } else if ((parsed.action === 'preview' || parsed.action === 'update') && !boState.value.selectedBO) {
+      if (MOCK_BENEFICIAL_OWNERS.length > 0) {
+        boState.value.selectedBO = MOCK_BENEFICIAL_OWNERS[0]
+        boState.value.type = 'orang_lain'
+        boState.value.identityType = 'ktp'
+        boState.value.identityNumber = MOCK_BENEFICIAL_OWNERS[0].nik
+      }
+    }
+    // Map action to step1SubView
+    if (parsed.action === 'create') {
+      step1SubView.value = 'tambah'
+    } else if (parsed.action === 'preview' || parsed.action === 'update') {
+      step1SubView.value = 'detail'
+    } else {
+      step1SubView.value = 'search'
+    }
+  } else if (parsed.stepNumber === 2) {
+    const targetId = parsed.id || ((parsed.action === 'preview' || parsed.action === 'update') ? (step2Ref.value?.step2State?.selectedCifId || MOCK_RAHIN_CIF_DATABASE[0].id) : undefined)
+    if (targetId) {
+      const foundCif = findRahinCifById(targetId)
+      if (foundCif) {
+        fieldsRahin.value.cif = foundCif.nomorCif
+        fieldsRahin.value.nik = foundCif.rawIdentitas
+        fieldsRahin.value.nama = foundCif.namaRahin
+        fieldsRahin.value.jenisIdentitas = foundCif.jenisIdentitas
+        fieldsRahin.value.statusRahin = foundCif.statusRahin
+        fieldsRahin.value.ratingRahin = foundCif.ratingRahin
+        fieldsRahin.value.alamat = foundCif.alamatRumah
+        fieldsRahin.value.noHp = foundCif.noHp
+        fieldsRahin.value.cabangPembuka = foundCif.cabangPembuka
+      }
+    }
+    // Map action to step2SubView
+    if (parsed.action === 'entry') {
+      step2SubView.value = 'search'
+    } else {
+      step2SubView.value = 'detail'
+    }
   }
-  if (activeStep.value === 2) {
-    return Boolean(fieldsRahin.value.nik && fieldsRahin.value.nama)
+
+  isSyncingFromRoute = false
+}
+
+// Initial sync on mount
+syncStateFromRoute()
+
+// Watch route params for back/forward or external navigation
+if (route) {
+  watch(
+    () => route.params,
+    () => {
+      syncStateFromRoute()
+    },
+    { deep: true, flush: 'sync' },
+  )
+}
+
+if (router && typeof router.afterEach === 'function') {
+  const unhook = router.afterEach((to) => {
+    syncStateFromRoute(to.params)
+  })
+  onUnmounted(() => {
+    if (typeof unhook === 'function') unhook()
+  })
+}
+
+const navigateToRoute = (
+  step: number,
+  action: UsecaseAction = 'entry',
+  id?: string,
+  replace = false,
+) => {
+  if (isSyncingFromRoute) return Promise.resolve()
+  if (!router) return Promise.resolve()
+  const targetPath = buildRahnPath(step, action, id)
+  const currentPath = route?.path || ''
+  if (currentPath !== targetPath) {
+    if (replace) {
+      return router.replace(targetPath)
+    } else {
+      return router.push(targetPath)
+    }
   }
-  return true
-})
+  return Promise.resolve()
+}
+
+// Watch activeStep changes (e.g. from GStepper click)
+watch(
+  activeStep,
+  (newStep, oldStep) => {
+    if (isSyncingFromRoute) return
+    if (newStep !== oldStep) {
+      activeAction.value = 'entry'
+      activeRecordId.value = undefined
+      navigateToRoute(newStep, 'entry')
+    }
+  },
+  { flush: 'sync' },
+)
 
 const nextStep = () => {
-  if (!canContinue.value) return
+  if (activeStep.value === 1) {
+    const canAdvance = step1Ref.value?.handleNext ? step1Ref.value.handleNext() : true
+    if (canAdvance) {
+      validationAlert.value = null
+      activeStep.value = 2
+      activeAction.value = 'entry'
+      activeRecordId.value = undefined
+      const p = navigateToRoute(2, 'entry')
+      if (typeof window !== 'undefined' && typeof window.scrollTo === 'function') {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      }
+      return p
+    }
+    return Promise.resolve()
+  }
+
+  if (activeStep.value === 2) {
+    const result = step2Ref.value?.handleNext ? step2Ref.value.handleNext() : { valid: true }
+    if (result && !result.valid) {
+      validationAlert.value = result.message || 'Mohon lengkapi data identitas Rahin.'
+      if (typeof window !== 'undefined' && typeof window.scrollTo === 'function') {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      }
+      return Promise.resolve()
+    }
+    if (result && result.handled) {
+      if (typeof window !== 'undefined' && typeof window.scrollTo === 'function') {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      }
+      return Promise.resolve()
+    }
+    validationAlert.value = null
+    activeStep.value = 3
+    activeAction.value = 'entry'
+    activeRecordId.value = undefined
+    const p = navigateToRoute(3, 'entry')
+    if (typeof window !== 'undefined' && typeof window.scrollTo === 'function') {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+    return p
+  }
+
   if (activeStep.value < steps.length) {
     activeStep.value++
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    activeAction.value = 'entry'
+    activeRecordId.value = undefined
+    const p = navigateToRoute(activeStep.value, 'entry')
+    if (typeof window !== 'undefined' && typeof window.scrollTo === 'function') {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+    return p
   }
+  return Promise.resolve()
 }
 
 const prevStep = () => {
-  if (activeStep.value > 1) {
-    activeStep.value--
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  } else {
-    router.push('/')
+  validationAlert.value = null
+  if (activeStep.value === 1) {
+    const canExit = step1Ref.value?.handlePrev ? step1Ref.value.handlePrev() : true
+    if (canExit) {
+      if (router) return router.push('/')
+    }
+    return Promise.resolve()
   }
+
+  if (activeStep.value === 2) {
+    const canExit = step2Ref.value?.handlePrev ? step2Ref.value.handlePrev() : true
+    if (canExit) {
+      activeStep.value = 1
+      step1SubView.value = 'search'
+      activeAction.value = 'entry'
+      activeRecordId.value = undefined
+      const p = navigateToRoute(1, 'entry')
+      if (typeof window !== 'undefined' && typeof window.scrollTo === 'function') {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      }
+      return p
+    }
+    return Promise.resolve()
+  }
+
+  if (activeStep.value > 2) {
+    activeStep.value--
+    activeAction.value = 'entry'
+    activeRecordId.value = undefined
+    const p = navigateToRoute(activeStep.value, 'entry')
+    if (typeof window !== 'undefined' && typeof window.scrollTo === 'function') {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+    return p
+  }
+  return Promise.resolve()
+}
+
+const handleStep1Advance = () => {
+  activeStep.value = 2
+  activeAction.value = 'entry'
+  activeRecordId.value = undefined
+  navigateToRoute(2, 'entry')
+}
+
+const handleStep1ActionChange = (action: UsecaseAction, recordId?: string) => {
+  if (isSyncingFromRoute) return
+  activeAction.value = action
+  activeRecordId.value = recordId || (action === 'entry' || action === 'create' ? undefined : activeRecordId.value)
+  navigateToRoute(1, action, activeRecordId.value)
+}
+
+const handleStep2Advance = () => {
+  activeStep.value = 3
+  activeAction.value = 'entry'
+  activeRecordId.value = undefined
+  navigateToRoute(3, 'entry')
+}
+
+const handleStep2Back = () => {
+  activeStep.value = 1
+  activeAction.value = 'entry'
+  activeRecordId.value = undefined
+  navigateToRoute(1, 'entry')
+}
+
+const handleStep2ActionChange = (action: UsecaseAction, recordId?: string) => {
+  if (isSyncingFromRoute) return
+  activeAction.value = action
+  activeRecordId.value = recordId || (action === 'entry' || action === 'create' ? undefined : activeRecordId.value)
+  navigateToRoute(2, action, activeRecordId.value)
 }
 
 const handleModuleBack = () => {
   prevStep()
 }
+
+defineExpose({
+  activeStep,
+  activeAction,
+  activeRecordId,
+  step1SubView,
+  step2SubView,
+  fields,
+  boState,
+  fieldsRahin,
+  syncStateFromRoute,
+  navigateToRoute,
+  nextStep,
+  prevStep,
+})
 </script>
 
 <template>
@@ -130,23 +391,34 @@ const handleModuleBack = () => {
     </template>
 
     <template #notice>
+      <!-- Validation Error / Warning Alert -->
       <GAlert
-        v-if="activeStep === 1"
-        class="rahn-notice variant"
+        v-if="validationAlert"
+        class="rahn-notice rahn-notice-top variant"
+        :label="validationAlert"
+        :color="validationAlert.includes('Pilih salah satu data CIF syariah') ? 'yellow' : 'red'"
+        :variant="validationAlert.includes('Pilih salah satu data CIF syariah') ? 'warning' : 'danger'"
+      />
+
+      <!-- Default SPRINT Step Guidelines -->
+      <GAlert
+        v-else-if="activeStep === 1"
+        class="rahn-notice rahn-notice-top variant"
         label="Pastikan data yang diisi telah sesuai dengan data Rahin."
         color="light-blue"
         variant="info"
       />
       <GAlert
         v-else-if="activeStep === 2"
-        class="rahn-notice variant"
-        label="Pastikan data identitas dan kontak Rahin sesuai dengan KTP."
+        class="rahn-notice rahn-notice-top variant"
+        label="Pastikan data yang diisi telah sesuai dengan data Rahin."
         color="light-blue"
         variant="info"
       />
     </template>
 
     <div class="application-layout">
+      <!-- Desktop Sidebar Stepper (1:1 with Figma) -->
       <GStepper
         v-if="!isMobile"
         v-model:active-step="activeStep"
@@ -157,166 +429,36 @@ const handleModuleBack = () => {
       />
 
       <!-- STEP 1: DATA PENGAJUAN -->
-      <div v-if="activeStep === 1" class="form-content">
-        <div class="form-card">
-          <ModuleSectionCard title="Informasi Rahn" v-model="isInformasiRahnOpen">
-            <h3>Transaksi dan Produk</h3>
-            <div class="form-grid">
-              <GDropdown
-                v-model="fields.tujuanPengajuan"
-                label="Tujuan Pengajuan"
-                placeholder="Pilih tujuan pengajuan"
-                :items="options"
-                item-value="value"
-                item-text="label"
-                :use-bottom-sheet="isMobile"
-              />
-              <GDropdown
-                v-model="fields.tujuanTransaksi"
-                label="Tujuan Transaksi"
-                placeholder="Pilih tujuan transaksi"
-                :items="options"
-                item-value="value"
-                item-text="label"
-                :use-bottom-sheet="isMobile"
-              />
-              <GDropdown
-                v-model="fields.pekerjaanTerkini"
-                label="Pekerjaan Terkini"
-                placeholder="Pilih pekerjaan terkini"
-                :items="options"
-                item-value="value"
-                item-text="label"
-                :use-bottom-sheet="isMobile"
-              />
-              <GDropdown
-                v-model="fields.rubrikMarhun"
-                label="Rubrik Marhun"
-                placeholder="Pilih rubrik marhun"
-                :items="options"
-                item-value="value"
-                item-text="label"
-                :use-bottom-sheet="isMobile"
-              />
-              <GDropdown
-                v-model="fields.skemaTarif"
-                label="Skema Tarif"
-                placeholder="Pilih skema tarif"
-                :items="options"
-                item-value="value"
-                item-text="label"
-                :use-bottom-sheet="isMobile"
-              />
-              <GDropdown
-                v-model="fields.produk"
-                label="Produk"
-                placeholder="Pilih produk"
-                :items="options"
-                item-value="value"
-                item-text="label"
-                :use-bottom-sheet="isMobile"
-              />
-              <GDropdown
-                v-model="fields.jangkaWaktu"
-                label="Jangka Waktu"
-                placeholder="Pilih jangka waktu"
-                :items="options"
-                item-value="value"
-                item-text="label"
-                :use-bottom-sheet="isMobile"
-              />
-            </div>
-
-            <div class="section-divider" />
-
-            <RahnReadonlyInfoGrid
-              title="Informasi Akad"
-              :items="akadItems"
-            />
-          </ModuleSectionCard>
-
-          <ModuleSectionCard title="Beneficial Owner" v-model="isBeneficialOwnerOpen">
-            <div class="owner-field">
-              <GDropdown
-                v-model="fields.beneficialOwner"
-                label="Tipe Beneficial Owner"
-                placeholder="Pilih tipe beneficial owner"
-                :items="options"
-                item-value="value"
-                item-text="label"
-                :use-bottom-sheet="isMobile"
-              />
-            </div>
-          </ModuleSectionCard>
-        </div>
-      </div>
+      <Step1PengajuanContent
+        v-if="activeStep === 1"
+        ref="step1Ref"
+        v-model:fields="fields"
+        v-model:bo-state="boState"
+        v-model:sub-view="step1SubView"
+        v-model:validation-alert="validationAlert"
+        :action="activeAction"
+        :record-id="activeRecordId"
+        :is-mobile="isMobile"
+        @advance="handleStep1Advance"
+        @back-to-root="router ? router.push('/') : undefined"
+        @update:action="handleStep1ActionChange"
+      />
 
       <!-- STEP 2: DATA RAHIN -->
-      <div v-else-if="activeStep === 2" class="form-content">
-        <div class="form-card">
-          <ModuleSectionCard title="Data Rahin" v-model="isInformasiRahinOpen">
-            <h3>Identitas & Kontak</h3>
-            <div class="form-grid">
-              <GInputText
-                v-model="fieldsRahin.nik"
-                label="NIK Rahin"
-                placeholder="Masukkan 16 digit NIK"
-              />
-              <GInputText
-                v-model="fieldsRahin.nama"
-                label="Nama Lengkap Rahin"
-                placeholder="Masukkan nama sesuai KTP"
-              />
-              <GInputText
-                v-model="fieldsRahin.noHp"
-                label="Nomor Handphone"
-                placeholder="Contoh: 081234567890"
-              />
-              <GDropdown
-                v-model="fieldsRahin.pekerjaan"
-                label="Pekerjaan Rahin"
-                placeholder="Pilih pekerjaan"
-                :items="options"
-                item-value="value"
-                item-text="label"
-                :use-bottom-sheet="isMobile"
-              />
-              <GInputNominalStart
-                v-model="fieldsRahin.nominal"
-                label="Nilai Pinjaman (UP)"
-                placeholder="Masukkan nominal"
-                unit="Rp"
-              />
-              <GInputText
-                v-model="fieldsRahin.alamat"
-                label="Alamat Domisili"
-                placeholder="Masukkan alamat domisili"
-              />
-            </div>
-
-            <div class="section-divider" />
-
-            <RahnReadonlyInfoGrid
-              title="Verifikasi & Data Dukung"
-              :items="verifikasiItems"
-            />
-          </ModuleSectionCard>
-
-          <ModuleSectionCard title="Kepemilikan Jaminan" v-model="isHubunganOpen">
-            <div class="owner-field">
-              <GDropdown
-                v-model="fieldsRahin.hubungan"
-                label="Status Kepemilikan"
-                placeholder="Pilih status kepemilikan"
-                :items="options"
-                item-value="value"
-                item-text="label"
-                :use-bottom-sheet="isMobile"
-              />
-            </div>
-          </ModuleSectionCard>
-        </div>
-      </div>
+      <Step2RahinContent
+        v-else-if="activeStep === 2"
+        ref="step2Ref"
+        v-model:fields="fieldsRahin"
+        v-model:bo-state="boState"
+        v-model:sub-view="step2SubView"
+        :action="activeAction"
+        :record-id="activeRecordId"
+        :is-mobile="isMobile"
+        @advance="handleStep2Advance"
+        @back="handleStep2Back"
+        @clear-validation="validationAlert = null"
+        @update:action="handleStep2ActionChange"
+      />
 
       <!-- FALLBACK STEP -->
       <div v-else class="form-content">
@@ -328,19 +470,23 @@ const handleModuleBack = () => {
       </div>
     </div>
 
+    <!-- Sticky Bottom Action Sheet -->
     <template #actions>
+      <!-- Tombol Sebelumnya: tampil jika berada di step > 1 ATAU di subview selain search di step 1 -->
       <GButton
-        v-if="!isMobile || activeStep > 1"
+        v-if="activeStep > 1 || (activeStep === 1 && step1SubView !== 'search')"
         label="Sebelumnya"
         type="outline"
         size="md"
+        style="width: 200px;"
         @click="prevStep"
       />
+      <!-- Tombol Selanjutnya: selalu 200px di desktop -->
       <GButton
         label="Selanjutnya"
         type="primary"
         size="md"
-        :disabled="!canContinue"
+        style="width: 200px;"
         @click="nextStep"
       />
     </template>
@@ -348,35 +494,16 @@ const handleModuleBack = () => {
 </template>
 
 <style lang="scss" scoped>
-.rahn-notice {
+.rahn-notice-top {
   margin: 16px 0 12px;
-
-  :deep(.alert) {
-    margin-bottom: 0;
-    border: none;
-    border-radius: 8px;
-    background-color: var(--g-kit-blue-10, #e8f4fd);
-    color: var(--g-kit-black-80, #252528);
-    background-image: url('kitvue-public/src/assets/images/alerts/aksen-blue.svg');
-    background-repeat: no-repeat;
-    background-position: right center;
-    background-size: contain;
-    font-family: 'Nunito Sans', sans-serif;
-    font-size: var(--g-kit-font-size-omicron, 14px);
-    line-height: var(--g-kit-line-height-omicron, 20px);
-  }
 
   @media (max-width: 767px) {
     margin: 12px 16px;
-
-    :deep(.alert) {
-      font-size: var(--g-kit-font-size-omega, 12px);
-      line-height: var(--g-kit-line-height-omega, 18px);
-    }
   }
 }
 
 .application-layout {
+  flex: 1 1 auto;
   display: grid;
   grid-template-columns: 270px minmax(0, 1fr);
   gap: 24px;
@@ -390,7 +517,40 @@ const handleModuleBack = () => {
 }
 
 .rahn-stepper {
-  height: max-content;
+  width: 270px;
+  height: fit-content;
+  border-radius: 8px;
+  background-color: var(--g-kit-black-10, #f8f8f8);
+
+  :deep(.label-stepper) {
+    font-size: 20px !important;
+    font-weight: 800 !important;
+    line-height: 30px !important;
+    color: var(--g-kit-black-80, #252528) !important;
+    margin-bottom: 32px !important;
+  }
+
+  :deep(ol.stepper-list li) {
+    margin-bottom: 32px !important;
+
+    &:last-child {
+      margin-bottom: 0 !important;
+    }
+
+    a.active {
+      color: var(--g-kit-black-80, #252528) !important;
+      font-size: 16px !important;
+      font-weight: 800 !important;
+      line-height: 24px !important;
+    }
+
+    span {
+      font-size: 16px !important;
+      font-weight: 800 !important;
+      line-height: 24px !important;
+      color: var(--g-kit-black-50, #939597) !important;
+    }
+  }
 
   @media (max-width: 767px) {
     display: none;
@@ -412,7 +572,8 @@ const handleModuleBack = () => {
   border: 1px solid var(--g-kit-black-20, #eeeeef);
   border-radius: 8px;
   background: var(--g-kit-white, #ffffff);
-  overflow: hidden;
+  box-shadow: 0px 2px 3px rgba(0, 0, 0, 0.14), 0px 0px 1px rgba(0, 0, 0, 0.08);
+  overflow: visible;
 
   :deep(.module-section-card) {
     border: none;
@@ -420,7 +581,7 @@ const handleModuleBack = () => {
     margin-bottom: 0;
 
     + .module-section-card {
-      border-top: 8px solid var(--g-kit-black-10, #f8f8f8);
+      border-top: 8px solid var(--g-kit-black-20, #eeeeef);
     }
   }
 
@@ -428,6 +589,7 @@ const handleModuleBack = () => {
     border: none;
     border-radius: 0;
     background: transparent;
+    box-shadow: none;
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -445,45 +607,5 @@ const handleModuleBack = () => {
       }
     }
   }
-}
-
-h3 {
-  margin: 0 0 12px;
-  color: var(--g-kit-black-80, #252528);
-  font-family: 'Nunito Sans', sans-serif;
-  font-size: var(--g-kit-font-size-omicron, 14px);
-  font-weight: var(--g-kit-font-weight-bold, 700);
-  line-height: var(--g-kit-line-height-omicron, 20px);
-}
-
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px 24px;
-  margin-top: 12px;
-
-  @media (max-width: 767px) {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-}
-
-.section-divider {
-  height: 1px;
-  margin: 16px 0;
-  background: var(--g-kit-black-20, #eeeeef);
-}
-
-.owner-field {
-  width: min(100%, 393px);
-
-  @media (max-width: 767px) {
-    width: auto;
-  }
-}
-
-// Component overrides
-:deep(.group-input) {
-  margin-bottom: 0px;
 }
 </style>

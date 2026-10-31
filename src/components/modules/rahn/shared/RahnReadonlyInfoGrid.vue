@@ -3,6 +3,7 @@
  * @file RahnReadonlyInfoGrid.vue
  * @description Domain module component for displaying read-only summary/akad fields
  * in SPRINT Pinjaman Rahn modules. Follows official Pegadaian G-Kit design tokens.
+ * Matches 1:1 with Figma frame 11347:148655.
  */
 export interface ReadonlyInfoItem {
   label: string
@@ -22,9 +23,9 @@ withDefaults(
 
 <template>
   <div class="rahn-readonly-group">
-    <h3 v-if="title" class="rahn-readonly-group__title">
+    <h4 v-if="title" class="rahn-readonly-group__title">
       {{ title }}
-    </h3>
+    </h4>
     <div class="rahn-readonly-grid" role="list">
       <div
         v-for="item in items"
@@ -33,7 +34,9 @@ withDefaults(
         role="listitem"
       >
         <span class="readonly-field__label">{{ item.label }}</span>
-        <b class="readonly-field__value">{{ item.value }}</b>
+        <div class="readonly-field__box">
+          <span class="readonly-field__value">{{ item.value }}</span>
+        </div>
       </div>
     </div>
   </div>
@@ -44,20 +47,20 @@ withDefaults(
   width: 100%;
 
   &__title {
-    margin: 0 0 12px;
+    margin: 0 0 16px;
     color: var(--g-kit-black-80, #252528);
     font-family: 'Nunito Sans', sans-serif;
-    font-size: var(--g-kit-font-size-omicron, 14px);
-    font-weight: var(--g-kit-font-weight-bold, 700);
-    line-height: var(--g-kit-line-height-omicron, 20px);
+    font-size: var(--g-kit-font-size-omicron, 16px);
+    font-weight: var(--g-kit-font-weight-bold, 800);
+    line-height: var(--g-kit-line-height-omicron, 24px);
   }
 }
 
 .rahn-readonly-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px 24px;
-  margin-top: 12px;
+  column-gap: 24px;
+  row-gap: 16px;
 
   @media (max-width: 767px) {
     grid-template-columns: 1fr;
@@ -66,25 +69,39 @@ withDefaults(
 }
 
 .readonly-field {
-  display: grid;
-  gap: 6px;
-  font-size: var(--g-kit-font-size-sigma, 12px);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
 
   &__label {
     color: var(--g-kit-black-80, #252528);
-    font-weight: var(--g-kit-font-weight-bold, 700);
+    font-family: 'Nunito Sans', sans-serif;
+    font-size: var(--g-kit-font-size-sigma, 14px);
+    font-weight: var(--g-kit-font-weight-bold, 800);
+    line-height: var(--g-kit-line-height-sigma, 20px);
+  }
+
+  &__box {
+    display: flex;
+    align-items: center;
+    height: 48px;
+    padding: 0 12px;
+    border-radius: 6px;
+    background-color: var(--g-kit-black-20, #eeeeef);
+    border: 1px solid var(--g-kit-black-20, #eeeeef);
+    box-sizing: border-box;
   }
 
   &__value {
-    display: block;
-    padding: 10px;
-    border-radius: 6px;
     color: var(--g-kit-black-60, #58585b);
-    background: var(--g-kit-black-20, #eeeeef);
-    font-size: var(--g-kit-font-size-omicron, 14px);
-    font-weight: var(--g-kit-font-weight-normal, 400);
-    line-height: 1.4;
+    font-family: 'Nunito Sans', sans-serif;
+    font-size: var(--g-kit-font-size-omicron, 16px);
+    font-weight: var(--g-kit-font-weight-normal, 600);
+    line-height: var(--g-kit-line-height-omicron, 24px);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
 </style>
-

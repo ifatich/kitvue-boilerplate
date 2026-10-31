@@ -32,6 +32,8 @@ import LineChart from 'kitvue-public/src/components/Chart/LineChart.vue'
 import TimePickerResponsive from 'kitvue-public/src/components/Input/TimePickerResponsive.vue'
 import AddAmountCounter from 'kitvue-public/src/components/AddAmount/AddAmountCounter.vue'
 import FilterCMSComponent from 'kitvue-public/src/components/Filter/FilterCMS.vue'
+import CustomCheckboxComponent from 'kitvue-public/src/components/Checkbox/CustomCheckbox.vue'
+import NewInputCameraComponent from 'kitvue-public/src/components/Input/NewInputCamera.vue'
 
 // Re-exports conforming to Kitvue conventions (both Button and GButton syntax supported)
 export const Button = ButtonComponent
@@ -132,3 +134,8 @@ export const GTimePickerResponsive = TimePickerResponsive
 
 export const Counter = AddAmountCounter
 export const GAddAmountCounter = AddAmountCounter
+
+export const CustomCheckbox = CustomCheckboxComponent
+export const GCheckbox = CustomCheckboxComponent
+
+export const NewInputCamera = NewInputCameraComponent
