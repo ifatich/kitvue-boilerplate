@@ -25,12 +25,16 @@ const props = withDefaults(
     backTo?: string
     profileRole?: string
     showAuthToggle?: boolean
+    wide?: boolean
+    searchPlaceholder?: string
   }>(),
   {
     breadcrumbs: () => [],
     backTo: '/',
     profileRole: 'Penaksir',
     showAuthToggle: false,
+    wide: false,
+    searchPlaceholder: 'Cari (contoh: pengajuan kredit)',
   },
 )
 
@@ -52,11 +56,12 @@ const handleBack = () => {
 </script>
 
 <template>
-  <div class="sprint-module-shell">
+  <div :class="['sprint-module-shell', { 'sprint-module-shell--wide': wide }]">
     <SprintNavbar
       embedded
       :profile-role="profileRole"
       :show-auth-toggle="showAuthToggle"
+      :search-placeholder="searchPlaceholder"
       :mobile-title="title"
       :mobile-back-to="backTo"
       @back="handleBack"
@@ -103,6 +108,12 @@ const handleBack = () => {
   flex: 1 0 auto;
   width: min(calc(100% - 32px), 1152px);
   margin: 0 auto;
+  padding-top: 16px;
+  box-sizing: border-box;
+}
+
+.sprint-module-shell__content :deep(.section-bg-top) {
+  padding: 15px 0;
 }
 
 .sprint-module-shell__breadcrumb-band {
@@ -120,15 +131,24 @@ const handleBack = () => {
 .sprint-module-shell__footer {
   margin-top: auto;
   display: flex;
+  flex-shrink: 0;
   justify-content: center;
   align-items: center;
-  padding: 16px 24px 104px;
+  box-sizing: border-box;
+  height: 48px;
+  padding: 12px 24px;
   border-top: 1px solid var(--g-kit-black-20);
   color: var(--g-kit-black-60);
-  font-size: var(--g-kit-font-size-omicron);
+  font-size: var(--g-kit-font-size-sigma);
   font-weight: var(--g-kit-font-weight-normal);
-  line-height: var(--g-kit-line-height-omicron);
+  line-height: var(--g-kit-line-height-sigma);
   background: var(--g-kit-white);
+}
+
+@media (min-width: 768px) {
+  .sprint-module-shell:has(.sprint-module-shell__actions) .sprint-module-shell__footer {
+    margin-bottom: 104px;
+  }
 }
 
 .sprint-module-shell__actions {
@@ -147,10 +167,10 @@ const handleBack = () => {
   gap: 24px;
   width: min(calc(100% - 32px), 1152px);
   margin: 0 auto;
-  padding: 24px 0;
+  padding: 31px 0 32px;
 
   :deep(.btn) {
-    min-width: 120px;
+    min-width: 200px;
     height: 40px;
     border-radius: 6px;
     font-size: 16px;
@@ -180,6 +200,87 @@ const handleBack = () => {
       background-color: #009644;
       border-color: #009644;
     }
+  }
+}
+
+@media (min-width: 768px) {
+  .sprint-module-shell--wide .sprint-module-shell__content,
+  .sprint-module-shell--wide .sprint-module-shell__breadcrumb-inner,
+  .sprint-module-shell--wide .sprint-module-shell__actions-inner {
+    width: min(calc(100% - 32px), 1312px);
+  }
+
+  .sprint-module-shell--wide :deep(.sprint-navbar--floating) {
+    width: min(calc(100% - 32px), 1312px);
+    border-radius: 12px;
+  }
+
+  .sprint-module-shell--wide :deep(.sprint-navbar--floating .sprint-search-wrapper) {
+    flex-basis: 547px;
+    max-width: 547px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .sprint-module-shell :deep(.sprint-navbar--floating .sprint-search-wrapper) {
+    position: absolute;
+    top: 16px;
+    left: 225px;
+    width: 360px;
+    max-width: 360px;
+  }
+
+  .sprint-module-shell--wide :deep(.sprint-navbar--floating .sprint-search-wrapper) {
+    width: 547px;
+    max-width: 547px;
+  }
+
+  .sprint-module-shell :deep(.sprint-navbar--floating .sprint-search-icon) {
+    left: 12px;
+    width: 24px;
+    height: 24px;
+  }
+
+  .sprint-module-shell :deep(.sprint-navbar--floating .sprint-search-input) {
+    padding-left: 40px;
+    border-radius: 6px;
+    background: var(--g-kit-black-10, #f8f8f8);
+    font-size: var(--g-kit-font-size-sigma, 14px);
+  }
+
+  .sprint-module-shell :deep(.sprint-profile-trigger) {
+    width: 220px;
+    gap: 8px;
+    padding: 4px 0 4px 18px;
+  }
+
+  .sprint-module-shell :deep(.sprint-profile-text) {
+    flex: 0 0 170px;
+    width: 170px;
+  }
+
+  .sprint-module-shell :deep(.sprint-user-name) {
+    font-size: var(--g-kit-font-size-sigma, 14px);
+    font-weight: var(--g-kit-font-weight-bold, 800);
+    line-height: var(--g-kit-line-height-sigma, 20px);
+    letter-spacing: 0;
+  }
+
+  .sprint-module-shell :deep(.sprint-user-role) {
+    font-size: var(--g-kit-font-size-omega, 12px);
+    line-height: var(--g-kit-line-height-omega, 18px);
+  }
+
+  .sprint-module-shell :deep(.sprint-chevron) {
+    width: 24px;
+    height: 24px;
+  }
+
+  .sprint-module-shell :deep(.sprint-notif-badge) {
+    font-size: 8px;
+    line-height: 10px;
+    padding: 0 2px;
+    border-radius: 3px;
   }
 }
 
@@ -221,6 +322,7 @@ const handleBack = () => {
     justify-content: center;
     align-items: center;
     width: 100%;
+    height: auto;
     padding: 16px 16px calc(88px + env(safe-area-inset-bottom, 0px));
     border-top: 1px solid var(--g-kit-black-20);
     background: var(--g-kit-white);
@@ -253,4 +355,3 @@ const handleBack = () => {
   }
 }
 </style>
-

@@ -2,6 +2,8 @@ import ButtonComponent from 'kitvue-public/src/components/Button/Button.vue'
 import ModalComponent from 'kitvue-public/src/components/Modal/ModalComponent.vue'
 import CustomModalComponent from 'kitvue-public/src/components/Modal/CustomModal.vue'
 import ModalBottomSheetComponent from '@/components/shared/modal/ModalBottomSheet.vue'
+import FilePickerSMComponent from '@/components/shared/file-picker/FilePickerSM.vue'
+import ImageViewComponent from '@/components/shared/image/ImageView.vue'
 import ListGroupUnit from 'kitvue-public/src/components/ListGroup/ListGroupOrdered.vue'
 import DropdownComponent from 'kitvue-public/src/components/Dropdown/InputDropdown.vue'
 import TeleportDropdown from '@/components/shared/dropdown/TeleportDropdown.vue'
@@ -32,6 +34,8 @@ import LineChart from 'kitvue-public/src/components/Chart/LineChart.vue'
 import TimePickerResponsive from 'kitvue-public/src/components/Input/TimePickerResponsive.vue'
 import AddAmountCounter from 'kitvue-public/src/components/AddAmount/AddAmountCounter.vue'
 import FilterCMSComponent from 'kitvue-public/src/components/Filter/FilterCMS.vue'
+import FilePickerLGComponent from 'kitvue-public/src/components/Filepicker/FilePickerLG.vue'
+import TooltipComponent from 'kitvue-public/src/components/Tooltip/TooltipComponent.vue'
 
 // Re-exports conforming to Kitvue conventions (both Button and GButton syntax supported)
 export const Button = ButtonComponent
@@ -90,6 +94,7 @@ export const GInputRupiah = InputNominalEnd
 export const GInputNominalEnd = InputNominalEnd
 export const GInputNominalStart = InputNominalStart
 export { InputNominalEnd, InputNominalStart }
+export const GTooltip = TooltipComponent
 
 export const AccordionGroup = Accordion
 export const GAccordion = Accordion
@@ -107,6 +112,11 @@ export const GStepper = Stepper
 
 export const Loading = LoadAnimate
 export const GLoading = LoadAnimate
+export const GFilePickerLG = FilePickerLGComponent
+export const FilePickerSM = FilePickerSMComponent
+export const GFilePickerSM = FilePickerSMComponent
+export const ImageView = ImageViewComponent
+export const GImageView = ImageViewComponent
 
 export const InputCameraComponent = InputCamera
 export const GInputCamera = InputCamera

@@ -24,10 +24,16 @@ const router = createRouter({
       alias: ['/dashboard/login'],
     },
     {
-      path: '/pengajuan-rahn',
+      path: '/pengajuan-rahn/:view?',
       name: 'pengajuan-rahn',
-      component: () => import('../views/PengajuanRahnView.vue'),
-      alias: ['/pengajuan/rahn', '/rahn'],
+      component: () => import('../views/rahn/PengajuanRahnView.vue'),
+      alias: ['/pengajuan/rahn/:view?', '/rahn/:view?'],
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/gadai-1-page',
+      name: 'gadai-1-page',
+      component: () => import('../views/gadai-1-page/Gadai1PageView.vue'),
       meta: { requiresAuth: true },
     },
     // Fallback redirect ke Home

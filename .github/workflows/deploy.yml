@@ -3,14 +3,6 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
-  schedule:
-    # Sinkronisasi harian otomatis (menggunakan off-peak minute agar tidak terhambat antrean GitHub):
-    # 01:47 UTC = 08:47 WIB (saat Galeri 24 merilis harga harian baru)
-    # 02:47 UTC = 09:47 WIB (pengecekan kedua jika rilis Galeri 24 tertunda)
-    # 06:17 UTC = 13:17 WIB (verifikasi update siang)
-    - cron: '47 1 * * *'
-    - cron: '47 2 * * *'
-    - cron: '17 6 * * *'
   workflow_dispatch:
 
 # Permissions needed to deploy to GitHub Pages
@@ -43,10 +35,7 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Fetch Live Gold Prices from Galeri 24 Server
-        run: node scripts/fetch-gold-price.mjs
+        run: pnpm install --frozen-lockfile --registry=https://registry.npmjs.org
 
       - name: Type check (TypeScript)
         run: pnpm type-check
@@ -56,6 +45,8 @@ jobs:
 
       - name: Build application
         run: pnpm build
+        env:
+          VITE_BASE_PATH: /kitvue-boilerplate/
 
       - name: Setup GitHub Pages
         uses: actions/configure-pages@v5

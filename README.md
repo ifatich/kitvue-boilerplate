@@ -71,6 +71,12 @@ Buka peramban di: `http://localhost:5173`
 
 ---
 
+## 🚀 GitHub Pages
+
+Setiap push ke branch `main` menjalankan workflow build dan deploy ke [GitHub Pages](https://ifatich.github.io/kitvue-boilerplate/). Workflow menggunakan base path repositori agar aset dan route Vue Router tetap bekerja saat halaman dibuka langsung atau direfresh.
+
+---
+
 ## 🏛️ Struktur Direktori
 
 ```
@@ -195,4 +201,3 @@ Boilerplate ini telah dilengkapi skill AI lokal yang siap diaktifkan saat mengem
 1. **Konversi Figma MCP ke Vue 3:** Membaca node Figma dan memetakan `boundVariables` langsung ke CSS variables resmi `--g-kit-*`.
 2. **Katalog Komponen Kitvue Lengkap:** Menghindari pembuatan komponen kustom jika telah disediakan oleh `kitvue-public`.
 3. **Template Referensi Kanonikal:** Menyertakan file referensi `examples/canonical-screen.vue` dan `references/kitvue-public-design-system.md` sebagai panduan implementasi.
-

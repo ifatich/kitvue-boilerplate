@@ -13,15 +13,17 @@ withDefaults(
   defineProps<{
     title?: string
     items: ReadonlyInfoItem[]
+    variant?: 'field' | 'review'
   }>(),
   {
     title: undefined,
+    variant: 'field',
   },
 )
 </script>
 
 <template>
-  <div class="rahn-readonly-group">
+  <div :class="['rahn-readonly-group', `rahn-readonly-group--${variant}`]">
     <h3 v-if="title" class="rahn-readonly-group__title">
       {{ title }}
     </h3>
@@ -29,11 +31,15 @@ withDefaults(
       <div
         v-for="item in items"
         :key="item.label"
-        class="readonly-field"
+        :class="['readonly-field', { 'readonly-field--review': variant === 'review' }]"
         role="listitem"
       >
         <span class="readonly-field__label">{{ item.label }}</span>
-        <b class="readonly-field__value">{{ item.value }}</b>
+        <span v-if="variant === 'review'" class="readonly-field__value">
+          <span aria-hidden="true">:</span>
+          {{ item.value }}
+        </span>
+        <b v-else class="readonly-field__value">{{ item.value }}</b>
       </div>
     </div>
   </div>
@@ -51,12 +57,18 @@ withDefaults(
     font-weight: var(--g-kit-font-weight-bold, 700);
     line-height: var(--g-kit-line-height-omicron, 20px);
   }
+
+  &--review &__title {
+    margin-bottom: 12px;
+    font-size: var(--g-kit-font-size-omicron, 16px);
+    line-height: var(--g-kit-line-height-omicron, 24px);
+  }
 }
 
 .rahn-readonly-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px 24px;
+  gap: 24px;
   margin-top: 12px;
 
   @media (max-width: 767px) {
@@ -67,11 +79,12 @@ withDefaults(
 
 .readonly-field {
   display: grid;
-  gap: 6px;
+  gap: 4px;
   font-size: var(--g-kit-font-size-sigma, 12px);
 
   &__label {
     color: var(--g-kit-black-80, #252528);
+    line-height: var(--g-kit-line-height-sigma, 20px);
     font-weight: var(--g-kit-font-weight-bold, 700);
   }
 
@@ -86,5 +99,41 @@ withDefaults(
     line-height: 1.4;
   }
 }
-</style>
 
+.rahn-readonly-group--review .rahn-readonly-grid {
+  gap: 12px 24px;
+  margin-top: 0;
+}
+
+.readonly-field--review {
+  grid-template-columns: minmax(0, 177px) minmax(0, 1fr);
+  align-items: start;
+  gap: 12px;
+  color: var(--g-kit-black-80, #252528);
+  font-size: var(--g-kit-font-size-omicron, 16px);
+  line-height: var(--g-kit-line-height-omicron, 24px);
+
+  .readonly-field__label {
+    font-weight: var(--g-kit-font-weight-bold, 800);
+  }
+
+  .readonly-field__value {
+    padding: 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--g-kit-black-80, #252528);
+    font-size: inherit;
+    font-weight: var(--g-kit-font-weight-normal, 600);
+    line-height: inherit;
+  }
+}
+
+@media (max-width: 767px) {
+  .readonly-field--review {
+    grid-template-columns: minmax(0, 120px) minmax(0, 1fr);
+    gap: 8px;
+    font-size: var(--g-kit-font-size-sigma, 14px);
+    line-height: var(--g-kit-line-height-sigma, 20px);
+  }
+}
+</style>
