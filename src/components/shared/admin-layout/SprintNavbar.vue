@@ -23,6 +23,7 @@ import { useAuthStore } from '@/stores/authStore'
 
 const props = withDefaults(defineProps<{
   embedded?: boolean
+  entryLayout?: boolean
   profileRole?: string
   showAuthToggle?: boolean
   searchPlaceholder?: string
@@ -31,6 +32,7 @@ const props = withDefaults(defineProps<{
   showMobileBottomNav?: boolean
 }>(), {
   embedded: false,
+  entryLayout: false,
   profileRole: 'Pimpinan Cabang',
   showAuthToggle: true,
   searchPlaceholder: 'Cari (contoh: pengajuan kredit)',
@@ -87,7 +89,7 @@ const closePopover = () => {
 
 const goToPengajuan = () => {
   closePopover()
-  router.push('/pengajuan-rahn')
+  router.push('/pengajuan-gadai')
 }
 
 const submitSearch = () => {
@@ -123,7 +125,14 @@ onBeforeUnmount(() => {
 <template>
   <header
     ref="navbarElement"
-    :class="['sprint-navbar', { 'sprint-navbar--floating': props.embedded, 'sprint-navbar--mobile-module': props.mobileTitle }]"
+    :class="[
+      'sprint-navbar',
+      {
+        'sprint-navbar--floating': props.embedded,
+        'sprint-navbar--entry-layout': props.entryLayout,
+        'sprint-navbar--mobile-module': props.mobileTitle,
+      },
+    ]"
     role="banner"
   >
     <div v-if="props.embedded" class="sprint-navbar-pattern" :style="{ backgroundImage: `url(${headerPattern})` }" aria-hidden="true" />
@@ -367,6 +376,109 @@ onBeforeUnmount(() => {
 .sprint-navbar--floating .sprint-nav-actions { gap: 24px; }
 .sprint-navbar--floating .sprint-action-btn { padding: 0; font-size: 16px; }
 .sprint-navbar--floating .sprint-action-icon { width: 24px; height: 24px; }
+
+@media (min-width: 901px) {
+  .sprint-navbar--entry-layout {
+    width: min(calc(100% - 32px), 1312px);
+    border-radius: 12px;
+  }
+
+  .sprint-navbar--entry-layout .sprint-navbar__container {
+    position: relative;
+    display: block;
+    padding: 0;
+  }
+
+  .sprint-navbar--entry-layout .sprint-brand {
+    position: absolute;
+    top: 8px;
+    left: 32px;
+    gap: 7.5px;
+    padding: 8px;
+  }
+
+  .sprint-navbar--entry-layout .sprint-search-wrapper {
+    position: absolute;
+    top: 16px;
+    left: 225px;
+    width: min(547px, calc(100% - 700px));
+    max-width: none;
+    flex: none;
+  }
+
+  .sprint-navbar--entry-layout .sprint-search-icon {
+    left: 12px;
+    width: 24px;
+    height: 24px;
+  }
+
+  .sprint-navbar--entry-layout .sprint-search-input {
+    height: 44px;
+    padding-left: 44px;
+    border: 0;
+    border-radius: 6px;
+    background: var(--g-kit-black-10);
+    font-size: 14px;
+  }
+
+  .sprint-navbar--entry-layout .sprint-nav-actions {
+    position: absolute;
+    top: 10px;
+    left: min(812px, calc(100% - 466px));
+    right: auto;
+    width: max-content;
+    height: 56px;
+    gap: 24px;
+  }
+
+  .sprint-navbar--entry-layout .sprint-action-btn {
+    font-size: 16px;
+    line-height: 24px;
+  }
+
+  .sprint-navbar--entry-layout .sprint-profile-trigger {
+    gap: 8px;
+    padding: 0;
+  }
+
+  .sprint-navbar--entry-layout .sprint-profile-text {
+    width: 170px;
+    text-align: left;
+  }
+
+  .sprint-navbar--entry-layout .sprint-user-name {
+    font-size: 14px;
+    font-weight: var(--g-kit-font-weight-bold);
+    letter-spacing: 0;
+    line-height: 20px;
+  }
+
+  .sprint-navbar--entry-layout .sprint-user-role {
+    color: var(--g-kit-white);
+    font-size: 12px;
+    line-height: 18px;
+  }
+
+  .sprint-navbar--entry-layout .sprint-notif-badge {
+    top: 0;
+    right: 0;
+    width: 12px;
+    height: 12px;
+    padding: 0;
+    border-radius: 50%;
+    font-size: 0;
+    line-height: 12px;
+  }
+
+  .sprint-navbar--entry-layout .sprint-divider {
+    height: 44px;
+  }
+
+  .sprint-navbar--entry-layout .sprint-chevron {
+    width: 24px;
+    height: 24px;
+  }
+}
 
 .sprint-navbar__container {
   max-width: 1360px;

@@ -85,6 +85,7 @@ const handleSlideClick = () => {
   <div class="entry-page">
     <SprintNavbar
       embedded
+      entry-layout
       profile-role="Penaksir"
       :show-auth-toggle="false"
       :show-mobile-bottom-nav="true"

@@ -595,6 +595,7 @@ provide(rahnFlowKey, {
     back-to="/"
     profile-role="Penaksir"
     :show-auth-toggle="false"
+    entry-navbar
     :wide="activeStep <= 5"
     search-placeholder="Cari (contoh: Pengajuan Gadai/Rahn)"
     @back="handleModuleBack"

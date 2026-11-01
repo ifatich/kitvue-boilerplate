@@ -360,6 +360,7 @@ watch(nik, (value) => {
     :breadcrumbs="[{ label: 'Beranda', to: '/' }, { label: 'Pinjaman Gadai' }, 'Pengajuan Gadai']"
     back-to="/"
     :wide="true"
+    entry-navbar
     search-placeholder="Cari (contoh: Pengajuan Gadai/Rahn)"
   >
     <div class="gadai-one-page">

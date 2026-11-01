@@ -26,6 +26,7 @@ const props = withDefaults(
     profileRole?: string
     showAuthToggle?: boolean
     wide?: boolean
+    entryNavbar?: boolean
     searchPlaceholder?: string
   }>(),
   {
@@ -34,6 +35,7 @@ const props = withDefaults(
     profileRole: 'Penaksir',
     showAuthToggle: false,
     wide: false,
+    entryNavbar: false,
     searchPlaceholder: 'Cari (contoh: pengajuan kredit)',
   },
 )
@@ -56,9 +58,16 @@ const handleBack = () => {
 </script>
 
 <template>
-  <div :class="['sprint-module-shell', { 'sprint-module-shell--wide': wide }]">
+  <div :class="[
+    'sprint-module-shell',
+    {
+      'sprint-module-shell--wide': wide,
+      'sprint-module-shell--entry-navbar': entryNavbar,
+    },
+  ]">
     <SprintNavbar
       embedded
+      :entry-layout="entryNavbar"
       :profile-role="profileRole"
       :show-auth-toggle="showAuthToggle"
       :search-placeholder="searchPlaceholder"
@@ -215,14 +224,14 @@ const handleBack = () => {
     border-radius: 12px;
   }
 
-  .sprint-module-shell--wide :deep(.sprint-navbar--floating .sprint-search-wrapper) {
+  .sprint-module-shell--wide:not(.sprint-module-shell--entry-navbar) :deep(.sprint-navbar--floating .sprint-search-wrapper) {
     flex-basis: 547px;
     max-width: 547px;
   }
 }
 
 @media (min-width: 1200px) {
-  .sprint-module-shell :deep(.sprint-navbar--floating .sprint-search-wrapper) {
+  .sprint-module-shell:not(.sprint-module-shell--entry-navbar) :deep(.sprint-navbar--floating .sprint-search-wrapper) {
     position: absolute;
     top: 16px;
     left: 225px;
@@ -230,53 +239,53 @@ const handleBack = () => {
     max-width: 360px;
   }
 
-  .sprint-module-shell--wide :deep(.sprint-navbar--floating .sprint-search-wrapper) {
+  .sprint-module-shell--wide:not(.sprint-module-shell--entry-navbar) :deep(.sprint-navbar--floating .sprint-search-wrapper) {
     width: 547px;
     max-width: 547px;
   }
 
-  .sprint-module-shell :deep(.sprint-navbar--floating .sprint-search-icon) {
+  .sprint-module-shell:not(.sprint-module-shell--entry-navbar) :deep(.sprint-navbar--floating .sprint-search-icon) {
     left: 12px;
     width: 24px;
     height: 24px;
   }
 
-  .sprint-module-shell :deep(.sprint-navbar--floating .sprint-search-input) {
+  .sprint-module-shell:not(.sprint-module-shell--entry-navbar) :deep(.sprint-navbar--floating .sprint-search-input) {
     padding-left: 40px;
     border-radius: 6px;
     background: var(--g-kit-black-10, #f8f8f8);
     font-size: var(--g-kit-font-size-sigma, 14px);
   }
 
-  .sprint-module-shell :deep(.sprint-profile-trigger) {
+  .sprint-module-shell:not(.sprint-module-shell--entry-navbar) :deep(.sprint-profile-trigger) {
     width: 220px;
     gap: 8px;
     padding: 4px 0 4px 18px;
   }
 
-  .sprint-module-shell :deep(.sprint-profile-text) {
+  .sprint-module-shell:not(.sprint-module-shell--entry-navbar) :deep(.sprint-profile-text) {
     flex: 0 0 170px;
     width: 170px;
   }
 
-  .sprint-module-shell :deep(.sprint-user-name) {
+  .sprint-module-shell:not(.sprint-module-shell--entry-navbar) :deep(.sprint-user-name) {
     font-size: var(--g-kit-font-size-sigma, 14px);
     font-weight: var(--g-kit-font-weight-bold, 800);
     line-height: var(--g-kit-line-height-sigma, 20px);
     letter-spacing: 0;
   }
 
-  .sprint-module-shell :deep(.sprint-user-role) {
+  .sprint-module-shell:not(.sprint-module-shell--entry-navbar) :deep(.sprint-user-role) {
     font-size: var(--g-kit-font-size-omega, 12px);
     line-height: var(--g-kit-line-height-omega, 18px);
   }
 
-  .sprint-module-shell :deep(.sprint-chevron) {
+  .sprint-module-shell:not(.sprint-module-shell--entry-navbar) :deep(.sprint-chevron) {
     width: 24px;
     height: 24px;
   }
 
-  .sprint-module-shell :deep(.sprint-notif-badge) {
+  .sprint-module-shell:not(.sprint-module-shell--entry-navbar) :deep(.sprint-notif-badge) {
     font-size: 8px;
     line-height: 10px;
     padding: 0 2px;
