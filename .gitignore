@@ -29,6 +29,9 @@ tsconfig.tsbuildinfo
 # Graphify knowledge graph outputs
 graphify-out/
 
+# Agent teamwork scratch files
+.agents/teamwork/
+
 # Generated export files
 *.pdf
 
