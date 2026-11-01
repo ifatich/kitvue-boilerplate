@@ -48,6 +48,16 @@ jobs:
         env:
           VITE_BASE_PATH: /kitvue-boilerplate/
 
+      - name: Build SPRINT POS
+        run: pnpm pos:build
+        env:
+          VITE_POS_BASE_PATH: /kitvue-boilerplate/POS/
+
+      - name: Add SPRINT POS to Pages artifact
+        run: |
+          mkdir -p ./dist/POS
+          cp -R ./POS/dist/. ./dist/POS/
+
       - name: Setup GitHub Pages
         uses: actions/configure-pages@v5
         with:
