@@ -7,6 +7,7 @@ type ShowAlertOptions = {
   label: string
   variant?: AppAlertVariant
   timeout?: number
+  position?: 'top-center' | 'bottom-left'
 }
 
 const variantColorMap: Record<AppAlertVariant, AppAlertColor> = {
@@ -21,6 +22,7 @@ const appAlert = reactive({
   label: '',
   color: 'green' as AppAlertColor,
   variant: 'success' as AppAlertVariant,
+  position: 'top-center' as ShowAlertOptions['position'],
 })
 
 let dismissTimer: ReturnType<typeof window.setTimeout> | undefined
@@ -34,7 +36,12 @@ export const useAppAlert = () => {
     }
   }
 
-  const showAlert = ({ label, variant = 'success', timeout = 2400 }: ShowAlertOptions) => {
+  const showAlert = ({
+    label,
+    variant = 'success',
+    timeout = 2400,
+    position = 'top-center',
+  }: ShowAlertOptions) => {
     if (dismissTimer) {
       window.clearTimeout(dismissTimer)
     }
@@ -42,6 +49,7 @@ export const useAppAlert = () => {
     appAlert.label = label
     appAlert.variant = variant
     appAlert.color = variantColorMap[variant]
+    appAlert.position = position
     appAlert.visible = true
 
     dismissTimer = window.setTimeout(() => {

@@ -211,6 +211,7 @@ const removeFile = () => {
 
     <LoadAnimate
       v-if="props.loaderType === 'modal' && isBusy"
+      class="kitvue-loading"
       :model-value="isBusy"
       title="Memproses Berkas"
     />

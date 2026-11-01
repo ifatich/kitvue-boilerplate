@@ -1,0 +1,9 @@
+.kitvue-loading.show {
+  display: block !important;
+  z-index: 2001 !important;
+}
+
+.kitvue-loading .modal-dialog {
+  position: relative;
+  z-index: 11;
+}

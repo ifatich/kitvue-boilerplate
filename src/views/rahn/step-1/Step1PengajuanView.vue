@@ -2,6 +2,7 @@
 import { inject } from 'vue'
 import { GAlert, GButton, GDropdown, GInputSmallDate, GInputText, GModal, GTextArea } from '@/components'
 import ModuleSectionCard from '@/components/shared/card/ModuleSectionCard.vue'
+import RahnApplicationDropdowns from '@/components/modules/rahn/RahnApplicationDropdowns.vue'
 import { RahnReadonlyInfoGrid } from '@/components/modules/rahn'
 import ownerNotFoundIllustration from '@/assets/figma/beneficial-owner-not-found.svg'
 import uploadSuratKuasaFrame from '@/assets/figma/upload-surat-kuasa.png'
@@ -10,8 +11,8 @@ import { rahnFlowKey } from '../rahnFlow'
 const flow = inject(rahnFlowKey)
 if (!flow) throw new Error('Rahn flow context is unavailable')
 const {
-  fields, isMobile, isSubmitted, purposeOptions, purposeTransactionOptions, employmentOptions,
-  rubricOptions, tariffOptions, productOptions, durationOptions, hasBeneficialOwner, ownerOptions,
+  fields, isMobile, isSubmitted, purposeTransactionOptions, employmentOptions,
+  ownerOptions,
   rahinTypeOptions, identityOptions, relationshipOptions, isOwnerResultsVisible, ownerMatchFound,
   ownerAge, validityOptions, provinceOptions, cityOptions, districtOptions, subdistrictOptions,
   isRtValid, isRwValid, isOwnerDataConfirmed, isOwnerAddressSame, genderOptions, educationOptions,
@@ -31,92 +32,26 @@ const requiredError = (value: string, label: string) => isSubmitted.value && !va
         <div class="form-card" :class="{ 'form-card--owner-details': isOwnerDetailsVisible }">
           <ModuleSectionCard title="Informasi Gadai" v-model="isInformasiRahnOpen">
             <h3>Transaksi dan Produk</h3>
-            <div class="form-grid">
-              <GDropdown
-                v-model="fields.tujuanPengajuan"
-                label="Tujuan Pengajuan"
-                placeholder="Pilih tujuan pengajuan"
-                :items="purposeOptions"
-                item-value="value"
-                item-text="label"
-                :error="dropdownError('Tujuan Pengajuan')"
-                :required="isSubmitted"
-                :is-checked="isSubmitted"
-                :use-bottom-sheet="isMobile"
-              />
-              <GDropdown
-                v-model="fields.tujuanTransaksi"
-                label="Tujuan Transaksi"
-                placeholder="Pilih tujuan transaksi"
-                :items="purposeTransactionOptions"
-                item-value="value"
-                item-text="label"
-                :error="dropdownError('Tujuan Transaksi')"
-                :required="isSubmitted"
-                :is-checked="isSubmitted"
-                :use-bottom-sheet="isMobile"
-              />
-              <GDropdown
-                v-model="fields.pekerjaanTerkini"
-                label="Pekerjaan Terkini"
-                placeholder="Pilih pekerjaan terkini"
-                :items="employmentOptions"
-                item-value="value"
-                item-text="label"
-                :error="dropdownError('Pekerjaan Terkini')"
-                :required="isSubmitted"
-                :is-checked="isSubmitted"
-                :use-bottom-sheet="isMobile"
-              />
-              <GDropdown
-                v-model="fields.rubrikMarhun"
-                label="Rubrik"
-                placeholder="Pilih rubrik"
-                :items="rubricOptions"
-                item-value="value"
-                item-text="label"
-                :error="dropdownError('Rubrik')"
-                :required="isSubmitted"
-                :is-checked="isSubmitted"
-                :use-bottom-sheet="isMobile"
-              />
-              <GDropdown
-                v-model="fields.skemaTarif"
-                label="Skema Tarif"
-                placeholder="Pilih skema tarif"
-                :items="tariffOptions"
-                item-value="value"
-                item-text="label"
-                :error="dropdownError('Skema Tarif')"
-                :required="isSubmitted"
-                :is-checked="isSubmitted"
-                :use-bottom-sheet="isMobile"
-              />
-              <GDropdown
-                v-model="fields.produk"
-                label="Produk"
-                placeholder="Pilih produk"
-                :items="productOptions"
-                item-value="value"
-                item-text="label"
-                :error="dropdownError('Produk')"
-                :required="isSubmitted"
-                :is-checked="isSubmitted"
-                :use-bottom-sheet="isMobile"
-              />
-              <GDropdown
-                v-model="fields.jangkaWaktu"
-                label="Jangka Waktu"
-                placeholder="Pilih jangka waktu"
-                :items="durationOptions"
-                item-value="value"
-                item-text="label"
-                :error="dropdownError('Jangka Waktu')"
-                :required="isSubmitted"
-                :is-checked="isSubmitted"
-                :use-bottom-sheet="isMobile"
-              />
-            </div>
+            <RahnApplicationDropdowns
+              class="form-grid"
+              :purpose="fields.tujuanPengajuan"
+              :transaction-purpose="fields.tujuanTransaksi"
+              :employment="fields.pekerjaanTerkini"
+              :rubric="fields.rubrikMarhun"
+              :tariff="fields.skemaTarif"
+              :product="fields.produk"
+              :duration="fields.jangkaWaktu"
+              :transaction-options="purposeTransactionOptions"
+              :is-mobile="isMobile"
+              :is-submitted="isSubmitted"
+              @update:purpose="fields.tujuanPengajuan = $event"
+              @update:transaction-purpose="fields.tujuanTransaksi = $event"
+              @update:employment="fields.pekerjaanTerkini = $event"
+              @update:rubric="fields.rubrikMarhun = $event"
+              @update:tariff="fields.skemaTarif = $event"
+              @update:product="fields.produk = $event"
+              @update:duration="fields.jangkaWaktu = $event"
+            />
 
             <div class="section-divider" />
 
@@ -144,7 +79,7 @@ const requiredError = (value: string, label: string) => isSubmitted.value && !va
               />
             </div>
 
-            <template v-if="hasBeneficialOwner">
+            <template v-if="isOwnerDetailsVisible">
               <div v-if="!isOwnerDetailsVisible" class="owner-subsection">
                 <h3>Informasi Beneficial Owner</h3>
                 <div class="form-grid">

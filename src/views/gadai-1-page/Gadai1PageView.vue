@@ -2,43 +2,39 @@
 import { computed, ref, watch } from 'vue'
 import { useMediaQuery } from '@vueuse/core'
 import { useRouter } from 'vue-router'
-import { GAlert, GButton, GDropdown, GImageView, GInputNominalStart, GInputText, GModal, GRadio, GTable, GTablePagination, GTooltip } from '@/components'
-import { RahnReadonlyInfoGrid, type ReadonlyInfoItem } from '@/components/modules/rahn'
+import { GAlert, GButton, GDropdown, GInputNominalStart, GInputText, GModal, GRadio, GTooltip } from '@/components'
+import submissionCloseIcon from 'kitvue-public/src/assets/icon/icon-system/icon-cross-fill.svg'
+import RahnApplicationDropdowns from '@/components/modules/rahn/RahnApplicationDropdowns.vue'
+import {
+  nasabahTypeOptions,
+  ownerOptions,
+  productiveTransactionOptions,
+  consumptiveTransactionOptions,
+  tariffChangeOptions,
+  RahnCollateralTable,
+  RahnAutoValueField,
+  RahnReadonlyInfoGrid,
+  type ReadonlyInfoItem,
+} from '@/components/modules/rahn'
 import RahnCollateralFormModal from '@/components/modules/rahn/RahnCollateralFormModal.vue'
+import SubmissionSuccessIllustration from '@/components/shared/illustration/SubmissionSuccessIllustration.vue'
 import ModuleSectionCard from '@/components/shared/card/ModuleSectionCard.vue'
 import SprintModuleShell from '@/components/shared/admin-layout/SprintModuleShell.vue'
-import { calculateRahnLoan, getMaximumRahnLoan, getRahnLoanTier } from '@/utils/rahnLoanCalculation'
+import {
+  calculateRahnLoan,
+  getMaximumRahnLoan,
+  getRemainingRahnLoanLimit,
+  getRahnLoanTier,
+} from '@/utils/rahnLoanCalculation'
 import type { RahnCollateral } from '@/views/rahn/rahnFlow'
-
-interface Option {
-  value: string
-  label: string
-}
+import { useAppAlert } from '@/hooks/useAppAlert'
 
 interface Collateral extends RahnCollateral {
   id: number
 }
 
 const router = useRouter()
-const makeOptions = (labels: string[]): Option[] => labels.map((label) => ({ value: label, label }))
-const nasabahOptions = makeOptions(['Perorangan', 'Badan Usaha'])
-const purposeOptions = makeOptions(['Produktif', 'Konsumtif'])
-const productiveTransactionOptions = makeOptions(['Usaha / Modal Kerja', 'Investasi'])
-const consumptiveTransactionOptions = makeOptions([
-  'Pembelian Kendaraan',
-  'Ibadah Haji',
-  'Pembelian Barang / Jasa',
-  'Wisata Rohani',
-  'Hajatan / Upacara',
-  'Biaya Pendidikan',
-  'Lain-Lain',
-])
-const employmentOptions = makeOptions(['Karyawan Swasta', 'Wiraswasta', 'Karyawan BUMN', 'Pensiunan'])
-const rubricOptions = makeOptions(['Barang Kantong', 'Barang Gudang', 'Kendaraan', 'Elektronik'])
-const productOptions = makeOptions(['Gadai KCA'])
-const tariffOptions = makeOptions(['Sewa Modal Harian', 'Sewa Modal Harian Per 10 Hari', 'Sewa Modal Harian Per 15 Hari'])
-const durationOptions = makeOptions(['120 Hari'])
-const beneficialOwnerOptions = makeOptions(['Diri sendiri', 'Beneficial Owner'])
+const { showAlert } = useAppAlert()
 const isMobile = useMediaQuery('(max-width: 767px)')
 const customerType = ref('Perorangan')
 const nik = ref('')
@@ -63,9 +59,8 @@ const isCollateralOpen = ref(false)
 const isCreditOpen = ref(false)
 const collaterals = ref<Collateral[]>([])
 const nextCollateralId = ref(1)
-const currentPage = ref(1)
-const pageSize = ref(10)
 const showCollateralModal = ref(false)
+const editingCollateral = ref<Collateral | null>(null)
 const loanAmount = ref('')
 const tariffChange = ref('Tidak')
 const specialTariffRate = ref('')
@@ -74,6 +69,10 @@ const isCalculated = ref(false)
 const showSubmissionModal = ref(false)
 const submissionModalStep = ref<'confirmation' | 'success'>('confirmation')
 const submissionError = ref('')
+const submissionCloseIconUrl = submissionCloseIcon as unknown as string
+const submissionNumber = '1234 5678 9012 3456'
+const submissionCopied = ref(false)
+const submissionCopyError = ref('')
 
 const cleanNik = computed(() => nik.value.replace(/\D/g, '').slice(0, 16))
 const formattedNik = computed(() => cleanNik.value.replace(/(\d{4})(?=\d)/g, '$1 '))
@@ -117,8 +116,16 @@ const transactionOptions = computed(() => fields.value.purpose === 'Produktif'
 const totalAppraisal = computed(() => collaterals.value.reduce((sum, item) => sum + item.estimatedValue, 0))
 const loanAmountValue = computed(() => Number(loanAmount.value.replace(/\D/g, '')) || 0)
 const loanTier = computed(() => getRahnLoanTier(loanAmountValue.value))
+const remainingLoanLimit = computed(() => getRemainingRahnLoanLimit(
+  maximumRatedLoan.value,
+  loanAmountValue.value,
+))
+const loanTierLabel = computed(() => loanTier.value
+  ? `${loanTier.value.group} (${loanTier.value.code})`
+  : 'Terisi otomatis')
 const maximumNormalLoan = computed(() => Math.floor(totalAppraisal.value * 0.8))
 const maximumRatedLoan = computed(() => getMaximumRahnLoan(totalAppraisal.value))
+const tariffTier = computed(() => getRahnLoanTier(loanAmountValue.value || maximumRatedLoan.value))
 const appliedTariffRate = computed(() => {
   if (tariffChange.value === 'Iya') return Number(specialTariffRate.value.replace(',', '.'))
   return loanTier.value?.tariffRate ?? Number.NaN
@@ -131,29 +138,6 @@ const calculation = computed(() => {
     appliedTariffRate.value,
     Number.parseInt(fields.value.duration, 10),
   )
-})
-const visibleCollaterals = computed(() => collaterals.value.slice(
-  (currentPage.value - 1) * pageSize.value,
-  currentPage.value * pageSize.value,
-))
-const collateralColumns = [
-  { key: 'rubric', label: 'Rubrik' },
-  { key: 'type', label: 'Tipe Jaminan' },
-  { key: 'details', label: 'Detail Jaminan' },
-  { key: 'photo', label: 'Foto Jaminan' },
-  { key: 'estimatedValue', label: 'Taksiran' },
-  { key: 'actions', label: 'Aksi' },
-]
-const collateralRows = computed(() => visibleCollaterals.value.map((item) => ({
-  ...item,
-  type: item.collateralType,
-  actions: item.id,
-})))
-const paginationTotalRows = computed(() => Math.max(collaterals.value.length, 1))
-const collateralPaginationLabel = computed(() => {
-  const first = collaterals.value.length ? (currentPage.value - 1) * pageSize.value + 1 : 0
-  const last = Math.min(currentPage.value * pageSize.value, collaterals.value.length)
-  return `Menampilkan ${first} sampai ${last} dari ${collaterals.value.length} baris`
 })
 const tariffSummaryItems = computed<ReadonlyInfoItem[]>(() => [
   { label: 'Skema Tarif', value: fields.value.tariff || '-' },
@@ -187,9 +171,11 @@ const loanSimulationFields = computed(() => [
   },
   {
     label: 'Sisa Limit Pinjaman',
-    value: calculation.value ? calculation.value.loanLimit - loanAmountValue.value : undefined,
+    value: calculation.value ? remainingLoanLimit.value : undefined,
     tooltip: 'Maksimal Pinjaman - Uang Pinjaman Diajukan',
   },
+])
+const loanSettlementFields = computed(() => [
   {
     label: 'Estimasi Uang Pinjaman Diterima',
     value: calculation.value?.receivedAmount,
@@ -208,12 +194,26 @@ const todayLabel = computed(() => fields.value.purpose
     year: 'numeric',
   }).format(new Date())
   : 'Terisi otomatis')
-const maturityDate = computed(() => {
+const maturityDateValue = computed(() => {
   const duration = Number.parseInt(fields.value.duration, 10)
-  if (!Number.isFinite(duration)) return 'Terisi otomatis'
+  if (!Number.isFinite(duration)) return null
   const date = new Date()
   date.setDate(date.getDate() + duration)
-  return new Intl.DateTimeFormat('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }).format(date)
+  return date
+})
+const formatDate = (date: Date) => new Intl.DateTimeFormat('id-ID', {
+  day: '2-digit',
+  month: 'long',
+  year: 'numeric',
+}).format(date)
+const maturityDate = computed(() => maturityDateValue.value
+  ? formatDate(maturityDateValue.value)
+  : 'Terisi otomatis')
+const auctionDate = computed(() => {
+  if (!maturityDateValue.value) return 'Terisi otomatis'
+  const date = new Date(maturityDateValue.value)
+  date.setDate(date.getDate() + 30)
+  return formatDate(date)
 })
 
 const formatCurrency = (value: number) => new Intl.NumberFormat('id-ID').format(value)
@@ -242,21 +242,46 @@ const searchAnotherCustomer = () => {
   isCustomerOpen.value = true
 }
 
-const openCollateralModal = () => {
+const toggleCustomerDetails = () => {
+  customerDetailsExpanded.value = !customerDetailsExpanded.value
+}
+
+const openCollateralModal = (collateral: Collateral | null = null) => {
+  editingCollateral.value = collateral
   showCollateralModal.value = true
 }
 
 const saveCollateral = (collateral: RahnCollateral) => {
-  collaterals.value.push({
-    id: nextCollateralId.value++,
-    ...collateral,
-  })
-  currentPage.value = Math.ceil(collaterals.value.length / pageSize.value)
+  if (editingCollateral.value) {
+    const index = collaterals.value.findIndex((item) => item.id === editingCollateral.value?.id)
+    if (index >= 0) {
+      collaterals.value.splice(index, 1, {
+        id: editingCollateral.value.id,
+        ...collateral,
+      })
+    }
+  } else {
+    collaterals.value.push({
+      id: nextCollateralId.value++,
+      ...collateral,
+    })
+    showAlert({
+      label: 'Barang jaminan berhasil ditambahkan.',
+      variant: 'success',
+      position: 'top-center',
+    })
+  }
+  editingCollateral.value = null
 }
 
-const removeCollateral = (item: Collateral) => {
-  collaterals.value = collaterals.value.filter((collateral) => collateral.id !== item.id)
-  currentPage.value = Math.max(1, Math.min(currentPage.value, Math.ceil(collaterals.value.length / pageSize.value)))
+const editCollateral = (index: number) => {
+  const collateral = collaterals.value[index]
+  if (!collateral) return
+  openCollateralModal(collateral)
+}
+
+const removeCollateral = (index: number) => {
+  collaterals.value.splice(index, 1)
 }
 
 const calculateLoan = () => {
@@ -328,6 +353,19 @@ const processApplication = () => {
 
 const confirmSubmission = () => {
   submissionModalStep.value = 'success'
+  submissionCopied.value = false
+  submissionCopyError.value = ''
+}
+
+const copySubmissionNumber = async () => {
+  submissionCopyError.value = ''
+  try {
+    await navigator.clipboard.writeText(submissionNumber)
+    submissionCopied.value = true
+  } catch (error) {
+    console.error('Unable to copy the submission number.', error)
+    submissionCopyError.value = 'Nomor pengajuan tidak dapat disalin. Silakan salin secara manual.'
+  }
 }
 
 const returnToEntryPage = () => {
@@ -339,11 +377,14 @@ watch([loanAmount, tariffChange, specialTariffRate, totalAppraisal], () => {
   isCalculated.value = false
   calculationError.value = ''
 })
+watch([tariffChange, tariffTier], ([value, tier]) => {
+  if (value === 'Iya' && !specialTariffRate.value && tier) {
+    specialTariffRate.value = String(tier.tariffRate).replace('.', ',')
+  }
+  if (value === 'Tidak') specialTariffRate.value = ''
+})
 watch(() => fields.value.purpose, () => {
   fields.value.transactionPurpose = ''
-})
-watch(pageSize, () => {
-  currentPage.value = 1
 })
 watch(nik, (value) => {
   const sanitized = value.replace(/\D/g, '').slice(0, 16)
@@ -376,7 +417,7 @@ watch(nik, (value) => {
                 v-model="customerType"
                 label="Tipe Nasabah"
                 placeholder="Pilih tipe nasabah"
-                :items="nasabahOptions"
+                :items="nasabahTypeOptions"
                 item-value="value"
                 item-text="label"
                 disabled
@@ -385,8 +426,8 @@ watch(nik, (value) => {
                 v-model="nik"
                 label="Nomor Induk Kependudukan (NIK)"
                 placeholder="Masukkan nomor induk kependudukan"
-                type="text"
-                :maxlength="16"
+                type="number"
+                :maxlength="19"
                 :error="customerSearchError"
                 helper-text="Nomor induk kependudukan harus 16 karakter."
               />
@@ -402,7 +443,7 @@ watch(nik, (value) => {
               variant="review"
               :items="customerIdentityItems"
             />
-            <template v-if="customerDetailsExpanded">
+            <div v-show="customerDetailsExpanded" id="gadai-page-customer-details">
               <hr class="gadai-one-page__customer-divider">
               <RahnReadonlyInfoGrid
                 class="gadai-one-page__customer-info-grid"
@@ -431,15 +472,16 @@ watch(nik, (value) => {
                 variant="review"
                 :items="customerEmergencyContactItems"
               />
-            </template>
+            </div>
             <div class="gadai-one-page__customer-result-actions">
               <button
                 type="button"
                 class="gadai-one-page__customer-details-toggle"
                 :aria-expanded="customerDetailsExpanded"
-                @click="customerDetailsExpanded = !customerDetailsExpanded"
+                aria-controls="gadai-page-customer-details"
+                @click.stop="toggleCustomerDetails"
               >
-                {{ customerDetailsExpanded ? 'Lihat Lebih Sedikit' : 'Lihat Selengkapnya' }}
+                {{ customerDetailsExpanded ? 'Sembunyikan' : 'Lihat Selengkapnya' }}
                 <svg
                   :class="{ 'is-expanded': customerDetailsExpanded }"
                   viewBox="0 0 16 16"
@@ -458,98 +500,32 @@ watch(nik, (value) => {
           title="Data Pengajuan"
           v-model="isApplicationOpen"
         >
-          <div class="gadai-one-page__grid">
-            <GDropdown
-              v-model="fields.purpose"
-              label="Tujuan Pengajuan"
-              placeholder="Pilih tujuan pengajuan"
-              :items="purposeOptions"
-              item-value="value"
-              item-text="label"
-              :error="fieldError(fields.purpose, 'Tujuan Pengajuan')"
-              :required="isSubmitted"
-              :is-checked="isSubmitted"
-              :use-bottom-sheet="isMobile"
-            />
-            <GDropdown
-              v-model="fields.transactionPurpose"
-              label="Tujuan Transaksi"
-              placeholder="Pilih tujuan transaksi"
-              :items="transactionOptions"
-              item-value="value"
-              item-text="label"
-              :error="fieldError(fields.transactionPurpose, 'Tujuan Transaksi')"
-              :required="isSubmitted"
-              :is-checked="isSubmitted"
-              :use-bottom-sheet="isMobile"
-            />
-            <GDropdown
-              v-model="fields.employment"
-              label="Pekerjaan Terkini"
-              placeholder="Pilih pekerjaan terkini"
-              :items="employmentOptions"
-              item-value="value"
-              item-text="label"
-              :error="fieldError(fields.employment, 'Pekerjaan Terkini')"
-              :required="isSubmitted"
-              :is-checked="isSubmitted"
-              :use-bottom-sheet="isMobile"
-            />
-            <GDropdown
-              v-model="fields.rubric"
-              label="Rubrik"
-              placeholder="Pilih rubrik"
-              :items="rubricOptions"
-              item-value="value"
-              item-text="label"
-              :error="fieldError(fields.rubric, 'Rubrik')"
-              :required="isSubmitted"
-              :is-checked="isSubmitted"
-              :use-bottom-sheet="isMobile"
-            />
-            <GDropdown
-              v-model="fields.product"
-              label="Produk"
-              placeholder="Pilih produk"
-              :items="productOptions"
-              item-value="value"
-              item-text="label"
-              :error="fieldError(fields.product, 'Produk')"
-              :required="isSubmitted"
-              :is-checked="isSubmitted"
-              :use-bottom-sheet="isMobile"
-            />
-            <GDropdown
-              v-model="fields.tariff"
-              label="Skema Tarif"
-              placeholder="Pilih skema tarif"
-              :items="tariffOptions"
-              item-value="value"
-              item-text="label"
-              :error="fieldError(fields.tariff, 'Skema Tarif')"
-              :required="isSubmitted"
-              :is-checked="isSubmitted"
-              :use-bottom-sheet="isMobile"
-            />
-            <GDropdown
-              v-model="fields.duration"
-              label="Jangka Waktu"
-              placeholder="Pilih jangka waktu"
-              :items="durationOptions"
-              item-value="value"
-              item-text="label"
-              :error="fieldError(fields.duration, 'Jangka Waktu')"
-              :required="isSubmitted"
-              :is-checked="isSubmitted"
-              :use-bottom-sheet="isMobile"
-            />
-          </div>
+          <RahnApplicationDropdowns
+            class="gadai-one-page__grid"
+            :purpose="fields.purpose"
+            :transaction-purpose="fields.transactionPurpose"
+            :employment="fields.employment"
+            :rubric="fields.rubric"
+            :tariff="fields.tariff"
+            :product="fields.product"
+            :duration="fields.duration"
+            :transaction-options="transactionOptions"
+            :is-mobile="isMobile"
+            :is-submitted="isSubmitted"
+            @update:purpose="fields.purpose = $event"
+            @update:transaction-purpose="fields.transactionPurpose = $event"
+            @update:employment="fields.employment = $event"
+            @update:rubric="fields.rubric = $event"
+            @update:tariff="fields.tariff = $event"
+            @update:product="fields.product = $event"
+            @update:duration="fields.duration = $event"
+          />
           <hr class="gadai-one-page__divider">
           <h3 class="gadai-one-page__subheading">Informasi Kredit</h3>
           <div class="gadai-one-page__grid">
             <GInputText label="Tanggal Kredit" :model-value="todayLabel" disabled />
             <GInputText label="Tanggal Jatuh Tempo" :model-value="maturityDate" disabled />
-            <GInputText label="Tanggal Lelang" model-value="Terisi otomatis" disabled />
+            <GInputText label="Tanggal Lelang" :model-value="auctionDate" disabled />
           </div>
         </ModuleSectionCard>
 
@@ -563,7 +539,7 @@ watch(nik, (value) => {
               v-model="fields.beneficialOwner"
               label="Tipe Beneficial Owner"
               placeholder="Pilih tipe beneficial owner"
-              :items="beneficialOwnerOptions"
+              :items="ownerOptions"
               item-value="value"
               item-text="label"
               :error="fieldError(fields.beneficialOwner, 'Tipe Beneficial Owner')"
@@ -579,79 +555,16 @@ watch(nik, (value) => {
           title="Data Jaminan"
           v-model="isCollateralOpen"
         >
-          <div class="gadai-one-page__table-toolbar">
-            <label class="gadai-one-page__page-size">
-              Lihat
-              <select v-model.number="pageSize" aria-label="Jumlah baris data jaminan">
-                <option :value="10">10</option>
-                <option :value="25">25</option>
-                <option :value="50">50</option>
-              </select>
-              baris
-            </label>
-          </div>
-          <div class="gadai-one-page__table-wrap">
-            <GTable
-              class="gadai-one-page__table"
-              :data="collateralRows"
-              :columns="collateralColumns"
-              nodata-message="Tambahkan jaminan terlebih dahulu"
-            >
-              <template #details="{ item }">
-                <span>
-                  Mitra : {{ item.partner }}<br>
-                  Merek Emas : {{ item.brand }}<br>
-                  Denominasi : {{ item.denomination }} gram<br>
-                  Jumlah Keping : {{ item.pieces }} Pcs<br>
-                  Karat : {{ item.karat }}<br>
-                  Keterangan : {{ item.description }}
-                </span>
-              </template>
-              <template #photo="{ item }">
-                <div v-if="item.photos.length" class="gadai-one-page__photo-list">
-                  <div
-                    v-for="(photo, index) in item.photos.slice(0, 2)"
-                    :key="`${item.id}-${index}`"
-                    class="gadai-one-page__photo"
-                  >
-                    <GImageView
-                      :img-src="photo"
-                      :images="[...item.photos.slice(index), ...item.photos.slice(0, index)]"
-                      img-alt="Foto barang jaminan"
-                      aspect-ratio="1:1"
-                      :width="64"
-                      :height="64"
-                      fit="cover"
-                      previewable
-                    />
-                    <span v-if="index === 1 && item.photos.length > 2" class="gadai-one-page__photo-count">
-                      +{{ item.photos.length - 2 }}
-                    </span>
-                  </div>
-                </div>
-                <span v-else>-</span>
-              </template>
-              <template #estimatedValue="{ value }">
-                Rp{{ formatCurrency(value) }}
-              </template>
-              <template #actions="{ item }">
-                <GButton label="Hapus" type="outline" size="sm" @click="removeCollateral(item)" />
-              </template>
-            </GTable>
-          </div>
-          <div class="gadai-one-page__pagination">
-            <span>{{ collateralPaginationLabel }}</span>
-            <GTablePagination
-              v-model="currentPage"
-              :total-rows="paginationTotalRows"
-              :per-page="pageSize"
-            />
-          </div>
+          <RahnCollateralTable
+            :items="collaterals"
+            @edit="editCollateral"
+            @remove="removeCollateral"
+          />
           <p v-if="isSubmitted && !collaterals.length" class="gadai-one-page__error" role="alert">
             Data jaminan wajib diisi.
           </p>
           <div class="gadai-one-page__add-action">
-            <GButton label="Tambah Jaminan" type="secondary" size="md" @click="openCollateralModal" />
+            <GButton label="Tambah Jaminan" type="secondary" size="md" @click="openCollateralModal()" />
           </div>
         </ModuleSectionCard>
 
@@ -671,10 +584,7 @@ watch(nik, (value) => {
               <legend>Perubahan Tarif</legend>
               <GRadio
                 v-model="tariffChange"
-                :items="[
-                  { text: 'Iya', value: 'Iya' },
-                  { text: 'Tidak', value: 'Tidak' },
-                ]"
+                :items="tariffChangeOptions"
               />
             </fieldset>
             <div class="gadai-one-page__field">
@@ -691,7 +601,7 @@ watch(nik, (value) => {
               <GInputText
                 id="gadai-tariff-rate"
                 class="gadai-one-page__tariff-input"
-                :model-value="String(loanTier?.tariffRate ?? '').replace('.', ',')"
+                :model-value="String(tariffTier?.tariffRate ?? '').replace('.', ',')"
                 disabled
                 placeholder="Terisi otomatis"
               >
@@ -722,8 +632,9 @@ watch(nik, (value) => {
           </div>
           <hr class="gadai-one-page__divider">
           <div class="gadai-one-page__loan-data">
-            <h3 class="gadai-one-page__subheading">Data Pinjaman</h3>
+            <h3 class="gadai-one-page__subheading mb-0">Data Pinjaman</h3>
             <GAlert
+              v-if="hasSearchedCustomer"
               class="gadai-one-page__rating-alert"
               label="Nasabah mendapatkan rating Platinum Plus Holding."
               color="light-blue"
@@ -735,25 +646,56 @@ watch(nik, (value) => {
             variant="review"
             :items="loanSummaryItems"
           />
-          <div class="gadai-one-page__grid">
+          <div class="gadai-one-page__grid mt-4">
             <div class="gadai-one-page__field">
               <label>Uang Pinjaman Diajukan</label>
               <GInputNominalStart v-model="loanAmount" unit="Rupiah" placeholder="Masukkan nominal" />
               <span class="gadai-one-page__caption">Nominal diajukan tidak boleh melebihi maksimal pinjaman customer rating / normal.</span>
             </div>
             <div class="gadai-one-page__field">
-              <label>Golongan Uang Pinjaman</label>
-              <GInputNominalStart :model-value="loanTier?.code || ''" unit="Rupiah" placeholder="Terisi otomatis" disabled />
+              <RahnAutoValueField
+                label="Golongan Uang Pinjaman"
+                :value="loanTierLabel"
+              />
             </div>
           </div>
           <p v-if="calculationError" class="gadai-one-page__error" role="alert">{{ calculationError }}</p>
           <div class="gadai-one-page__calculate-action">
-            <GButton label="Hitung" type="outline" size="md" @click="calculateLoan" />
+            <GButton label="Hitung" type="secondary" size="md" @click="calculateLoan" />
           </div>
           <hr class="gadai-one-page__divider">
           <h3 class="gadai-one-page__subheading">Simulasi Pinjaman</h3>
-          <div class="gadai-one-page__grid">
-            <div v-for="field in loanSimulationFields" :key="field.label" class="gadai-one-page__field">
+          <div class="gadai-one-page__grid gadai-one-page__simulation-grid">
+            <div
+              v-for="field in loanSimulationFields"
+              :key="field.label"
+              class="gadai-one-page__field gadai-one-page__simulation-field"
+            >
+              <label class="gadai-one-page__tooltip-label">
+                {{ field.label }}
+                <GTooltip
+                  color="black"
+                  variant="light"
+                  placement="top"
+                  custom-class="gadai-credit-tooltip"
+                  :tooltip-text="field.tooltip"
+                />
+              </label>
+              <GInputNominalStart
+                :model-value="field.value !== undefined ? String(field.value) : ''"
+                unit="Rupiah"
+                placeholder="Terisi otomatis"
+                disabled
+              />
+            </div>
+          </div>
+          <hr class="gadai-one-page__simulation-divider">
+          <div class="gadai-one-page__grid gadai-one-page__simulation-grid gadai-one-page__settlement-grid">
+            <div
+              v-for="field in loanSettlementFields"
+              :key="field.label"
+              class="gadai-one-page__field gadai-one-page__simulation-field"
+            >
               <label class="gadai-one-page__tooltip-label">
                 {{ field.label }}
                 <GTooltip
@@ -788,28 +730,62 @@ watch(nik, (value) => {
     v-model="showCollateralModal"
     :rubric="fields.rubric"
     :is-mobile="isMobile"
+    :initial-collateral="editingCollateral"
     @save="saveCollateral"
   />
 
   <GModal
     v-model="showSubmissionModal"
-    class="gadai-one-page__modal"
+    :class="[
+      'gadai-one-page__modal',
+      `gadai-one-page__modal--${submissionModalStep}`,
+    ]"
     centered
-    :title="submissionModalStep === 'confirmation' ? 'Perhatian' : 'Data Berhasil Disimpan.'"
+    :title="submissionModalStep === 'confirmation' ? 'Konfirmasi' : ''"
     :show-close-button="false"
   >
+    <template #header>
+      <div v-if="submissionModalStep === 'confirmation'" class="gadai-one-page__modal-header">
+        <h2>Konfirmasi</h2>
+        <button
+          type="button"
+          class="gadai-one-page__modal-close"
+          aria-label="Tutup"
+          @click="showSubmissionModal = false"
+        >
+          <img :src="submissionCloseIconUrl" alt="">
+        </button>
+      </div>
+    </template>
     <template #body>
-      <div class="gadai-one-page__submission-modal-copy">
-        <h2>{{ submissionModalStep === 'confirmation' ? 'Perhatian' : 'Data Berhasil Disimpan.' }}</h2>
-        <p v-if="submissionModalStep === 'confirmation'">Apakah anda yakin untuk melakukan pengajuan?</p>
-        <p v-else>Data pengajuan berhasil disimpan, silakan kembali ke beranda.</p>
+      <p v-if="submissionModalStep === 'confirmation'" class="gadai-one-page__confirmation-copy">
+        Apakah Anda yakin untuk memproses pengajuan ini?
+      </p>
+      <div v-else class="gadai-one-page__success-content">
+        <SubmissionSuccessIllustration />
+        <div class="gadai-one-page__success-copy">
+          <h2>Pengajuan Berhasil</h2>
+          <p>Pengajuan Gadai berhasil Anda ajukan.</p>
+          <div class="gadai-one-page__submission-number">
+            <span class="gadai-one-page__submission-number-label">Nomor Pengajuan</span>
+            <div class="gadai-one-page__submission-number-field">
+              <span>{{ submissionNumber }}</span>
+              <button type="button" @click="copySubmissionNumber">
+                {{ submissionCopied ? 'Tersalin' : 'Salin' }}
+              </button>
+            </div>
+            <p v-if="submissionCopyError" class="gadai-one-page__copy-error" role="alert">
+              {{ submissionCopyError }}
+            </p>
+          </div>
+        </div>
       </div>
     </template>
     <template #footer>
       <div class="gadai-one-page__modal-actions">
         <template v-if="submissionModalStep === 'confirmation'">
           <GButton label="Batal" type="neutral" size="md" @click="showSubmissionModal = false" />
-          <GButton label="Proses Pengajuan" type="primary" size="md" @click="confirmSubmission" />
+          <GButton label="Ya, Proses Pengajuan" type="primary" size="md" @click="confirmSubmission" />
         </template>
         <GButton v-else label="Mengerti" type="primary" size="md" @click="returnToEntryPage" />
       </div>
@@ -822,7 +798,7 @@ watch(nik, (value) => {
   margin-top: 16px;
   margin-bottom: 40px;
 
-  .group-input {
+  :deep(.group-input) {
     margin-bottom: 0px !important;
   }
 }
@@ -941,7 +917,7 @@ watch(nik, (value) => {
   }
 
   :deep(.rahn-readonly-grid) {
-    gap: 8px 24px;
+    gap: 12px 24px;
   }
 
   :deep(.readonly-field--review) {
@@ -977,16 +953,14 @@ watch(nik, (value) => {
 }
 
 .gadai-one-page__customer-result-actions {
-  position: relative;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 40px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
   margin-top: 16px;
 
   :deep(.btn) {
-    position: absolute;
-    right: 0;
+    align-self: flex-end;
     min-width: 200px;
     border-color: var(--g-kit-black-40, #bbbdc0);
     color: var(--g-kit-black-60, #58585b);
@@ -996,6 +970,7 @@ watch(nik, (value) => {
 
 .gadai-one-page__customer-details-toggle {
   display: inline-flex;
+  align-self: center;
   align-items: center;
   gap: 8px;
   padding: 8px;
@@ -1030,110 +1005,6 @@ watch(nik, (value) => {
   border: 0;
   border-top: 1px solid var(--g-kit-black-20, #eeeeef);
   opacity: 1;
-}
-
-.gadai-one-page__table-toolbar {
-  display: flex;
-  justify-content: flex-start;
-  margin-bottom: 16px;
-}
-
-.gadai-one-page__page-size {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--g-kit-black-80, #252528);
-  font-size: 14px;
-  font-weight: var(--g-kit-font-weight-normal, 600);
-
-  select {
-    min-width: 52px;
-    height: 28px;
-    padding: 2px 8px;
-    border: 1px solid var(--g-kit-black-40, #bbbdc0);
-    border-radius: 4px;
-    color: inherit;
-    background: var(--g-kit-white, #ffffff);
-  }
-}
-
-.gadai-one-page__table-wrap {
-  width: 100%;
-  overflow-x: auto;
-  border: 1px solid var(--g-kit-black-20, #eeeeef);
-  border-radius: 6px;
-}
-
-.gadai-one-page__table-wrap :deep(.gadai-one-page__table) {
-  width: 100%;
-  min-width: 760px;
-  margin: 0;
-  table-layout: fixed;
-  border: 0;
-  border-collapse: separate;
-  border-spacing: 0;
-  border-radius: 0;
-  color: var(--g-kit-black-80, #252528);
-  font-size: 14px;
-
-  th,
-  td {
-    padding: 12px 16px;
-    border: 0;
-    border-right: 1px solid var(--g-kit-black-20, #eeeeef);
-    text-align: left;
-    vertical-align: middle;
-  }
-
-  th {
-    height: 40px;
-    padding-top: 10px;
-    padding-bottom: 10px;
-    background: var(--g-kit-lime-50, #00ab4e);
-    color: var(--g-kit-white, #ffffff);
-    font-weight: var(--g-kit-font-weight-bold, 800);
-    line-height: 20px;
-    white-space: nowrap;
-  }
-
-  th:last-child,
-  td:last-child {
-    border-right: 0;
-  }
-
-  td {
-    border-top: 1px solid var(--g-kit-black-20, #eeeeef);
-    line-height: 20px;
-  }
-
-  th:nth-child(1),
-  td:nth-child(1) { width: 19%; }
-  th:nth-child(2),
-  td:nth-child(2) { width: 19%; }
-  th:nth-child(3),
-  td:nth-child(3) { width: 21.5%; }
-  th:nth-child(4),
-  td:nth-child(4) { width: 16%; }
-  th:nth-child(5),
-  td:nth-child(5) { width: 12.5%; }
-  th:nth-child(6),
-  td:nth-child(6) { width: 12%; }
-
-  tbody tr:last-child td {
-    height: 40px !important;
-    color: var(--g-kit-black-80, #252528);
-    text-align: center;
-  }
-}
-
-.gadai-one-page__pagination {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  margin-top: 16px;
-  color: var(--g-kit-black-60, #58585b);
-  font-size: 14px;
 }
 
 .gadai-one-page__summary-grid {
@@ -1179,6 +1050,22 @@ watch(nik, (value) => {
   gap: 16px;
 }
 
+.gadai-one-page__simulation-grid {
+  row-gap: 20px;
+}
+
+.gadai-one-page__simulation-field > label {
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.gadai-one-page__simulation-divider {
+  margin: 24px 0 16px;
+  border: 0;
+  border-top: 1px solid var(--g-kit-black-20, #eeeeef);
+  opacity: 1;
+}
+
 .gadai-one-page__loan-summary {
   margin-top: 24px;
 }
@@ -1211,55 +1098,63 @@ watch(nik, (value) => {
   }
 }
 
-.gadai-one-page__tariff-input {
-  :deep(.input-group) {
-    height: 48px;
-    overflow: hidden;
-    border: 1px solid var(--g-kit-black-40, #bbbdc0);
-    border-radius: 6px;
-    background: var(--g-kit-black-20, #eeeeef);
-  }
+:global(.gadai-one-page__tariff-input .input-group) {
+  box-sizing: border-box;
+  height: 48px;
+  overflow: hidden;
+  border: 1px solid var(--g-kit-black-40, #bbbdc0);
+  border-radius: 6px;
+  background: var(--g-kit-black-20, #eeeeef);
+}
 
-  :deep(.form-control) {
-    height: 46px;
-    border: 0;
-    border-radius: 6px 0 0 6px;
-    background: var(--g-kit-black-20, #eeeeef);
-    color: var(--g-kit-black-60, #58585b);
-    box-shadow: none;
-  }
+:global(.gadai-one-page__tariff-input .form-control) {
+  height: 46px;
+  border: 0;
+  border-radius: 5px 0 0 5px;
+  background: var(--g-kit-black-20, #eeeeef);
+  color: var(--g-kit-black-60, #58585b);
+  box-shadow: none;
+}
 
-  :deep(.input-group:has(input:not(:disabled))) {
-    border-color: var(--g-kit-black-20, #eeeeef);
-    background: var(--g-kit-white, #ffffff);
+:global(.gadai-one-page__tariff-input .input-group:has(input:not(:disabled))) {
+  background: var(--g-kit-white, #ffffff);
+}
 
-    .form-control {
-      background: var(--g-kit-white, #ffffff);
-      color: var(--g-kit-black-80, #252528);
-    }
-
-    .gadai-one-page__tariff-suffix {
-      background: var(--g-kit-white, #ffffff);
-      color: var(--g-kit-black-80, #252528);
-    }
-  }
+:global(.gadai-one-page__tariff-input .input-group:has(input:not(:disabled)) .form-control) {
+  background: var(--g-kit-white, #ffffff);
+  color: var(--g-kit-black-80, #252528);
 }
 
 .gadai-one-page__tariff-suffix {
+  position: relative;
   display: flex;
-  flex: 0 0 98px;
+  flex: 0 0 101px;
   align-items: center;
   justify-content: center;
   height: 46px;
-  border-left: 1px solid var(--g-kit-black-40, #bbbdc0);
   background: var(--g-kit-black-20, #eeeeef);
   color: var(--g-kit-black-60, #58585b);
   font-size: 16px;
   line-height: 24px;
 }
 
+.gadai-one-page__tariff-suffix::before {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 1px;
+  background: var(--g-kit-black-40, #bbbdc0);
+  content: '';
+}
+
+:global(.gadai-one-page__tariff-input .input-group:has(input:not(:disabled)) .gadai-one-page__tariff-suffix) {
+  background: var(--g-kit-white, #ffffff);
+  color: var(--g-kit-black-80, #252528);
+}
+
 .gadai-one-page__radio-field {
-  width: min(100%, 393px);
+  width: 100%;
   margin: 0;
   padding: 0;
   border: 0;
@@ -1267,7 +1162,7 @@ watch(nik, (value) => {
   legend {
     float: none;
     width: auto;
-    margin: 0 0 8px;
+    margin: 0px;
     color: var(--g-kit-black-80, #252528);
     font-size: var(--g-kit-font-size-omicron, 16px);
     font-weight: var(--g-kit-font-weight-bold, 800);
@@ -1358,49 +1253,6 @@ watch(nik, (value) => {
   text-align: right;
 }
 
-.gadai-one-page__photo-list {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-}
-
-.gadai-one-page__photo {
-  position: relative;
-}
-
-.gadai-one-page__photo-count {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  border-radius: 6px;
-  color: var(--g-kit-white, #ffffff);
-  background: rgba(37, 37, 40, 0.6);
-  font-size: 14px;
-  font-weight: var(--g-kit-font-weight-bold, 800);
-}
-
-.gadai-one-page__modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  width: 100%;
-}
-
-.gadai-one-page__submission-modal-copy {
-  h2 {
-    margin: 0 0 8px;
-    color: var(--g-kit-black-80, #252528);
-    font-size: 20px;
-    font-weight: var(--g-kit-font-weight-bold, 800);
-  }
-
-  p {
-    margin: 0;
-    color: var(--g-kit-black-60, #58585b);
-  }
-}
-
 :global(.gadai-one-page__modal.show) {
   display: block !important;
 }
@@ -1409,7 +1261,179 @@ watch(nik, (value) => {
   position: relative;
   z-index: 1051;
   width: calc(100% - 32px);
-  max-width: 520px;
+  max-width: 360px;
+}
+
+:global(.gadai-one-page__modal .modal-content) {
+  overflow: hidden;
+  border: 0;
+  border-radius: 12px;
+}
+
+:global(.gadai-one-page__modal--confirmation .modal-header) {
+  padding: 16px 16px 15px;
+}
+
+:global(.gadai-one-page__modal--confirmation.modal-general.border-bottom .modal-header) {
+  border-bottom: 1px solid var(--g-kit-black-20, #eeeeef);
+}
+
+.gadai-one-page__modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 26px;
+
+  h2 {
+    margin: 0;
+    color: var(--g-kit-black-80, #252528);
+    font-size: 18px;
+    font-weight: var(--g-kit-font-weight-bold, 800);
+    line-height: 26px;
+  }
+}
+
+.gadai-one-page__modal-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+:global(.gadai-one-page__modal--confirmation .modal-body) {
+  padding: 16px 16px 0;
+}
+
+.gadai-one-page__confirmation-copy {
+  margin: 0;
+  color: var(--g-kit-black-60, #58585b);
+  font-size: 14px;
+  font-weight: var(--g-kit-font-weight-normal, 600);
+  line-height: 20px;
+}
+
+:global(.gadai-one-page__modal--confirmation .modal-footer) {
+  padding: 16px;
+  border: 0;
+}
+
+.gadai-one-page__modal-actions {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin: 0;
+  gap: 8px;
+
+  :deep(.btn) {
+    width: 100%;
+    height: 40px;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: var(--g-kit-font-weight-bold, 800);
+    line-height: 24px;
+  }
+}
+
+:global(.gadai-one-page__modal--success .modal-header) {
+  display: none;
+}
+
+:global(.gadai-one-page__modal--success .modal-body) {
+  padding: 50px 16px 0;
+}
+
+.gadai-one-page__success-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  gap: 24px;
+}
+
+.gadai-one-page__success-copy {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 8px;
+
+  h2 {
+    margin: 0;
+    color: var(--g-kit-black-80, #252528);
+    font-size: 20px;
+    font-weight: var(--g-kit-font-weight-bold, 800);
+    line-height: 30px;
+  }
+
+  > p {
+    margin: 0;
+    color: var(--g-kit-black-60, #58585b);
+    font-size: 16px;
+    font-weight: var(--g-kit-font-weight-normal, 600);
+    line-height: 24px;
+  }
+}
+
+.gadai-one-page__submission-number {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 4px;
+}
+
+.gadai-one-page__submission-number-label {
+  color: var(--g-kit-black-60, #58585b);
+  font-size: 14px;
+  font-weight: var(--g-kit-font-weight-bold, 800);
+  line-height: 20px;
+}
+
+.gadai-one-page__submission-number-field {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  border: 1px solid var(--g-kit-lime-10, #e6f6ea);
+  border-radius: 6px;
+  background: var(--g-kit-lime-10, #e6f6ea);
+  gap: 8px;
+
+  span {
+    min-width: 0;
+    color: var(--g-kit-black-60, #58585b);
+    font-size: 16px;
+    font-weight: var(--g-kit-font-weight-normal, 600);
+    line-height: 24px;
+  }
+
+  button {
+    flex: 0 0 80px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--g-kit-lime-50, #00ab4e);
+    font-size: 16px;
+    font-weight: var(--g-kit-font-weight-bold, 800);
+    line-height: 24px;
+    text-align: right;
+    cursor: pointer;
+  }
+}
+
+.gadai-one-page__copy-error {
+  margin: 0;
+  color: var(--g-kit-red-50, #ae1e22);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+:global(.gadai-one-page__modal--success .modal-footer) {
+  padding: 24px 16px 16px;
+  border: 0;
 }
 
 @media (max-width: 767px) {
@@ -1460,19 +1484,6 @@ watch(nik, (value) => {
   .gadai-one-page__summary-item {
     grid-template-columns: minmax(130px, 1fr) minmax(0, 1fr);
     font-size: 14px;
-  }
-
-  .gadai-one-page__pagination {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .gadai-one-page__modal-actions {
-    flex-direction: column-reverse;
-
-    :deep(.btn) {
-      width: 100%;
-    }
   }
 
 }

@@ -508,7 +508,7 @@ h3 {
 }
 
 .owner-field {
-  width: min(100%, 393px);
+  width: min(100%, calc(50% - 12px));
 
   @media (max-width: 767px) {
     width: auto;

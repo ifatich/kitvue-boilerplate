@@ -777,7 +777,6 @@
 .rahn-loading {
   &.show {
     display: block !important;
-    z-index: 2001 !important;
   }
 
   .modal-dialog {
@@ -844,10 +843,6 @@
   }
 }
 
-body:has(.rahn-loading.show) .modal-backdrop {
-  z-index: 2000 !important;
-}
-
 .table-scroll { overflow-x: auto; }
 .text-action {
   display: block;
@@ -873,11 +868,9 @@ body:has(.rahn-loading.show) .modal-backdrop {
 .status-error { color: var(--g-kit-red-50, #ae1e22); font-weight: var(--g-kit-font-weight-bold, 800); }
 
 .owner-field {
-  width: min(100%, 393px);
-
-  @media (max-width: 767px) {
-    width: auto;
-  }
+  box-sizing: border-box;
+  width: 100%;
+  max-width: calc(50% - 12px);
 }
 
 .form-card--owner-details {

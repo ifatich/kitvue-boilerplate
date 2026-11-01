@@ -65,10 +65,10 @@ const incomeOptions = [{ value: '5 - 10 Juta', label: '5 - 10 Juta' }]
     title="Pengajuan Rahn"
     :breadcrumbs="[
       { label: 'Beranda', to: '/' },
-      { label: 'Pengajuan Rahn', to: '/pengajuan-rahn' },
+      { label: 'Pengajuan Rahn', to: '/pengajuan-gadai' },
       'Detail Data Beneficial Owner',
     ]"
-    back-to="/pengajuan-rahn"
+    back-to="/pengajuan-gadai"
     profile-role="Penaksir"
     :show-auth-toggle="false"
     @back="emit('back')"

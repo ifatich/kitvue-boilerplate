@@ -114,7 +114,6 @@ export interface RahnFlowContext {
   isNasabahInquired: Ref<boolean>
   isNasabahSearchSubmitted: Ref<boolean>
   isNasabahSelected: Ref<boolean>
-  hasBeneficialOwner: ComputedRef<boolean>
   purposeOptions: RahnOption[]
   purposeTransactionOptions: ComputedRef<RahnOption[]>
   employmentOptions: RahnOption[]

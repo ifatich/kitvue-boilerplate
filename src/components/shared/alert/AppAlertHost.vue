@@ -10,7 +10,7 @@ const { appAlert, hideAlert } = useAppAlert()
     <Transition name="app-alert">
       <output
         v-if="appAlert.visible"
-        class="app-alert-host"
+        :class="['app-alert-host', `app-alert-host--${appAlert.position}`]"
         aria-live="polite"
         aria-label="Notifikasi"
       >
@@ -44,15 +44,53 @@ const { appAlert, hideAlert } = useAppAlert()
   display: block;
 
   position: fixed;
-  top: 24px;
+  top: 64px;
   left: 50%;
   z-index: 2000;
   width: min(420px, calc(100vw - 32px));
   transform: translateX(-50%);
 }
 
+.app-alert-host--bottom-left {
+  top: auto;
+  bottom: 20px;
+  left: 20px;
+  width: min(252px, calc(100vw - 40px));
+  transform: none;
+}
+
 .app-alert-host :deep(.alert) {
   overflow-wrap: anywhere;
+}
+
+.app-alert-host--bottom-left :deep(.alert) {
+  margin: 0;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 6px;
+  font-size: 10px;
+  line-height: 14px;
+}
+
+.app-alert-host--bottom-left :deep(.alert .row) {
+  align-items: center;
+  flex-wrap: nowrap;
+}
+
+.app-alert-host--bottom-left :deep(.alert .row > div:first-child) {
+  flex: 1 1 auto;
+  width: auto;
+}
+
+.app-alert-host--bottom-left :deep(.alert .row > div:last-child) {
+  flex: 0 0 20px;
+  width: 20px;
+  padding: 0;
+}
+
+.app-alert-host--bottom-left .alert-close svg {
+  width: 12px;
+  height: 12px;
 }
 
 .alert-close {
@@ -86,10 +124,22 @@ const { appAlert, hideAlert } = useAppAlert()
   transform: translate(-50%, -8px);
 }
 
+.app-alert-enter-from.app-alert-host--bottom-left,
+.app-alert-leave-to.app-alert-host--bottom-left {
+  transform: translateY(8px);
+}
+
 @media (max-width: 560px) {
   .app-alert-host {
-    top: 16px;
+    top: 64px;
     width: calc(100vw - 32px);
+  }
+
+  .app-alert-host--bottom-left {
+    top: auto;
+    bottom: 20px;
+    left: 20px;
+    width: min(252px, calc(100vw - 40px));
   }
 }
 </style>

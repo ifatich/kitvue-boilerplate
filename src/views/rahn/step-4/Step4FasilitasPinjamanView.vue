@@ -9,11 +9,13 @@ import {
   GRadio,
 } from '@/components'
 import ModuleSectionCard from '@/components/shared/card/ModuleSectionCard.vue'
+import RahnAutoValueField from '@/components/modules/rahn/RahnAutoValueField.vue'
 import {
   calculateRahnLoan,
   getMaximumRahnLoan,
   getRahnLoanTier,
 } from '@/utils/rahnLoanCalculation'
+import { tariffChangeOptions } from '@/components/modules/rahn/rahnOptions'
 import { rahnFlowKey } from '../rahnFlow'
 
 const infoIcon = new URL('../../../../node_modules/kitvue-public/src/assets/images/icon-info.svg', import.meta.url).href
@@ -191,12 +193,10 @@ const calculateLoan = async () => {
               </p>
             </div>
 
-            <div class="rahn-loan-field">
-              <label>Golongan Uang Pinjaman</label>
-              <div class="rahn-auto-field" aria-live="polite">
-                {{ selectedTierLabel }}
-              </div>
-            </div>
+            <RahnAutoValueField
+              label="Golongan Uang Pinjaman"
+              :value="selectedTierLabel"
+            />
           </div>
         </div>
       </ModuleSectionCard>
@@ -232,10 +232,7 @@ const calculateLoan = async () => {
             <legend>Perubahan Tarif</legend>
             <GRadio
               v-model="tariffChange"
-              :items="[
-                { text: 'Iya', value: 'Iya' },
-                { text: 'Tidak', value: 'Tidak' },
-              ]"
+              :items="tariffChangeOptions"
             />
           </fieldset>
 
@@ -282,7 +279,7 @@ const calculateLoan = async () => {
 
   <GLoading
     v-model="isCalculating"
-    class="rahn-loading"
+    class="kitvue-loading rahn-loading"
     :count="0"
     title="Memproses Data"
     persistent
@@ -420,20 +417,6 @@ const calculateLoan = async () => {
 //   height: 70px;
 //   font-size: 24px;
 // }
-
-.rahn-auto-field {
-  box-sizing: border-box;
-  display: flex;
-  align-items: center;
-  min-height: 48px;
-  padding: 11px;
-  border: 1px solid var(--g-kit-black-20, #eeeeef);
-  border-radius: 6px;
-  background-color: var(--g-kit-black-20, #eeeeef);
-  color: var(--g-kit-black-60, #58585b);
-  font-size: var(--g-kit-font-size-omicron, 16px);
-  line-height: var(--g-kit-line-height-omicron, 24px);
-}
 
 .rahn-facility-error {
   margin: 4px 0 0;

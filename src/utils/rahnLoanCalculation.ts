@@ -91,3 +91,14 @@ export const calculateRahnLoan = (
     receivedAmount: amount - administrationFee - premiumFee,
   }
 }
+
+export const getRemainingRahnLoanLimit = (maximumLoan: number, amount: number) => {
+  if (
+    !Number.isFinite(maximumLoan)
+    || maximumLoan <= 0
+    || !Number.isFinite(amount)
+    || amount <= 0
+  ) return undefined
+
+  return Math.max(maximumLoan - amount, 0)
+}

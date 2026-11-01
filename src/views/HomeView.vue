@@ -8,12 +8,35 @@ import verificationIcon from 'kitvue-public/src/assets/icon/gadai.svg'
 import reportIcon from 'kitvue-public/src/assets/icon/icon-product/icon-submenu-pinjaman.svg'
 import chevronDownAsset from 'kitvue-public/src/assets/icon/icon-system/icon-chevron-down.svg'
 import infoIconAsset from 'kitvue-public/src/assets/icon/icon-system/icon-info.svg'
+import loanApplyIcon from '@/assets/figma/entry/loan-apply.svg'
+import loanVerifyIcon from '@/assets/figma/entry/loan-verify.svg'
+import loanConfirmIcon from '@/assets/figma/entry/loan-confirm.svg'
+import eformPrintIcon from '@/assets/figma/entry/eform-print.svg'
+import eformManageIcon from '@/assets/figma/entry/eform-manage.svg'
+import egcInputIcon from '@/assets/figma/entry/egc-input.svg'
+import egcReactivateIcon from '@/assets/figma/entry/egc-reactivation.svg'
+import egcCrmIcon from '@/assets/figma/entry/egc-crm.svg'
+import egcFollowUpIcon from '@/assets/figma/entry/egc-follow-up.svg'
+import monitorLoanIcon from '@/assets/figma/entry/monitor-loan-list.svg'
+import monitorHomeReportIcon from '@/assets/figma/entry/monitor-home-report.svg'
+import monitorReferralIcon from '@/assets/figma/entry/monitor-referral.svg'
+import monitorEgcHistoryIcon from '@/assets/figma/entry/monitor-egc-history.svg'
+import monitorRestructureIcon from '@/assets/figma/entry/monitor-restructure.svg'
+import monitorProblemLoanIcon from '@/assets/figma/entry/monitor-problem-loan.svg'
+import reportOslIcon from '@/assets/figma/entry/report-osl.svg'
+import reportKpiIcon from '@/assets/figma/entry/report-kpi.svg'
+import reportBalanceIcon from '@/assets/figma/entry/report-balance.svg'
 
 const router = useRouter()
-const openPengajuan = () => router.push('/pengajuan-rahn')
+const openPengajuan = () => router.push('/pengajuan-gadai')
 const openModule = ref<string | null>('Pengajuan')
 const chevronDown = chevronDownAsset as unknown as string
 const infoIcon = infoIconAsset as unknown as string
+const dashboardPage = ref(0)
+const dashboardSlides = [
+  ['egc', 'osl', 'npl'],
+  ['omset', 'profitability', 'gold'],
+] as const
 
 const tasks = [
   { label: 'Pengajuan', value: '2' },
@@ -22,11 +45,56 @@ const tasks = [
 ]
 
 const modules = [
-  { title: 'Pengajuan', label: 'Pengajuan Gadai/Rahn', icon: rahnIcon as unknown as string, to: '/pengajuan-rahn', slot: 'submission' },
-  { title: 'Konfirmasi', label: 'Konfirmasi Gadai/Rahn', icon: confirmationIcon as unknown as string, to: '/pengajuan-rahn', slot: 'confirmation' },
-  { title: 'Verifikasi', label: 'Verifikasi Gadai/Rahn', icon: verificationIcon as unknown as string, to: '/pengajuan-rahn', slot: 'verification' },
-  { title: 'Laporan', label: 'Daftar Pinjaman', icon: reportIcon as unknown as string, to: '/pengajuan-rahn', slot: 'report' },
+  { title: 'Pengajuan', label: 'Pengajuan Gadai/Rahn', icon: rahnIcon as unknown as string, to: '/pengajuan-gadai', slot: 'submission' },
+  { title: 'Konfirmasi', label: 'Konfirmasi Gadai/Rahn', icon: confirmationIcon as unknown as string, to: '/pengajuan-gadai', slot: 'confirmation' },
+  { title: 'Verifikasi', label: 'Verifikasi Gadai/Rahn', icon: verificationIcon as unknown as string, to: '/pengajuan-gadai', slot: 'verification' },
+  { title: 'Laporan', label: 'Daftar Pinjaman', icon: reportIcon as unknown as string, to: '/pengajuan-gadai', slot: 'report' },
 ]
+
+const entryGroups = [
+  {
+    items: [
+      { label: 'Pengajuan Gadai', icon: loanApplyIcon },
+      { label: 'Verifikasi Gadai', icon: loanVerifyIcon },
+      { label: 'Konfirmasi Gadai', icon: loanConfirmIcon },
+    ],
+  },
+  {
+    items: [
+      { label: 'Cetak E-FPK', icon: eformPrintIcon },
+      { label: 'Manajemen E-FPK', icon: eformManageIcon },
+    ],
+  },
+  {
+    items: [
+      { label: 'Input Data EGC/OGC', icon: egcInputIcon },
+      { label: 'EGC Leads Reaktivasi', icon: egcReactivateIcon },
+      { label: 'Daftar Leads EGC - CRM', icon: egcCrmIcon },
+      { label: 'Follow Up EGC - CRM', icon: egcFollowUpIcon },
+    ],
+  },
+  {
+    items: [
+      { label: 'Daftar Pinjaman', icon: monitorLoanIcon },
+      { label: 'Laporan Aktivitas Gadai Dari Rumah', icon: monitorHomeReportIcon },
+      { label: 'Riwayat EGC (Reaktivasi)', icon: monitorReferralIcon },
+      { label: 'Riwayat EGC (CRM)', icon: monitorEgcHistoryIcon },
+      { label: 'Laporan Restrukturisasi', icon: monitorRestructureIcon },
+      { label: 'Laporan Penyelesaian Pinjaman Bermasalah', icon: monitorProblemLoanIcon },
+    ],
+  },
+  {
+    items: [
+      { label: 'OSL Data Harian', icon: reportOslIcon },
+      { label: 'Realisasi KPI', icon: reportKpiIcon },
+      { label: 'Saldo List Gadai/Rahn', icon: reportBalanceIcon },
+    ],
+  },
+]
+
+const changeDashboardPage = (direction: number) => {
+  dashboardPage.value = direction > 0 ? 1 : 0
+}
 
 // Mobile Carousel Swipeable State & Logic
 const carouselRef = ref<HTMLElement | null>(null)
@@ -93,74 +161,248 @@ const handleSlideClick = () => {
     />
 
     <main class="entry-content">
-      <!-- Desktop Grid Layout -->
       <div class="entry-grid">
-        <section class="panel dashboard-panel">
-          <h1>Dashboard</h1>
-          <div class="metric-row">
-            <article class="metric-card metric-card--lime">
-              <strong>OSL</strong>
-              <span>OSL Gross</span>
-              <div class="progress"><span /></div>
-              <small>Pencapaian</small>
-              <b>Rp 100,5 M / 105,6 M</b>
-            </article>
-            <article class="metric-card metric-card--yellow">
-              <strong>NPL</strong>
-              <span>Kualitas Kredit</span>
-              <div class="metric-pair">
-                <div><small>Skor Gadai</small><b>0,29</b></div>
-                <div><small>Skor Non Gadai</small><b>0,05</b></div>
+        <div class="entry-top-grid">
+          <section class="panel dashboard-panel">
+            <h1>Dashboard</h1>
+            <div class="dashboard-carousel">
+              <button
+                type="button"
+                class="dashboard-arrow dashboard-arrow--previous"
+                aria-label="Dashboard sebelumnya"
+                @click="changeDashboardPage(-1)"
+              >
+                <img :src="chevronDown" alt="" aria-hidden="true" />
+              </button>
+
+              <div class="dashboard-metrics">
+                <article
+                  v-for="metric in dashboardSlides[dashboardPage]"
+                  :key="metric"
+                  :class="['dashboard-metric', `dashboard-metric--${metric}`]"
+                >
+                  <template v-if="metric === 'egc'">
+                    <div class="dashboard-metric__heading">
+                      <strong>EGC / OGC</strong>
+                      <img :src="infoIcon" alt="" aria-hidden="true" />
+                    </div>
+                    <span class="dashboard-metric__subtitle">Pencapaian per Pegawai</span>
+                    <div class="dashboard-metric__stats">
+                      <div><small>Referral</small><b>2</b></div>
+                      <div><small>Closing</small><b>0</b></div>
+                      <div><small>Total XP</small><b>0</b></div>
+                    </div>
+                  </template>
+
+                  <template v-else-if="metric === 'osl'">
+                    <div class="dashboard-metric__heading">
+                      <strong>OSL</strong>
+                      <img :src="infoIcon" alt="" aria-hidden="true" />
+                    </div>
+                    <div class="dashboard-metric__osl">
+                      <div class="dashboard-metric__subheading">
+                        <span>OSL Gross</span>
+                        <b class="dashboard-badge">99%</b>
+                      </div>
+                      <div class="dashboard-progress"><span /></div>
+                      <div class="dashboard-metric__footer">
+                        <small>Pencapaian</small>
+                        <b>Rp 100,5 M / 105,6 M</b>
+                      </div>
+                    </div>
+                  </template>
+
+                  <template v-else-if="metric === 'npl'">
+                    <div class="dashboard-metric__heading">
+                      <strong>NPL</strong>
+                      <img :src="infoIcon" alt="" aria-hidden="true" />
+                    </div>
+                    <span class="dashboard-metric__subtitle">Kualitas Kredit</span>
+                    <div class="dashboard-metric__stats dashboard-metric__stats--npl">
+                      <div>
+                        <small>Skor Gadai</small>
+                        <span><b>0,29</b><em class="dashboard-badge">99%</em></span>
+                      </div>
+                      <div>
+                        <small>Skor Non Gadai</small>
+                        <span><b>0,05</b><em class="dashboard-badge dashboard-badge--red">50%</em></span>
+                      </div>
+                    </div>
+                  </template>
+
+                  <template v-else-if="metric === 'omset'">
+                    <div class="dashboard-metric__heading">
+                      <strong>Omset</strong>
+                      <img :src="infoIcon" alt="" aria-hidden="true" />
+                    </div>
+                    <span class="dashboard-metric__subtitle">Per Posisi</span>
+                    <div class="dashboard-metric__footer dashboard-metric__footer--large">
+                      <small>Tercapai</small>
+                      <b>Rp 2,57 M</b>
+                    </div>
+                  </template>
+
+                  <template v-else-if="metric === 'profitability'">
+                    <div class="dashboard-metric__heading">
+                      <strong>Profitabilitas</strong>
+                      <img :src="infoIcon" alt="" aria-hidden="true" />
+                    </div>
+                    <div class="dashboard-metric__footer dashboard-metric__footer--large">
+                      <small>Total</small>
+                      <b>61,5%</b>
+                    </div>
+                  </template>
+
+                  <template v-else>
+                    <div class="dashboard-metric__heading dashboard-metric__heading--stacked">
+                      <strong>Harga Tabungan Emas</strong>
+                      <small>10 Januari 2024</small>
+                    </div>
+                    <div class="dashboard-gold-prices">
+                      <div>
+                        <span>Beli Emas <img :src="chevronDown" alt="" aria-hidden="true" /></span>
+                        <b>Rp 5.000 <small>/ 0,01 gr</small></b>
+                      </div>
+                      <div>
+                        <span>Beli Emas <img :src="chevronDown" alt="" aria-hidden="true" /></span>
+                        <b>Rp 5.000 <small>/ 0,01 gr</small></b>
+                      </div>
+                    </div>
+                  </template>
+                </article>
               </div>
-            </article>
-            <article class="metric-card metric-card--blue">
-              <strong>Omset</strong>
-              <span>Per Posisi</span>
-              <small>Tercapai</small>
-              <b class="metric-value">Rp 2,57 M</b>
-            </article>
-          </div>
-        </section>
 
-        <section class="panel task-panel">
-          <div class="panel-heading">
-            <h2>Tugasku <span>99+</span></h2>
-            <button type="button" @click="openPengajuan">Lihat Semua</button>
-          </div>
-          <button
-            v-for="task in tasks"
-            :key="task.label"
-            type="button"
-            class="task-row"
-            @click="openPengajuan"
-          >
-            <span>{{ task.label }}</span>
-            <b>{{ task.value }}</b>
-          </button>
-        </section>
+              <button
+                type="button"
+                class="dashboard-arrow dashboard-arrow--next"
+                aria-label="Dashboard berikutnya"
+                @click="changeDashboardPage(1)"
+              >
+                <img :src="chevronDown" alt="" aria-hidden="true" />
+              </button>
+            </div>
+          </section>
 
-        <section
-          v-for="module in modules"
-          :key="module.title"
-          :class="['panel', 'module-panel', `module-panel--${module.slot}`]"
-        >
-          <h2>{{ module.title }}</h2>
-          <button type="button" class="module-link" @click="router.push(module.to)">
-            <span class="module-icon"><img :src="module.icon" alt="" /></span>
-            <span>{{ module.label }}</span>
-          </button>
-        </section>
+          <section class="panel task-panel">
+            <div class="panel-heading">
+              <h2>Tugasku <span>99+</span></h2>
+              <button type="button" @click="openPengajuan">Lihat Semua</button>
+            </div>
+            <button
+              v-for="task in tasks"
+              :key="task.label"
+              type="button"
+              class="task-row"
+              @click="openPengajuan"
+            >
+              <span>{{ task.label }}</span>
+              <b>{{ task.value }}</b>
+            </button>
+          </section>
+        </div>
 
-        <section class="panel favorite-panel">
-          <div class="panel-heading">
-            <h2>Menu Favorit</h2>
-            <button type="button" @click="openPengajuan">Atur</button>
+        <div class="entry-feature-grid">
+          <div class="entry-feature-column">
+            <section class="panel feature-panel feature-panel--loan">
+              <h2>Pinjaman Gadai</h2>
+              <div class="feature-menu">
+                <button
+                  v-for="item in entryGroups[0].items"
+                  :key="item.label"
+                  type="button"
+                  class="feature-menu__item"
+                  @click="openPengajuan"
+                >
+                  <img :src="item.icon" alt="" aria-hidden="true" />
+                  <span>{{ item.label }}</span>
+                </button>
+              </div>
+            </section>
+
+            <section class="panel feature-panel feature-panel--egc">
+              <h2>EGC / OGC</h2>
+              <div class="feature-menu">
+                <button
+                  v-for="item in entryGroups[2].items"
+                  :key="item.label"
+                  type="button"
+                  class="feature-menu__item"
+                  @click="openPengajuan"
+                >
+                  <img :src="item.icon" alt="" aria-hidden="true" />
+                  <span>{{ item.label }}</span>
+                </button>
+              </div>
+            </section>
           </div>
-          <button type="button" class="add-menu" @click="openPengajuan">
-            <span>+</span>
-            Tambah<br />Menu
-          </button>
-        </section>
+
+          <div class="entry-feature-column">
+            <section class="panel feature-panel feature-panel--eform">
+              <h2>E-Form</h2>
+              <div class="feature-menu">
+                <button
+                  v-for="item in entryGroups[1].items"
+                  :key="item.label"
+                  type="button"
+                  class="feature-menu__item"
+                  @click="openPengajuan"
+                >
+                  <img :src="item.icon" alt="" aria-hidden="true" />
+                  <span>{{ item.label }}</span>
+                </button>
+              </div>
+            </section>
+
+            <section class="panel feature-panel feature-panel--monitoring">
+              <h2>Monitoring</h2>
+              <div class="feature-menu">
+                <button
+                  v-for="item in entryGroups[3].items"
+                  :key="item.label"
+                  type="button"
+                  class="feature-menu__item"
+                  @click="openPengajuan"
+                >
+                  <img :src="item.icon" alt="" aria-hidden="true" />
+                  <span>{{ item.label }}</span>
+                </button>
+              </div>
+            </section>
+          </div>
+
+          <div class="entry-feature-column">
+            <section class="panel feature-panel feature-panel--favorite">
+              <div class="panel-heading">
+                <h2>Menu Favorit</h2>
+                <button type="button" @click="openPengajuan">Atur</button>
+              </div>
+              <div class="favorite-menu">
+                <button type="button" class="favorite-menu__add" @click="openPengajuan">
+                  <span class="favorite-menu__icon">
+                    <span aria-hidden="true">+</span>
+                  </span>
+                  <span>Tambah<br />Menu</span>
+                </button>
+              </div>
+            </section>
+
+            <section class="panel feature-panel feature-panel--reports">
+              <h2>Laporan</h2>
+              <div class="feature-menu">
+                <button
+                  v-for="item in entryGroups[4].items"
+                  :key="item.label"
+                  type="button"
+                  class="feature-menu__item"
+                  @click="openPengajuan"
+                >
+                  <img :src="item.icon" alt="" aria-hidden="true" />
+                  <span>{{ item.label }}</span>
+                </button>
+              </div>
+            </section>
+          </div>
+        </div>
       </div>
 
       <!-- Mobile Responsive Entry Layout (Figma Node 19034:162370 & 19034:160866) -->
@@ -394,14 +636,14 @@ const handleSlideClick = () => {
 
 .entry-content {
   flex: 1;
-  width: min(calc(100% - 32px), 1152px);
-  margin: 24px auto 18px;
+  width: min(calc(100% - 32px), 1312px);
+  margin: 24px auto 0;
 }
 
 .entry-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 18px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
 .panel {
@@ -415,87 +657,298 @@ const handleSlideClick = () => {
   display: none;
 }
 
+.entry-top-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 867fr) minmax(0, 421fr);
+  gap: 24px;
+}
+
 .dashboard-panel {
-  grid-column: 1 / span 2;
-  min-height: 226px;
+  min-width: 0;
+  height: 226px;
+  overflow: visible;
+
+  h1 {
+    font-size: 20px;
+    line-height: 30px;
+  }
 }
 
 .task-panel {
-  grid-column: 3;
-  grid-row: 1;
-  min-height: 226px;
+  height: 226px;
+  padding-bottom: 12px;
+
+  .panel-heading {
+    margin-bottom: 16px;
+  }
 }
 
 h1,
 h2 {
   margin: 0;
   color: var(--g-kit-black-80);
-  font-size: var(--g-kit-font-size-kappa);
+  font-size: 20px;
   font-weight: var(--g-kit-font-weight-bold);
-  line-height: var(--g-kit-line-height-kappa);
+  line-height: 30px;
 }
 
-.metric-row {
-  display: flex;
-  gap: 12px;
+.dashboard-carousel {
+  position: relative;
   margin-top: 16px;
-  overflow: hidden;
+  margin-right: -16px;
+  margin-left: -16px;
 }
 
-.metric-card {
-  display: flex;
-  flex: 1 0 0;
-  flex-direction: column;
-  min-height: 120px;
-  padding: 12px;
+.dashboard-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 267px);
+  gap: 16px;
+  margin: 0 16px;
+}
+
+.dashboard-arrow {
+  position: absolute;
+  z-index: 1;
+  top: 53px;
+  display: grid;
+  width: 40px;
+  height: 40px;
+  padding: 8px;
+  place-items: center;
   border: 1px solid var(--g-kit-black-20);
+  border-radius: 50%;
+  background: var(--g-kit-white);
+  box-shadow: var(--bb-elevation-1);
+  cursor: pointer;
+
+  img {
+    width: 22px;
+    height: 22px;
+    transform: rotate(90deg);
+  }
+
+  &--previous {
+    left: -20px;
+
+    img {
+      transform: rotate(90deg);
+    }
+  }
+
+  &--next {
+    right: -20px;
+
+    img {
+      transform: rotate(-90deg);
+    }
+  }
+}
+
+.dashboard-metric {
+  display: flex;
+  min-width: 0;
+  height: 144px;
+  flex-direction: column;
+  padding: 11px 15px;
   border-radius: 8px;
+  border: 1px solid var(--g-kit-black-20);
+  box-sizing: border-box;
 
-  &--lime {
-    background: var(--g-kit-lime-10);
+  &--egc {
+    border-color: rgba(255, 243, 165, 0.5);
+    background: rgba(255, 249, 237, 0.5);
   }
 
-  &--yellow {
-    background: var(--g-kit-yellow-10);
+  &--osl {
+    border-color: #e9f5e2;
+    background: rgba(230, 246, 234, 0.5);
   }
 
-  &--blue {
-    background: var(--g-kit-blue-10);
+  &--npl {
+    border-color: #f8f7d3;
+    background: rgba(248, 251, 234, 0.5);
   }
 
-  strong {
-    color: var(--g-kit-black-80);
-    font-size: var(--g-kit-font-size-omicron);
-    font-weight: var(--g-kit-font-weight-bold);
+  &--omset {
+    border-color: rgba(232, 244, 251, 0.5);
+    background: rgba(232, 241, 249, 0.5);
   }
 
-  span {
+  &--profitability {
+    border-color: #e6f6f3;
+    background: rgba(230, 246, 243, 0.5);
+  }
+
+  &--gold {
+    border-color: #fbf2e9;
+    background: rgba(251, 242, 233, 0.5);
+  }
+
+  &__heading {
+    display: flex;
+    min-height: 24px;
+    align-items: center;
+    gap: 4px;
+
+    strong {
+      overflow: hidden;
+      color: var(--g-kit-black-80);
+      font-size: 16px;
+      font-weight: var(--g-kit-font-weight-bold);
+      line-height: 24px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    img {
+      width: 20px;
+      height: 20px;
+      flex: 0 0 20px;
+    }
+
+    &--stacked {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 2px;
+
+      strong {
+        max-width: 100%;
+      }
+
+      small {
+        color: var(--g-kit-black-60);
+        font-size: 12px;
+        line-height: 18px;
+      }
+    }
+  }
+
+  &__subtitle {
     margin-top: 4px;
     color: var(--g-kit-black-60);
-    font-size: var(--g-kit-font-size-sigma);
+    font-size: 14px;
+    font-weight: var(--g-kit-font-weight-normal);
+    line-height: 20px;
   }
 
-  small {
+  &__stats {
+    display: flex;
+    width: 200px;
+    max-width: 100%;
+    justify-content: space-between;
     margin-top: auto;
-    color: var(--g-kit-black-50);
-    font-size: var(--g-kit-font-size-omega);
+
+    > div {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    small {
+      color: var(--g-kit-black-50);
+      font-size: 12px;
+      line-height: 18px;
+    }
+
+    b {
+      color: var(--g-kit-black-80);
+      font-size: 20px;
+      font-weight: var(--g-kit-font-weight-bold);
+      line-height: 30px;
+    }
+
+    &--npl {
+      margin-top: auto;
+
+      > div > span {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+    }
   }
 
-  b {
-    color: var(--g-kit-black-80);
-    font-size: var(--g-kit-font-size-kappa);
-    font-weight: var(--g-kit-font-weight-bold);
+  &__osl {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    width: 200px;
+    margin-top: 4px;
+  }
+
+  &__subheading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--g-kit-black-60);
+    font-size: 14px;
+    line-height: 22px;
+  }
+
+  &__footer {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-top: auto;
+
+    small {
+      color: var(--g-kit-black-50);
+      font-size: 12px;
+      line-height: 18px;
+    }
+
+    b {
+      color: var(--g-kit-black-80);
+      font-size: 20px;
+      font-weight: var(--g-kit-font-weight-bold);
+      line-height: 30px;
+      white-space: nowrap;
+    }
+
+    &--large {
+      margin-top: auto;
+
+      b {
+        font-size: 30px;
+        line-height: 44px;
+      }
+
+      &--omset &__footer {
+        width: 144px;
+      }
+
+      &--profitability &__footer {
+        width: 91px;
+      }
+    }
   }
 }
 
-.metric-value {
-  margin-top: 6px;
-  font-size: var(--g-kit-font-size-epsilon) !important;
+.dashboard-badge {
+  display: inline-flex;
+  min-width: 38px;
+  height: 22px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
+  border-radius: 4px;
+  color: var(--g-kit-lime-50);
+  background: var(--g-kit-lime-10);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: var(--g-kit-font-weight-bold);
+  line-height: 18px;
 }
 
-.progress {
+.dashboard-badge--red {
+  color: var(--g-kit-red-50);
+  background: var(--g-kit-red-10);
+}
+
+.dashboard-progress {
+  width: 100%;
   height: 10px;
-  margin: 8px 0;
+  margin-top: 6px;
   overflow: hidden;
   border: 1px solid var(--g-kit-black-40);
   border-radius: 8px;
@@ -505,25 +958,54 @@ h2 {
     display: block;
     width: 99%;
     height: 100%;
-    margin: 0;
     background: var(--g-kit-lime-40);
   }
 }
 
-.metric-pair {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-top: auto;
+.dashboard-gold-prices {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
 
-  small {
-    display: block;
-    margin: 0;
+  > div {
+    display: flex;
+    min-width: 0;
+    flex: 1;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--g-kit-black-60);
+    font-size: 14px;
+    line-height: 20px;
+  }
+
+  img {
+    width: 14px;
+    height: 14px;
   }
 
   b {
-    display: block;
-    margin-top: 3px;
+    display: flex;
+    flex-direction: column;
+    color: var(--g-kit-black-80);
+    font-size: 18px;
+    font-weight: var(--g-kit-font-weight-bold);
+    line-height: 26px;
+    white-space: normal;
+  }
+
+  span {
+    small {
+      color: var(--g-kit-black-60);
+      font-size: 12px;
+      font-weight: var(--g-kit-font-weight-normal);
+      line-height: 16px;
+    }
   }
 }
 
@@ -532,38 +1014,54 @@ h2 {
   align-items: center;
   justify-content: space-between;
 
+  h2 {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
   h2 span {
-    padding: 2px 5px;
-    border-radius: 10px;
+    display: inline-flex;
+    min-width: 24px;
+    height: 18px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 3px;
+    border-radius: 9px;
     color: var(--g-kit-white);
     background: var(--g-kit-lime-50);
-    font-size: var(--g-kit-font-size-omega);
+    font-size: 10px;
+    line-height: 14px;
   }
 
   button {
+    height: 24px;
     padding: 3px 10px;
     border: 1px solid var(--g-kit-lime-50);
     border-radius: 4px;
     color: var(--g-kit-lime-50);
     background: var(--g-kit-white);
     font: inherit;
-    font-size: var(--g-kit-font-size-omega);
+    font-size: 12px;
     font-weight: var(--g-kit-font-weight-bold);
+    line-height: 18px;
     cursor: pointer;
   }
 }
 
 .task-row {
   display: flex;
+  align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding: 16px 0;
+  height: 52px;
+  padding: 0;
   border: 0;
   border-bottom: 1px solid var(--g-kit-black-20);
   color: var(--g-kit-black-80);
   background: transparent;
   font: inherit;
-  font-size: var(--g-kit-font-size-sigma);
+  font-size: 14px;
   text-align: left;
   cursor: pointer;
 
@@ -577,89 +1075,147 @@ h2 {
   }
 }
 
-.module-panel {
-  min-height: 186px;
-
-  &--submission {
-    grid-column: 1;
-    grid-row: 2;
-  }
-
-  &--confirmation {
-    grid-column: 2;
-    grid-row: 2;
-  }
-
-  &--verification {
-    grid-column: 1;
-    grid-row: 3;
-  }
-
-  &--report {
-    grid-column: 3;
-    grid-row: 3;
-  }
-}
-
-.favorite-panel {
-  grid-column: 3;
-  grid-row: 2;
-}
-
-.module-link {
+.entry-feature-grid {
   display: grid;
-  justify-items: center;
-  gap: 8px;
-  width: 104px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: start;
+  gap: 24px;
+}
+
+.entry-feature-column {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.feature-panel {
+  min-width: 0;
+
+  h2 {
+    font-size: 20px;
+    line-height: 30px;
+  }
+
+  &--loan {
+    height: 166px;
+  }
+
+  &--egc {
+    min-height: 306px;
+  }
+
+  &--eform,
+  &--favorite,
+  &--reports {
+    min-height: 186px;
+  }
+
+  &--monitoring {
+    min-height: 366px;
+  }
+}
+
+.feature-menu {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: start;
+  gap: 16px 24px;
   margin-top: 16px;
+}
+
+.feature-menu__item {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
   border: 0;
   color: var(--g-kit-black-80);
   background: transparent;
   font: inherit;
-  font-size: var(--g-kit-font-size-sigma);
-  line-height: var(--g-kit-line-height-sigma);
+  font-size: 14px;
+  font-weight: var(--g-kit-font-weight-normal);
+  line-height: 20px;
   text-align: center;
   cursor: pointer;
-}
-
-.module-icon {
-  display: grid;
-  width: 56px;
-  height: 56px;
-  place-items: center;
 
   img {
     width: 56px;
     height: 56px;
-    object-fit: contain;
+    flex: 0 0 56px;
+  }
+
+  span {
+    width: min(100%, 114px);
   }
 }
 
-.add-menu {
-  display: grid;
-  justify-items: center;
-  gap: 8px;
-  width: 104px;
+.feature-panel--eform .feature-menu {
+  grid-template-columns: repeat(3, 114px);
+}
+
+.feature-panel--favorite {
+  padding-bottom: 21px;
+}
+
+.favorite-menu {
   margin-top: 16px;
+}
+
+.favorite-menu__add {
+  display: flex;
+  width: 104px;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
   border: 0;
   color: var(--g-kit-lime-50);
   background: transparent;
   font: inherit;
-  font-size: var(--g-kit-font-size-sigma);
+  font-size: 14px;
   font-weight: var(--g-kit-font-weight-bold);
-  line-height: var(--g-kit-line-height-sigma);
+  line-height: 20px;
+  text-align: center;
   cursor: pointer;
+}
+
+.favorite-menu__icon {
+  position: relative;
+  display: block;
+  width: 56px;
+  height: 59px;
+  margin: 0 auto;
+
+  &::before {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 56px;
+    height: 56px;
+    border: 1px solid var(--g-kit-black-20);
+    border-radius: 50%;
+    background: var(--g-kit-black-10);
+    content: '';
+    box-sizing: border-box;
+  }
 
   span {
+    position: absolute;
+    top: 0;
+    left: 56px;
     display: grid;
-    width: 20px;
-    height: 20px;
+    width: 24px;
+    height: 24px;
     place-items: center;
     border-radius: 50%;
     color: var(--g-kit-white);
     background: var(--g-kit-lime-50);
     font-size: 20px;
-    line-height: 20px;
+    font-weight: var(--g-kit-font-weight-normal);
+    line-height: 24px;
   }
 }
 
@@ -668,31 +1224,43 @@ footer {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 16px 24px;
+  height: 48px;
+  flex: 0 0 48px;
+  padding: 12px 24px;
   border-top: 1px solid var(--g-kit-black-20);
   color: var(--g-kit-black-60);
   background: var(--g-kit-white);
-  font-size: var(--g-kit-font-size-omicron);
+  font-size: 16px;
   font-weight: var(--g-kit-font-weight-normal);
+  line-height: 24px;
+  box-sizing: border-box;
 }
 
-@media (max-width: 900px) {
-  .entry-grid {
+@media (max-width: 1100px) {
+  .entry-top-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .entry-feature-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .dashboard-panel {
-    grid-column: span 2;
+  .dashboard-metrics {
+    margin: 0 16px;
   }
 
-  .task-panel,
-  .module-panel--submission,
-  .module-panel--confirmation,
-  .module-panel--verification,
-  .module-panel--report,
-  .favorite-panel {
-    grid-column: auto;
-    grid-row: auto;
+  .task-panel {
+    width: 100%;
+  }
+
+  .feature-panel--eform .feature-menu {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .dashboard-metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 

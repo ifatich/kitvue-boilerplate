@@ -27,8 +27,8 @@ const emit = defineEmits<{
 }>()
 
 const model = defineModel<boolean>({ default: false })
-const detailStage = ref(false)
-const hasTriedContinue = ref(false)
+const detailStage = computed(() => Boolean(draft.partner && draft.collateralType))
+const hasTriedSave = ref(false)
 const photoReadError = ref('')
 const draft = reactive({
   rubric: '',
@@ -46,14 +46,21 @@ const partnerOptions = [
   { value: 'Non Galeri 24', label: 'Non Galeri 24' },
 ]
 const collateralTypeOptions = [{ value: 'Emas Batangan', label: 'Emas Batangan' }]
-const brandOptions = [
-  { value: 'Galeri24', label: 'Galeri24' },
+const galeri24BrandOptions = [
+  { value: 'Galeri 24', label: 'Galeri 24' },
+  { value: 'Baby Galeri 24', label: 'Baby Galeri 24' },
+  { value: 'Batik Galeri 24', label: 'Batik Galeri 24' },
+  { value: 'Custom Galeri 24', label: 'Custom Galeri 24' },
+]
+const nonGaleri24BrandOptions = [
   { value: 'Antam', label: 'Antam' },
   { value: 'UBS', label: 'UBS' },
+  { value: 'Lotus Archi', label: 'Lotus Archi' },
+  { value: 'Galeri24', label: 'Galeri24' },
 ]
-const availableBrandOptions = computed(() => draft.partner === 'Non Galeri 24'
-  ? brandOptions.filter((option) => option.value !== 'Galeri24')
-  : brandOptions)
+const availableBrandOptions = computed(() => draft.partner === 'Galeri 24'
+  ? galeri24BrandOptions
+  : nonGaleri24BrandOptions)
 const denominationOptions = [
   { value: '0,500', label: '0,500 gram' },
   { value: '1,000', label: '1,000 gram' },
@@ -72,6 +79,7 @@ const photoPickerIndexes = computed(() => {
   ), -1)
   const slotCount = Math.min(lastFilledIndex + 2, 3)
   return Array.from({ length: Math.max(slotCount, 1) }, (_, index) => index)
+    .sort((left, right) => Number(draft.photos[left] !== null) - Number(draft.photos[right] !== null))
 })
 const estimatedValue = computed(() => {
   const denomination = Number(draft.denomination.replace(',', '.'))
@@ -111,19 +119,22 @@ watch(model, (isOpen) => {
         description: '',
         photos: [null],
       })
-  detailStage.value = Boolean(initial)
-  hasTriedContinue.value = false
+  hasTriedSave.value = false
   photoReadError.value = ''
 })
 
 const continueToDetails = () => {
-  hasTriedContinue.value = true
-  if (!draft.partner || !draft.collateralType) return
-  hasTriedContinue.value = false
-  detailStage.value = true
+  hasTriedSave.value = true
 }
 
 const handlePhotoInput = (file: File | null, index: number) => {
+  if (!file) {
+    const remainingPhotos = draft.photos.filter((photo): photo is string | File => photo !== null)
+    draft.photos.splice(0, draft.photos.length, ...remainingPhotos, null)
+    photoReadError.value = ''
+    return
+  }
+
   draft.photos[index] = file
   photoReadError.value = ''
   while (draft.photos.length > 1 && draft.photos[draft.photos.length - 1] === null) draft.photos.pop()
@@ -144,7 +155,7 @@ const photoAsDataUrl = async (photo: string | File): Promise<string> => {
 }
 
 const saveCollateral = async () => {
-  hasTriedContinue.value = true
+  hasTriedSave.value = true
   const pieces = Number(draft.pieces)
   if (!draft.brand || !draft.denomination || !Number.isInteger(pieces) || pieces <= 0 || !draft.description.trim() || draft.description.trim().length < 10 || availablePhotos.value.length === 0) return
 
@@ -195,8 +206,8 @@ const saveCollateral = async () => {
           item-value="value"
           item-text="label"
           error="Pilih mitra"
-          :required="hasTriedContinue"
-          :is-checked="hasTriedContinue"
+          :required="hasTriedSave"
+          :is-checked="hasTriedSave"
           :use-bottom-sheet="isMobile"
         />
         <GDropdown
@@ -207,8 +218,8 @@ const saveCollateral = async () => {
           item-value="value"
           item-text="label"
           error="Pilih tipe barang jaminan"
-          :required="hasTriedContinue"
-          :is-checked="hasTriedContinue"
+          :required="hasTriedSave"
+          :is-checked="hasTriedSave"
           :use-bottom-sheet="isMobile"
         />
 
@@ -220,9 +231,9 @@ const saveCollateral = async () => {
             :items="availableBrandOptions"
             item-value="value"
             item-text="label"
-            :error="hasTriedContinue && !draft.brand ? 'Pilih merek emas' : ''"
-            :required="hasTriedContinue"
-            :is-checked="hasTriedContinue"
+            :error="hasTriedSave && !draft.brand ? 'Pilih merek emas' : ''"
+            :required="hasTriedSave"
+            :is-checked="hasTriedSave"
             :use-bottom-sheet="isMobile"
           />
           <GDropdown
@@ -232,9 +243,9 @@ const saveCollateral = async () => {
             :items="denominationOptions"
             item-value="value"
             item-text="label"
-            :error="hasTriedContinue && !draft.denomination ? 'Pilih denominasi' : ''"
-            :required="hasTriedContinue"
-            :is-checked="hasTriedContinue"
+            :error="hasTriedSave && !draft.denomination ? 'Pilih denominasi' : ''"
+            :required="hasTriedSave"
+            :is-checked="hasTriedSave"
             :use-bottom-sheet="isMobile"
           />
 
@@ -246,7 +257,7 @@ const saveCollateral = async () => {
               unit="Pcs"
               delimeter="none"
             />
-            <span v-if="hasTriedContinue && !draft.pieces" class="rahn-collateral-validation">
+            <span v-if="hasTriedSave && !draft.pieces" class="rahn-collateral-validation">
               Masukkan jumlah keping
             </span>
           </div>
@@ -276,7 +287,7 @@ const saveCollateral = async () => {
               variant="count"
               :max-length="200"
               placeholder="Masukkan keterangan"
-              :error="hasTriedContinue && draft.description.trim().length < 10 ? 'Minimal 10 karakter.' : ''"
+              :error="hasTriedSave && draft.description.trim().length < 10 ? 'Minimal 10 karakter.' : ''"
             />
             <span class="rahn-collateral-description-hint">Minimal 10 karakter.</span>
           </div>
@@ -293,7 +304,7 @@ const saveCollateral = async () => {
                 @input="(file) => handlePhotoInput(file, index)"
               />
             </div>
-            <span v-if="hasTriedContinue && !availablePhotos.length" class="rahn-collateral-validation">
+            <span v-if="hasTriedSave && !availablePhotos.length" class="rahn-collateral-validation">
               Kolom ini wajib diisi.
             </span>
             <span v-else-if="photoReadError" class="rahn-collateral-validation">{{ photoReadError }}</span>

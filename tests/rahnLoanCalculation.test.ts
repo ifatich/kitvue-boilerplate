@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   calculateRahnLoan,
   getMaximumRahnLoan,
+  getRemainingRahnLoanLimit,
   getRahnLoanTier,
 } from '../src/utils/rahnLoanCalculation'
 
@@ -18,6 +19,13 @@ describe('Rahn loan calculation', () => {
   it('rounds the appraisal-based loan limit down by the tier increment', () => {
     expect(getMaximumRahnLoan(12_000_000)).toBe(11_040_000)
     expect(getMaximumRahnLoan(12_345_678)).toBe(11_350_000)
+  })
+
+  it('subtracts the requested loan from the customer rating maximum', () => {
+    expect(getRemainingRahnLoanLimit(55_800_000, 10_000_000)).toBe(45_800_000)
+    expect(getRemainingRahnLoanLimit(10_000_000, 10_000_000)).toBe(0)
+    expect(getRemainingRahnLoanLimit(0, 10_000_000)).toBeUndefined()
+    expect(getRemainingRahnLoanLimit(55_800_000, 0)).toBeUndefined()
   })
 
   it('calculates rental, fees, and net proceeds using the selected tier', () => {

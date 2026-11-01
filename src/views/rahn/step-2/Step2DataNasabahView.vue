@@ -31,6 +31,12 @@ const auctionCollateralPage = ref(1)
 const customerPage = ref(1)
 
 const toggleNasabahSelection = (customer: (typeof customerSearchResults.value)[number]) => {
+  if (customerSearchResults.value.length === 1) {
+    isNasabahSelected.value = true
+    selectedCustomer.value = customer
+    return
+  }
+
   const isSelected = isNasabahSelected.value && selectedCustomer.value?.cif === customer.cif
   isNasabahSelected.value = !isSelected
   selectedCustomer.value = isSelected ? null : customer

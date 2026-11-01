@@ -13,15 +13,35 @@ import { computed, nextTick, provide, ref, watch } from 'vue'
 import { useMediaQuery } from '@vueuse/core'
 import { useRoute, useRouter } from 'vue-router'
 import { GAlert, GButton, GLoading, GModal, GStepper } from '@/components'
-import submissionCheckCircleBase from '@/assets/figma/rahn-submission-check-layer-circle-base.svg'
-import submissionCheckCircleInner from '@/assets/figma/rahn-submission-check-layer-circle-inner.svg'
-import submissionCheckCircleTop from '@/assets/figma/rahn-submission-check-layer-circle-top.svg'
-import submissionCheckOutline from '@/assets/figma/rahn-submission-check-layer-outline.svg'
-import submissionCheckStarLeft from '@/assets/figma/rahn-submission-check-star-left.svg'
-import submissionCheckStarRight from '@/assets/figma/rahn-submission-check-star-right.svg'
-import submissionCheckTick from '@/assets/figma/rahn-submission-check-layer-tick.svg'
-import submissionWarningTriangle from '@/assets/figma/rahn-submission-warning-triangle.svg'
+import submissionCloseIcon from 'kitvue-public/src/assets/icon/icon-system/icon-cross-fill.svg'
+import {
+  cityOptions,
+  districtOptions,
+  durationOptions as rahnDurationOptions,
+  educationOptions,
+  employmentOptions,
+  fundOptions,
+  genderOptions,
+  identityOptions,
+  incomeOptions,
+  maritalOptions,
+  nationalityOptions,
+  nasabahTypeOptions,
+  ownerOptions,
+  populationOptions,
+  productOptions,
+  provinceOptions,
+  purposeOptions,
+  purposeTransactionOptions as allPurposeTransactionOptions,
+  rahinTypeOptions,
+  relationshipOptions,
+  rubricOptions,
+  subdistrictOptions,
+  tariffOptions,
+  validityOptions,
+} from '@/components/modules/rahn/rahnOptions'
 import SprintModuleShell from '@/components/shared/admin-layout/SprintModuleShell.vue'
+import SubmissionSuccessIllustration from '@/components/shared/illustration/SubmissionSuccessIllustration.vue'
 import MobileStepperBanner from '@/components/shared/stepper/MobileStepperBanner.vue'
 import { type ReadonlyInfoItem } from '@/components/modules/rahn'
 import BeneficialOwnerDetailView from './step-1/BeneficialOwnerDetailView.vue'
@@ -30,10 +50,8 @@ import RahnStep2DataNasabahView from './step-2/Step2DataNasabahView.vue'
 import RahnStep3DataJaminanView from './step-3/Step3DataJaminanView.vue'
 import RahnStep4FasilitasPinjamanView from './step-4/Step4FasilitasPinjamanView.vue'
 import RahnStep5DataReviewView from './step-5/Step5DataReviewView.vue'
-import { type NasabahFields, type RahnApplicationFields, type RahnCollateral, type RahnCustomerSummary, type RahnOption, rahnFlowKey } from './rahnFlow'
+import { type NasabahFields, type RahnApplicationFields, type RahnCollateral, type RahnCustomerSummary, rahnFlowKey } from './rahnFlow'
 import './rahn-form.scss'
-
-type Option = RahnOption
 
 const router = useRouter()
 const route = useRoute()
@@ -139,62 +157,13 @@ const tariffChange = ref('Tidak')
 const tariffRate = ref('')
 const showSubmissionConfirmation = ref(false)
 const submissionModalStep = ref<'confirmation' | 'success'>('confirmation')
-const submissionWarningTriangleUrl = submissionWarningTriangle as unknown as string
-const submissionCheckIllustrationLayers = [
-  { class: 'rahn-submission-modal__check-circle-base', src: submissionCheckCircleBase as unknown as string },
-  { class: 'rahn-submission-modal__check-circle-inner', src: submissionCheckCircleInner as unknown as string },
-  { class: 'rahn-submission-modal__check-circle-top', src: submissionCheckCircleTop as unknown as string },
-  { class: 'rahn-submission-modal__check-tick', src: submissionCheckTick as unknown as string },
-  { class: 'rahn-submission-modal__check-star-left', src: submissionCheckStarLeft as unknown as string },
-  { class: 'rahn-submission-modal__check-star-right', src: submissionCheckStarRight as unknown as string },
-  { class: 'rahn-submission-modal__check-outline', src: submissionCheckOutline as unknown as string },
-]
+const submissionNumber = '1234 5678 9012 3456'
+const submissionCopied = ref(false)
+const submissionCopyError = ref('')
+const submissionCloseIconUrl = submissionCloseIcon as unknown as string
 
-const makeOptions = (labels: string[]): Option[] => labels.map((label) => ({ value: label, label }))
-const nasabahTypeOptions = makeOptions(['Perorangan', 'Badan Usaha'])
-const purposeOptions = makeOptions(['Produktif', 'Konsumtif'])
-const productiveTransactionOptions = makeOptions(['Usaha / Modal Kerja', 'Investasi'])
-const consumptiveTransactionOptions = makeOptions([
-  'Pembelian Kendaraan', 'Ibadah Haji', 'Pembelian Barang / Jasa', 'Wisata Rohani',
-  'Hajatan / Upacara', 'Biaya Pendidikan', 'Lain-Lain',
-])
-const employmentOptions = makeOptions([
-  'Wirausaha/Pedagang', 'Pensiunan', 'Karyawan Swasta', 'Wiraswasta', 'Karyawan BUMN',
-  'Karyawan BUMD', 'Biarawati', 'Peneliti', 'Tentara Nasional Indonesia', 'Kepolisian RI (POLRI)',
-  'Perdagangan', 'Peternak', 'Industri', 'Konstruksi/Engineering', 'Transportasi',
-  'Mengurus Rumah Tangga', 'Karyawan Honorer', 'Buruh Harian Lepas',
-  'Buruh Tani/Perkebunan', 'Buruh Nelayan/Perikanan', 'Petani/Pekebun', 'Buruh Peternakan',
-])
-const rubricOptions = makeOptions([
-  'Kendaraan', 'Barang Elektronik', 'Barang Gudang', 'Barang Kantong', 'Surat Berharga',
-  'Barang Persediaan', 'Efek',
-])
-const tariffOptions = makeOptions([
-  'Sewa Modal Harian', 'Sewa Modal Harian Per 10 Hari', 'Sewa Modal Harian Per 15 Hari',
-])
-const productOptions = makeOptions(['Gadai KCA'])
-const durationOptions = computed(() => makeOptions(['120 Hari']))
-const ownerOptions = makeOptions(['Diri sendiri', 'Beneficial Owner'])
-const rahinTypeOptions = makeOptions(['Perorangan', 'Badan Usaha'])
-const identityOptions = makeOptions(['KTP', 'Paspor'])
-const relationshipOptions = makeOptions(['Suami / Istri', 'Orang Tua/Anak', 'Kakak/Adik', 'Majikan/Karyawan', 'Lainnya'])
-const genderOptions = makeOptions(['Laki-Laki', 'Perempuan'])
-const educationOptions = makeOptions(['SMP', 'SMA', 'D1', 'D2', 'D3 / Akademi', 'S1', 'S2', 'S3', 'Tidak Sekolah'])
-const maritalOptions = makeOptions(['Janda', 'Duda', 'Belum Menikah', 'Menikah'])
-const populationOptions = makeOptions(['Penduduk', 'Bukan Penduduk'])
-const fundOptions = makeOptions(['Gaji', 'Hasil Usaha', 'Pinjaman', 'Hasil Investasi', 'Hibah', 'Warisan'])
-const incomeOptions = makeOptions(['1 - 3 Juta', '3 - 5 Juta', '5 - 10 Juta', '10 - 20 Juta', '20 - 50 Juta', '> 50 Juta'])
-const validityOptions = makeOptions(['Seumur Hidup', 'Sampai Dengan'])
-const nationalityOptions = makeOptions(['WNI', 'WNA'])
-const provinceOptions = makeOptions(['Aceh', 'Bali', 'Banten', 'Bengkulu', 'DI Yogyakarta', 'DKI Jakarta'])
-const cityOptions = makeOptions(['Jakarta Barat', 'Jakarta Pusat', 'Jakarta Selatan', 'Jakarta Timur', 'Jakarta Utara'])
-const districtOptions = makeOptions(['Cempaka Putih', 'Johar Baru', 'Kemayoran', 'Menteng', 'Senen'])
-const subdistrictOptions = makeOptions(['Cikini', 'Gondangdia', 'Kebon Sirih', 'Pegangsaan'])
-const purposeTransactionOptions = computed(() => [
-  ...productiveTransactionOptions,
-  ...consumptiveTransactionOptions,
-])
-const hasBeneficialOwner = computed(() => fields.value.beneficialOwner === 'Beneficial Owner')
+const durationOptions = computed(() => rahnDurationOptions)
+const purposeTransactionOptions = computed(() => allPurposeTransactionOptions)
 const isOwnerResultsVisible = ref(false)
 const ownerMatchFound = ref(false)
 const isOwnerDetailsVisible = ref(false)
@@ -242,16 +211,6 @@ watch(() => fields.value.provinsi, () => {
   fields.value.kota = ''
   fields.value.kecamatan = ''
   fields.value.kelurahan = ''
-})
-watch(() => fields.value.beneficialOwner, () => {
-  isOwnerResultsVisible.value = false
-  isOwnerDetailsVisible.value = false
-  isExistingBeneficialOwnerSelected.value = false
-  fields.value.tipeRahin = ''
-  fields.value.tipeIdentitas = ''
-  fields.value.hubunganBeneficialOwner = ''
-  fields.value.nikBeneficialOwner = ''
-  dukcapilStatus.value = 'idle'
 })
 watch(() => fields.value.tipeIdentitas, (value) => {
   if (value === 'KTP') fields.value.kewarganegaraan = 'WNI'
@@ -338,8 +297,9 @@ const searchNasabah = () => {
       }]
     : []
   isNasabahInquired.value = customerSearchResults.value.length > 0
-  isNasabahSelected.value = false
-  selectedCustomer.value = null
+  const [onlyCustomer] = customerSearchResults.value
+  isNasabahSelected.value = customerSearchResults.value.length === 1
+  selectedCustomer.value = isNasabahSelected.value ? onlyCustomer ?? null : null
 }
 
 watch(() => fieldsNasabah.value.nik, () => {
@@ -363,26 +323,7 @@ const canContinue = computed(() => {
       fields.value.rubrikMarhun && fields.value.skemaTarif && fields.value.produk && fields.value.jangkaWaktu &&
       fields.value.beneficialOwner,
     )
-    const ownerDetailsComplete = !hasBeneficialOwner.value || (
-      (isOwnerDetailsVisible.value || isExistingBeneficialOwnerSelected.value) && Boolean(
-      fields.value.tipeRahin && fields.value.tipeIdentitas && fields.value.nikBeneficialOwner &&
-      (fields.value.tipeIdentitas !== 'KTP' || (fields.value.nikBeneficialOwner.replace(/\D/g, '').length === 16 && dukcapilStatus.value === 'success')) &&
-      fields.value.namaBeneficialOwner && fields.value.namaIbu && fields.value.tempatLahir &&
-      fields.value.tanggalLahir && (ownerAge.value === null || ownerAge.value >= 17) &&
-      (fields.value.masaBerlaku === 'Seumur Hidup' || fields.value.masaBerlakuDate) && fields.value.kodePos && fields.value.provinsi && fields.value.kota &&
-      fields.value.kecamatan && fields.value.kelurahan && isRtValid.value && isRwValid.value && fields.value.alamat &&
-      fields.value.jenisKelamin && fields.value.pendidikan && fields.value.statusPerkawinan && fields.value.kewarganegaraan &&
-      fields.value.handphone && fields.value.tipeKependudukan && fields.value.sumberDana &&
-      fields.value.pekerjaanBeneficialOwner && fields.value.agama && fields.value.penghasilan &&
-      (isOwnerAddressSame.value || (
-        fields.value.kodePosSaatIni && fields.value.provinsiSaatIni && fields.value.kotaSaatIni &&
-        fields.value.kecamatanSaatIni && fields.value.kelurahanSaatIni &&
-        /^\d{3}$/.test(fields.value.rtSaatIni) && /^\d{3}$/.test(fields.value.rwSaatIni) &&
-        fields.value.alamatSaatIni
-      )) &&
-      (fields.value.beneficialOwner !== 'Beneficial Owner' || fields.value.hubunganBeneficialOwner),
-    ))
-    return applicationDataComplete && ownerDetailsComplete
+    return applicationDataComplete
   }
   if (activeStep.value === 2) {
     return isNasabahInquired.value && isNasabahSelected.value
@@ -413,6 +354,19 @@ const nextStep = async () => {
 const confirmSubmission = () => {
   isSubmitted.value = true
   submissionModalStep.value = 'success'
+  submissionCopied.value = false
+  submissionCopyError.value = ''
+}
+
+const copySubmissionNumber = async () => {
+  submissionCopyError.value = ''
+  try {
+    await navigator.clipboard.writeText(submissionNumber)
+    submissionCopied.value = true
+  } catch (error) {
+    console.error('Unable to copy the submission number.', error)
+    submissionCopyError.value = 'Nomor pengajuan tidak dapat disalin. Silakan salin secara manual.'
+  }
 }
 
 const returnToEntryPage = async () => {
@@ -482,11 +436,11 @@ const openBeneficialOwnerDetail = async () => {
   await nextTick()
   isExistingBeneficialOwnerSelected.value = true
   dukcapilStatus.value = identityType === 'KTP' ? 'success' : 'idle'
-  await router.push({ name: 'pengajuan-rahn', params: { view: 'beneficial-owner' } })
+  await router.push({ name: 'pengajuan-gadai', params: { view: 'beneficial-owner' } })
 }
 
 const closeBeneficialOwnerDetail = () => {
-  router.push({ name: 'pengajuan-rahn', params: { view: undefined } })
+  router.push({ name: 'pengajuan-gadai', params: { view: undefined } })
 }
 
 const continueFromBeneficialOwnerDetail = async () => {
@@ -532,7 +486,6 @@ provide(rahnFlowKey, {
   isNasabahInquired,
   isNasabahSearchSubmitted,
   isNasabahSelected,
-  hasBeneficialOwner,
   purposeOptions,
   purposeTransactionOptions,
   employmentOptions,
@@ -667,52 +620,44 @@ provide(rahnFlowKey, {
       `rahn-submission-modal--${submissionModalStep}`,
     ]"
     centered
-    :title="submissionModalStep === 'confirmation' ? 'Perhatian' : 'Data Berhasil Disimpan.'"
+    :title="submissionModalStep === 'confirmation' ? 'Konfirmasi' : ''"
     :show-close-button="false"
   >
     <template #header>
-      <div class="rahn-submission-modal__header">
+      <div v-if="submissionModalStep === 'confirmation'" class="rahn-submission-modal__header">
+        <h2>Konfirmasi</h2>
         <button
           type="button"
           class="rahn-submission-modal__close"
           aria-label="Tutup"
           @click="showSubmissionConfirmation = false"
         >
-          <span aria-hidden="true">&times;</span>
+          <img :src="submissionCloseIconUrl" alt="">
         </button>
-        <div
-          v-if="submissionModalStep === 'confirmation'"
-          class="rahn-submission-modal__illustration rahn-submission-modal__warning-illustration"
-          aria-hidden="true"
-        >
-          <span class="rahn-submission-modal__warning-stripes rahn-submission-modal__warning-stripes--first" />
-          <span class="rahn-submission-modal__warning-stripes rahn-submission-modal__warning-stripes--second" />
-          <img :src="submissionWarningTriangleUrl" alt="">
-        </div>
-        <div
-          v-else
-          class="rahn-submission-modal__illustration rahn-submission-modal__check-illustration"
-          aria-hidden="true"
-        >
-          <img
-            v-for="layer in submissionCheckIllustrationLayers"
-            :key="layer.class"
-            :class="layer.class"
-            :src="layer.src"
-            alt=""
-          >
-        </div>
       </div>
     </template>
     <template #body>
-      <div class="rahn-submission-modal__content">
-        <h2>{{ submissionModalStep === 'confirmation' ? 'Perhatian' : 'Data Berhasil Disimpan.' }}</h2>
-        <p v-if="submissionModalStep === 'confirmation'">
-          Apakah anda yakin untuk melakukan pengajuan?
-        </p>
-        <p v-else>
-          Data pengajuan berhasil disimpan, silakan kembali ke-beranda.
-        </p>
+      <p v-if="submissionModalStep === 'confirmation'" class="rahn-submission-modal__confirmation-copy">
+        Apakah Anda yakin untuk memproses pengajuan ini?
+      </p>
+      <div v-else class="rahn-submission-modal__success-content">
+        <SubmissionSuccessIllustration />
+        <div class="rahn-submission-modal__success-copy">
+          <h2>Pengajuan Berhasil</h2>
+          <p>Pengajuan Rahn berhasil Anda ajukan.</p>
+          <div class="rahn-submission-modal__submission-number">
+            <span class="rahn-submission-modal__submission-number-label">Nomor Pengajuan</span>
+            <div class="rahn-submission-modal__submission-number-field">
+              <span>{{ submissionNumber }}</span>
+              <button type="button" @click="copySubmissionNumber">
+                {{ submissionCopied ? 'Tersalin' : 'Salin' }}
+              </button>
+            </div>
+            <p v-if="submissionCopyError" class="rahn-submission-modal__copy-error" role="alert">
+              {{ submissionCopyError }}
+            </p>
+          </div>
+        </div>
       </div>
     </template>
     <template #footer>
@@ -725,7 +670,7 @@ provide(rahnFlowKey, {
             @click="showSubmissionConfirmation = false"
           />
           <GButton
-            label="Proses Pengajuan"
+            label="Ya, Proses Pengajuan"
             type="primary"
             size="md"
             @click="confirmSubmission"
@@ -744,7 +689,7 @@ provide(rahnFlowKey, {
 
   <GLoading
     v-model="isStepTransitionLoading"
-    class="rahn-loading"
+    class="kitvue-loading rahn-loading"
     :count="0"
     title="Memproses Data"
     persistent
@@ -765,165 +710,104 @@ provide(rahnFlowKey, {
   }
 
   .modal-content {
-    display: flex;
-    flex-direction: column;
     overflow: hidden;
     border: 0;
     border-radius: 12px;
   }
 
-  &.rahn-submission-modal--confirmation .modal-content {
-    min-height: 452px;
-  }
+}
 
-  &.rahn-submission-modal--success .modal-content {
-    min-height: 396px;
-  }
+.rahn-submission-modal--confirmation .modal-header {
+  padding: 16px 16px 15px;
+}
 
-  .modal-header {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    padding: 16px 16px 0;
-    border: 0;
-  }
+.rahn-submission-modal--confirmation.modal-general.border-bottom .modal-header {
+  border-bottom: 1px solid var(--g-kit-black-20, #eeeeef);
+}
 
-  &.modal-general.border-bottom .modal-header {
-    border-bottom: 0;
-  }
+.rahn-submission-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 26px;
 
-  .rahn-submission-modal__header {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    width: 100%;
-  }
-
-  .rahn-submission-modal__close {
-    display: inline-flex;
-    width: 24px;
-    height: 24px;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    border: 0;
-    background: transparent;
-    color: var(--g-kit-black-60, #58585b);
-    font-size: 24px;
-    line-height: 1;
-    cursor: pointer;
-  }
-
-  .rahn-submission-modal__illustration {
-    position: relative;
-    display: block;
-    width: 156px;
-    height: 156px;
-    margin: 10px auto 0;
-    flex: 0 0 156px;
-  }
-
-  .rahn-submission-modal__warning-stripes {
-    position: absolute;
-    top: 43.74px;
-    left: 4px;
-    width: 148px;
-    height: 24px;
-    background: repeating-linear-gradient(
-      30deg,
-      transparent 0 17px,
-      var(--g-kit-black-20, #eeeeef) 17px 31px
-    );
-    clip-path: inset(0);
-  }
-
-  .rahn-submission-modal__warning-stripes--first {
-    transform: rotate(-18.41deg);
-  }
-
-  .rahn-submission-modal__warning-stripes--second {
-    transform: rotate(21.8deg);
-  }
-
-  .rahn-submission-modal__warning-illustration > img {
-    position: absolute;
-    top: 11.4px;
-    left: 4px;
-    display: block;
-    width: 148px;
-    height: 133.87px;
-    max-width: none;
-  }
-
-  .rahn-submission-modal__check-illustration > img {
-    position: absolute;
-    display: block;
-    max-width: none;
-  }
-
-  .rahn-submission-modal__check-circle-base {
-    top: 4px;
-    left: 5.16px;
-    width: 147.08px;
-    height: 147.08px;
-  }
-
-  .rahn-submission-modal__check-circle-inner {
-    top: 21.83px;
-    left: 20.76px;
-    width: 114.78px;
-    height: 114.78px;
-  }
-
-  .rahn-submission-modal__check-circle-top {
-    top: 16.27px;
-    left: 20.77px;
-    width: 114.4px;
-    height: 114.4px;
-  }
-
-  .rahn-submission-modal__check-tick {
-    top: 51.89px;
-    left: 47.52px;
-    width: 62.4px;
-    height: 55.7165px;
-  }
-
-  .rahn-submission-modal__check-star-left {
-    top: 108.72px;
-    left: 0.72px;
-    width: 25.06px;
-    height: 25.06px;
-  }
-
-  .rahn-submission-modal__check-star-right {
-    top: 11.79px;
-    left: 122.15px;
-    width: 34px;
-    height: 33.98px;
-  }
-
-  .rahn-submission-modal__check-outline {
-    top: 11.31px;
-    left: 0.22px;
-    width: 156.44px;
-    height: 123px;
-  }
-
-  .modal-body {
-    padding: 24px 16px 0;
+  h2 {
+    margin: 0;
     color: var(--g-kit-black-80, #252528);
+    font-size: 18px;
+    font-weight: var(--g-kit-font-weight-bold, 800);
+    line-height: 26px;
   }
+}
 
-  .rahn-submission-modal__content {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-    text-align: left;
+.rahn-submission-modal__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.rahn-submission-modal--confirmation .modal-body {
+  padding: 16px 16px 0;
+}
+
+.rahn-submission-modal__confirmation-copy {
+  margin: 0;
+  color: var(--g-kit-black-60, #58585b);
+  font-size: 14px;
+  font-weight: var(--g-kit-font-weight-normal, 600);
+  line-height: 20px;
+}
+
+.rahn-submission-modal--confirmation .modal-footer {
+  padding: 16px;
+  border: 0;
+}
+
+.rahn-submission-modal__actions {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin: 0;
+  gap: 8px;
+
+  .btn {
+    width: 100%;
+    height: 40px;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: var(--g-kit-font-weight-bold, 800);
+    line-height: 24px;
   }
+}
 
-  .rahn-submission-modal__content h2 {
+.rahn-submission-modal--success .modal-header {
+  display: none;
+}
+
+.rahn-submission-modal--success .modal-body {
+  padding: 50px 16px 0;
+}
+
+.rahn-submission-modal__success-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  gap: 24px;
+}
+
+.rahn-submission-modal__success-copy {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 8px;
+
+  h2 {
     margin: 0;
     color: var(--g-kit-black-80, #252528);
     font-size: 20px;
@@ -931,37 +815,71 @@ provide(rahnFlowKey, {
     line-height: 30px;
   }
 
-  .rahn-submission-modal__content p {
+  > p {
     margin: 0;
     color: var(--g-kit-black-60, #58585b);
     font-size: 16px;
     font-weight: var(--g-kit-font-weight-normal, 600);
     line-height: 24px;
   }
+}
 
-  .modal-footer {
-    display: flex;
-    flex-direction: column;
-    margin-top: auto;
-    padding: 24px 16px 16px;
-    border: 0;
+.rahn-submission-modal__submission-number {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 4px;
+}
 
-    .rahn-submission-modal__actions {
-      display: flex;
-      flex-direction: column;
-      width: 100%;
-      margin: 0;
-      gap: 16px;
-    }
+.rahn-submission-modal__submission-number-label {
+  color: var(--g-kit-black-60, #58585b);
+  font-size: 14px;
+  font-weight: var(--g-kit-font-weight-bold, 800);
+  line-height: 20px;
+}
 
-    .btn {
-      width: 100%;
-      height: 40px;
-      border-radius: 6px;
-      font-size: 16px;
-      font-weight: var(--g-kit-font-weight-bold, 800);
-      line-height: 24px;
-    }
+.rahn-submission-modal__submission-number-field {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  border: 1px solid var(--g-kit-lime-10, #e6f6ea);
+  border-radius: 6px;
+  background: var(--g-kit-lime-10, #e6f6ea);
+  gap: 8px;
+
+  span {
+    min-width: 0;
+    color: var(--g-kit-black-60, #58585b);
+    font-size: 16px;
+    font-weight: var(--g-kit-font-weight-normal, 600);
+    line-height: 24px;
   }
+
+  button {
+    flex: 0 0 80px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--g-kit-lime-50, #00ab4e);
+    font-size: 16px;
+    font-weight: var(--g-kit-font-weight-bold, 800);
+    line-height: 24px;
+    text-align: right;
+    cursor: pointer;
+  }
+}
+
+.rahn-submission-modal__copy-error {
+  margin: 0;
+  color: var(--g-kit-red-50, #ae1e22);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.rahn-submission-modal--success .modal-footer {
+  padding: 24px 16px 16px;
+  border: 0;
 }
 </style>

@@ -24,10 +24,10 @@ const router = createRouter({
       alias: ['/dashboard/login'],
     },
     {
-      path: '/pengajuan-rahn/:view?',
-      name: 'pengajuan-rahn',
+      path: '/pengajuan-gadai/:view?',
+      name: 'pengajuan-gadai',
       component: () => import('../views/rahn/PengajuanRahnView.vue'),
-      alias: ['/pengajuan/rahn/:view?', '/rahn/:view?'],
+      alias: ['/pengajuan-rahn/:view?', '/pengajuan/rahn/:view?', '/rahn/:view?'],
       meta: { requiresAuth: true },
     },
     {

@@ -7,6 +7,7 @@ import router from './router'
 // Kitvue standard styling & Pegadaian tokens
 import 'kitvue-public/src/assets/scss/g-kit.scss'
 import './assets/styles/tokens.css'
+import './assets/styles/loading-overlay.scss'
 
 // Polyfill legacy webpack require() used in kitvue components
 declare global {
