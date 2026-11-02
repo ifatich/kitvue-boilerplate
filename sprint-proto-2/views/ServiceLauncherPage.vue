@@ -34,6 +34,8 @@ import verificationIconDocument from '../assets/notifications/verification-docum
 import verificationIconDetail from '../assets/notifications/verification-detail.svg'
 import verificationIconHand from '../assets/notifications/verification-hand.svg'
 import verificationIconBadge from '../assets/notifications/verification-badge.svg'
+import infoCreditDueIcon from '../assets/notifications/info-credit-due.png'
+import infoCashReportIcon from '../assets/notifications/info-cash-report.png'
 
 type SidebarRoleId = 'kasir' | 'pinca' | 'penaksir'
 const chevronRightIconUrl = chevronRightIcon as unknown as string
@@ -314,6 +316,11 @@ function normalizeMenuSearch(value: string) {
   return value.trim().toLocaleLowerCase('id-ID').replace(/\s+/g, ' ')
 }
 
+function focusNotificationTab(tab: 'tugasku' | 'informasi') {
+  activeNotifTab.value = tab
+  document.getElementById(`proto2-notif-tab-${tab}`)?.focus()
+}
+
 // Tasks matching the Figma dashboard list
 const taskItems = [
   { title: 'Pinjaman Rahn', count: 1 },
@@ -325,57 +332,140 @@ const taskItems = [
   { title: 'Titipan Emas Syariah', count: 0 },
 ]
 
-// Notification feed items matching Figma Notifikasi card
-const notificationFeed = [
+type NotificationItem = {
+  id: string
+  parts: { text: string; strong?: boolean }[]
+  time: string
+  isUnread: boolean
+  icon: 'slip-gaji' | 'claim-management' | 'recommendation' | 'verification' | 'activity' | 'info-credit-due' | 'info-cash-report'
+}
+
+const notificationFeed: NotificationItem[] = [
   {
-    id: 1,
-    titlePrefix: 'Segera lakukan ',
-    action: 'Pembayaran Titipan Emas',
-    userText: ' atas nama ',
-    userName: 'Udin Nganga',
-    detailText: ' dengan jenis transaksi ',
-    detailValue: 'Pembayaran Awal',
+    id: 'initial-payment',
+    parts: [
+      { text: 'Segera lakukan ' },
+      { text: 'Pembayaran Titipan Emas', strong: true },
+      { text: ' atas nama ' },
+      { text: 'Udin Nganga', strong: true },
+      { text: ' dengan jenis transaksi ' },
+      { text: 'Pembayaran Awal', strong: true },
+      { text: '.' },
+    ],
     time: '5 Oktober 2020 | 10:00 WIB',
     isUnread: true,
     icon: 'slip-gaji',
   },
   {
-    id: 2,
-    titlePrefix: 'Segera ',
-    action: 'Serah Terima Barang Titipan Emas',
-    userText: ' atas nama ',
-    userName: 'Annisya Dhelisya',
-    detailText: ' karena ',
-    detailValue: 'Perlu Taksir Ulang',
+    id: 'item-handover',
+    parts: [
+      { text: 'Segera ' },
+      { text: 'Serah Terima Barang Titipan Emas', strong: true },
+      { text: ' atas nama ' },
+      { text: 'Annisya Dhelistya', strong: true },
+      { text: ' karena ' },
+      { text: 'Perlu Taksir Ulang', strong: true },
+      { text: '.' },
+    ],
     time: '5 Oktober 2020 | 10:00 WIB',
     isUnread: false,
     icon: 'claim-management',
   },
   {
-    id: 3,
-    titlePrefix: 'Segera tindaklanjuti ',
-    action: 'Rekomendasi Pinjaman Karyawan',
-    userText: ' dengan produk ',
-    userName: 'Arrum Multiguna Internal',
-    detailText: ' atas nama nasabah ',
-    detailValue: 'Annisya Dhelisya',
+    id: 'employee-loan-recommendation',
+    parts: [
+      { text: 'Segera tindak lanjuti ' },
+      { text: 'Rekomendasi Pinjaman Karyawan', strong: true },
+      { text: ' dengan produk ' },
+      { text: 'Arrum Multiguna Internal', strong: true },
+      { text: ' atas nama nasabah ' },
+      { text: 'Annisya Dhelistya', strong: true },
+      { text: '.' },
+    ],
     time: '27 Jan 2026 | 10:00 WIB',
     isUnread: false,
     icon: 'recommendation',
   },
   {
-    id: 4,
-    titlePrefix: 'Segera lakukan ',
-    action: 'Verifikasi Program UMK',
-    userText: ' untuk mitra ',
-    userName: 'Thoriq Sadad',
-    detailText: ' dengan nomor pengajuan ',
-    detailValue: 'PJ-250515-000123',
+    id: 'umk-verification',
+    parts: [
+      { text: 'Segera lakukan ' },
+      { text: 'Verifikasi Program UMK', strong: true },
+      { text: ' untuk mitra ' },
+      { text: 'Thoriq Sadad', strong: true },
+      { text: ' dengan nomor pengajuan ' },
+      { text: 'PJ-250515-000123', strong: true },
+      { text: '.' },
+    ],
     time: '27 Jan 2026 | 10:00 WIB',
     isUnread: false,
     icon: 'verification',
   },
+  {
+    id: 'umk-post-credit-activity',
+    parts: [
+      { text: 'Segera lakukan ' },
+      { text: 'Aktivitas Pasca Kredit Program UMK', strong: true },
+      { text: ' untuk mitra ' },
+      { text: 'Thoriq Sadad', strong: true },
+      { text: ' dengan jenis aktivitas ' },
+      { text: 'Pembinaan Kredit', strong: true },
+      { text: '.' },
+    ],
+    time: '27 Jan 2026 | 10:00 WIB',
+    isUnread: false,
+    icon: 'activity',
+  },
 ]
+
+const informationFeed: NotificationItem[] = [
+  {
+    id: 'credit-due-tomorrow',
+    parts: [
+      { text: 'Nasabah dengan nomor kredit ' },
+      { text: '1234 5678 9012 3456 7890', strong: true },
+      { text: ' sudah memasuki tanggal jatuh tempo 1 hari lagi.' },
+    ],
+    time: '4 Maret 2024 | 10:00 WIB',
+    isUnread: true,
+    icon: 'info-credit-due',
+  },
+  {
+    id: 'cash-balance-report',
+    parts: [
+      { text: 'Laporkan saldo kas dan bank harian setelah jam tutup operasional.' },
+    ],
+    time: '4 Maret 2024 | 15:00 WIB',
+    isUnread: true,
+    icon: 'info-cash-report',
+  },
+  {
+    id: 'credit-due-tomorrow-second',
+    parts: [
+      { text: 'Nasabah dengan nomor kredit ' },
+      { text: '1234 5678 9012 3456 7890', strong: true },
+      { text: ' sudah memasuki tanggal jatuh tempo 1 hari lagi.' },
+    ],
+    time: '4 Maret 2024 | 10:00 WIB',
+    isUnread: false,
+    icon: 'info-credit-due',
+  },
+  {
+    id: 'credit-due-tomorrow-third',
+    parts: [
+      { text: 'Nasabah dengan nomor kredit ' },
+      { text: '1234 5678 9012 3456 7890', strong: true },
+      { text: ' sudah memasuki tanggal jatuh tempo 1 hari lagi.' },
+    ],
+    time: '4 Maret 2024 | 10:00 WIB',
+    isUnread: false,
+    icon: 'info-credit-due',
+  },
+]
+
+const activeNotifications = computed(() => (
+  activeNotifTab.value === 'tugasku' ? notificationFeed : informationFeed
+))
 
 const trackRef = ref<HTMLElement | null>(null)
 
@@ -847,17 +937,28 @@ function handleDrawerItemClick(groupLabel: string, item: string) {
                 </div>
 
                 <!-- Tabs: Tugasku (1) vs Informasi -->
-                <div class="proto2-notif-tabs">
-                  <button class="proto2-notif-tab" :class="{ 'proto2-notif-tab--active': activeNotifTab === 'tugasku' }"
-                    type="button" @click="activeNotifTab = 'tugasku'">
+                <div class="proto2-notif-tabs" role="tablist" aria-label="Jenis notifikasi">
+                  <button id="proto2-notif-tab-tugasku" class="proto2-notif-tab"
+                    :class="{ 'proto2-notif-tab--active': activeNotifTab === 'tugasku' }"
+                    type="button" role="tab" aria-controls="proto2-notif-panel"
+                    :aria-selected="activeNotifTab === 'tugasku'"
+                    :tabindex="activeNotifTab === 'tugasku' ? 0 : -1"
+                    @click="activeNotifTab = 'tugasku'" @keydown.right.prevent="focusNotificationTab('informasi')"
+                    @keydown.left.prevent="focusNotificationTab('informasi')">
                     <span>Tugasku</span>
-                    <span class="proto2-notif-badge">5</span>
+                    <span class="proto2-notif-badge"
+                      :class="{ 'proto2-notif-badge--active': activeNotifTab === 'tugasku' }">{{ notificationFeed.length }}</span>
                   </button>
-                  <button class="proto2-notif-tab"
+                  <button id="proto2-notif-tab-informasi" class="proto2-notif-tab"
                     :class="{ 'proto2-notif-tab--active': activeNotifTab === 'informasi' }" type="button"
-                    @click="activeNotifTab = 'informasi'">
+                    role="tab" aria-controls="proto2-notif-panel"
+                    :aria-selected="activeNotifTab === 'informasi'"
+                    :tabindex="activeNotifTab === 'informasi' ? 0 : -1"
+                    @click="activeNotifTab = 'informasi'" @keydown.right.prevent="focusNotificationTab('tugasku')"
+                    @keydown.left.prevent="focusNotificationTab('tugasku')">
                     <span>Informasi</span>
-                    <span class="proto2-notif-badge proto2-notif-badge--muted">4</span>
+                    <span class="proto2-notif-badge"
+                      :class="{ 'proto2-notif-badge--active': activeNotifTab === 'informasi' }">{{ informationFeed.length }}</span>
                   </button>
                 </div>
 
@@ -870,9 +971,14 @@ function handleDrawerItemClick(groupLabel: string, item: string) {
                 </div>
 
                 <!-- Notification Item Feed -->
-                <div class="proto2-notif-list">
-                  <div v-for="item in notificationFeed" :key="item.id" class="proto2-notif-item"
-                    :class="{ 'proto2-notif-item--highlight': item.isUnread }">
+                <div id="proto2-notif-panel" class="proto2-notif-list"
+                  :class="{ 'proto2-notif-list--information': activeNotifTab === 'informasi' }" role="tabpanel"
+                  :aria-labelledby="`proto2-notif-tab-${activeNotifTab}`">
+                  <div v-for="item in activeNotifications" :key="item.id" class="proto2-notif-item"
+                    :class="{
+                      'proto2-notif-item--highlight': item.isUnread,
+                      'proto2-notif-item--information': activeNotifTab === 'informasi',
+                    }">
                     <!-- Icon Box (40x40) -->
                     <div class="proto2-notif-icon" aria-hidden="true">
                       <img v-if="item.icon === 'slip-gaji'" :src="slipGajiIcon" alt=""
@@ -883,24 +989,27 @@ function handleDrawerItemClick(groupLabel: string, item: string) {
                         <img :src="recommendationIconBase" alt="" class="proto2-notif-icon__full" />
                         <img :src="recommendationIconOverlay" alt="" class="proto2-notif-icon__recommendation" />
                       </template>
-                      <template v-else>
+                      <template v-else-if="item.icon === 'verification' || item.icon === 'activity'">
                         <img :src="verificationIconBase" alt="" class="proto2-notif-icon__full" />
                         <img :src="verificationIconDocument" alt="" class="proto2-notif-icon__full" />
                         <img :src="verificationIconDetail" alt="" class="proto2-notif-icon__verification-detail" />
                         <img :src="verificationIconHand" alt="" class="proto2-notif-icon__verification-hand" />
-                        <img :src="verificationIconBadge" alt="" class="proto2-notif-icon__verification-badge" />
+                        <img v-if="item.icon === 'verification'" :src="verificationIconBadge" alt=""
+                          class="proto2-notif-icon__verification-badge" />
+                      </template>
+                      <template v-else>
+                        <img :src="item.icon === 'info-credit-due' ? infoCreditDueIcon : infoCashReportIcon" alt=""
+                          class="proto2-notif-icon__full" />
                       </template>
                     </div>
                     <!-- Content Body -->
                     <div class="proto2-notif-copy">
-                      <div>
-                        <span>{{ item.titlePrefix }}</span>
-                        <strong>{{ item.action }}</strong>
-                        <span>{{ item.userText }}</span>
-                        <strong>{{ item.userName }}</strong>
-                        <span>{{ item.detailText }}</span>
-                        <strong>{{ item.detailValue }}</strong>.
-                      </div>
+                      <p>
+                        <template v-for="(part, index) in item.parts" :key="`${item.id}-${index}`">
+                          <strong v-if="part.strong">{{ part.text }}</strong>
+                          <span v-else>{{ part.text }}</span>
+                        </template>
+                      </p>
                       <span>{{ item.time }}</span>
                     </div>
                   </div>
@@ -950,9 +1059,8 @@ function handleDrawerItemClick(groupLabel: string, item: string) {
                         fill="#e6f6ea" fill-opacity=".5" />
                       <path d="M0 50 L82 77 L164 159 L246 112 L328 112 L410 77 L500 50" fill="none"
                         stroke="#00ab4e" stroke-width="2" />
-                      <circle cx="500" cy="50" r="5" fill="#00ab4e" />
-                      <circle cx="500" cy="50" r="9" fill="none" stroke="#00ab4e" stroke-opacity=".3" stroke-width="2" />
                     </svg>
+                    <span class="proto2-chart-marker" aria-hidden="true" />
                     <div class="proto2-chart-tooltip">
                       <span>07 Okt 2026</span>
                       <strong>Rp 75 M</strong>

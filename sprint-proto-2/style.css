@@ -1081,7 +1081,7 @@ button {
   align-items: center;
   justify-content: center;
   width: 18px;
-  height: 22px;
+  height: 18px;
   border-radius: 50%;
   background: var(--g-kit-red-50);
   color: var(--g-kit-white);
@@ -1268,6 +1268,18 @@ button {
   overflow: visible;
 }
 
+.proto2-chart-marker {
+  position: absolute;
+  top: calc(22.7273% - 5px);
+  right: -5px;
+  z-index: 1;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--g-kit-lime-50);
+  box-shadow: 0 0 0 4px rgb(0 171 78 / 30%);
+}
+
 .proto2-chart-tooltip {
   position: absolute;
   top: 42px;
@@ -1344,9 +1356,9 @@ button {
   right: -20px;
 }
 
-/* Notifikasi Card (Figma: height ~458px, Tab Tugasku & Informasi) */
+/* Notifikasi Card (Figma variants: Tugasku & Informasi) */
 .proto2-notif-card {
-  height: 458px;
+  height: auto;
   background: var(--g-kit-white);
   border-radius: 12px;
   box-shadow: var(--g-kit-shadow-notification);
@@ -1357,9 +1369,9 @@ button {
 
 .proto2-notif-header {
   display: flex;
-  flex: 0 0 58px;
+  flex: 0 0 auto;
   align-items: center;
-  padding: 12px 16px 16px;
+  padding: 16px;
   border-bottom: 1px solid var(--g-kit-black-20);
 }
 
@@ -1368,18 +1380,17 @@ button {
   color: var(--g-kit-black-80);
   font-size: 18px;
   font-weight: var(--g-kit-font-weight-bold);
-  line-height: 30px;
+  line-height: 26px;
 }
 
 .proto2-notif-tabs {
   display: flex;
-  flex: 0 0 56px;
-  padding: 0 20px;
+  flex: 0 0 auto;
   border-bottom: 1px solid var(--g-kit-black-20);
 }
 
 .proto2-notif-tab {
-  flex: 1 1 auto;
+  flex: 1 1 50%;
   height: 56px;
   border: 0;
   background: transparent;
@@ -1403,20 +1414,21 @@ button {
 
 .proto2-notif-badge {
   display: inline-flex;
+  flex: 0 0 auto;
   align-items: center;
   justify-content: center;
-  width: 18px;
+  min-width: 18px;
   height: 18px;
-  padding: 0;
-  background: var(--g-kit-lime-50);
+  padding: 2px 3px;
+  border-radius: 10px;
+  background: var(--g-kit-black-50);
   color: var(--g-kit-white);
   font-size: 10px;
   font-weight: var(--g-kit-font-weight-normal);
-  border-radius: 50%;
 }
 
-.proto2-notif-badge--muted {
-  background: var(--g-kit-black-50);
+.proto2-notif-badge--active {
+  background: var(--g-kit-lime-50);
 }
 
 .proto2-notif-sort {
@@ -1434,22 +1446,31 @@ button {
 
 .proto2-notif-list {
   display: flex;
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   flex-direction: column;
   min-height: 0;
-  overflow: hidden;
+  overflow-y: auto;
+}
+
+.proto2-notif-list--information {
+  padding-bottom: 24px;
 }
 
 .proto2-notif-item {
   display: flex;
-  flex: 0 0 77px;
+  flex: 0 0 auto;
   align-items: flex-start;
   gap: 12px;
-  min-height: 0;
+  min-height: 76px;
   padding: 8px 16px;
   border-bottom: 1px solid var(--g-kit-black-20);
   background: var(--g-kit-white);
   transition: background 0.15s ease;
+}
+
+.proto2-notif-item--information {
+  padding-top: 10px;
+  padding-bottom: 10px;
 }
 
 .proto2-notif-item--highlight {
@@ -1523,6 +1544,10 @@ button {
 
 .proto2-notif-copy strong {
   font-weight: var(--g-kit-font-weight-bold);
+}
+
+.proto2-notif-copy p {
+  margin: 0;
 }
 
 .proto2-notif-copy > span {
