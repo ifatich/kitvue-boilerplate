@@ -13,6 +13,7 @@ const PROTOTYPE_ROLE_BY_EMAIL: Record<string, PrototypeRole> = {
   'pinca@pegadaian.co.id': 'Pinca',
   'pimpinan.cabang@pegadaian.co.id': 'Pinca',
   'penaksir@pegadaian.co.id': 'Penaksir',
+  'cro@pegadaian.co.id': 'CRO',
 }
 
 const DEFAULT_MOCK_USER: AdminUserAccount = {

@@ -276,96 +276,7 @@ const roleGroup = (title: string, labels: string[]): FeatureGroup => ({
   })),
 })
 
-export const featureColumnsByRole: Record<PrototypeRole, FeatureGroup[][]> = {
-  Kasir: [
-    [
-      roleGroup('Prospek', ['Prospek Baru', 'Daftar Prospek']),
-      roleGroup('Pinjaman Non Gadai', ['Daftar Pencairan', 'Pencairan Non Gadai']),
-      roleGroup('Restrukturisasi Pinjaman', ['Pencairan Restrukturisasi']),
-      roleGroup('Pembinaan Kredit', ['Daftar Pembinaan', 'Aktivitas Pembinaan', 'Riwayat Pembinaan']),
-      roleGroup('Penanganan Pinjaman Bermasalah', [
-        'Pelunasan Pinjaman Bermasalah',
-        'Pengajuan Penjualan Lelang Pinjaman Bermasalah',
-        'Penjualan Lelang Pinjaman Bermasalah',
-      ]),
-      roleGroup('Utilitas', ['Tes Print']),
-      roleGroup('Manajemen Surat Bukti Gadai/Rahn', [
-        'Pengajuan Cetak Ulang SBG/SBR',
-        'Pembaruan Nomor Seri SBG/SBR',
-      ]),
-      roleGroup('Titipan Emas Syariah', [
-        'Pengajuan Titipan Emas Syariah',
-        'Pembayaran dan Pelunasan Titipan Emas Syariah',
-        'Cetak Dokumen Titipan Emas Syariah',
-      ]),
-      roleGroup('Pasca Kredit PUMK', [
-        'Realisasi Restrukturisasi PUMK',
-        'Realisasi Reklasifikasi PUMK',
-      ]),
-      roleGroup('Pinjaman Karyawan', ['Pengajuan dan Konfirmasi Pinjaman Karyawan']),
-    ],
-    [
-      roleGroup('Pinjaman Rahn', ['Pengajuan Rahn', 'Pencairan Rahn']),
-      roleGroup('Pinjaman Gadai', [
-        'Pengajuan Gadai Dari Rumah',
-        'Pengajuan Gadai',
-        'Pencairan Gadai',
-      ]),
-      roleGroup('E-Form', ['Proses Transaksi', 'Manajemen Transaksi']),
-      roleGroup('EGC / OGC', [
-        'Input Data EGC/OGC',
-        'EGC Leads Reaktivasi',
-        'Daftar Leads EGC - CRM',
-        'Follow Up EGC - CRM',
-      ]),
-      roleGroup('Deposito Emas', [
-        'Pengajuan Pembukaan Deposito Emas',
-        'Konfirmasi Pembukaan Deposito Emas',
-        'Pengajuan Penarikan Deposito Emas',
-        'Konfirmasi Penarikan Deposito Emas',
-        'Pengajuan Pembatalan/Perpanjangan Otomatis',
-        'Konfirmasi Pembatalan/Perpanjangan Otomatis',
-        'Cetak Dokumen Deposito Emas',
-      ]),
-      roleGroup('Program UMK (PUMK)', [
-        'Permohonan Dana Program UMK',
-        'Pembayaran Angsuran dan Pelunasan PUMK',
-        'Pembayaran PUMK Belum Teridentifikasi',
-        'Pengembalian Kelebihan Bayar PUMK',
-        'Pelaporan Harian Kas dan Bank PUMK',
-        'Transfer Modal Kerja (RAK)',
-        'Transaksi Kas',
-        'Inquiry Jurnal Transaksi',
-      ]),
-    ],
-    [
-      roleGroup('Laporan', [
-        'OSL Rata Harian',
-        'Realisasi KPI',
-        'Saldo List Gadai/Rahn',
-        'Saldo List Mikro',
-        'Dashboard Kinerja Non Gadai',
-        'Dashboard Prospek Non Gadai',
-        'Riwayat EGC (Reaktivasi)',
-        'Riwayat EGC (CRM)',
-        'Portofolio Kredit',
-        'Daftar Pinjaman',
-        'Laporan Rekening Deposito Emas',
-        'Data Mitra Program UMK',
-        'Dashboard Program UMK',
-      ]),
-      roleGroup('Monitoring', [
-        'Laporan Aktivitas Gadai Dari Rumah',
-        'Laporan Restrukturisasi',
-        'Laporan Penyelesaian Pinjaman Bermasalah',
-        'Monitoring Aktivitas Deposito Emas',
-        'Monitoring Titipan Emas Syariah',
-        'Monitoring Program UMK',
-        'Monitoring Arrum Multiguna Internal',
-      ]),
-    ],
-  ],
-  Pinca: [
+const pincaFeatureColumns: FeatureGroup[][] = [
     [
       roleGroup('Pinjaman Rahn', ['Pengajuan Rahn', 'Persetujuan Rahn']),
       roleGroup('Pinjaman Gadai', [
@@ -464,7 +375,99 @@ export const featureColumnsByRole: Record<PrototypeRole, FeatureGroup[][]> = {
         'Monitoring Kinerja Pinjaman',
       ]),
     ],
+  ]
+
+export const featureColumnsByRole: Record<PrototypeRole, FeatureGroup[][]> = {
+  Kasir: [
+    [
+      roleGroup('Prospek', ['Prospek Baru', 'Daftar Prospek']),
+      roleGroup('Pinjaman Non Gadai', ['Daftar Pencairan', 'Pencairan Non Gadai']),
+      roleGroup('Restrukturisasi Pinjaman', ['Pencairan Restrukturisasi']),
+      roleGroup('Pembinaan Kredit', ['Daftar Pembinaan', 'Aktivitas Pembinaan', 'Riwayat Pembinaan']),
+      roleGroup('Penanganan Pinjaman Bermasalah', [
+        'Pelunasan Pinjaman Bermasalah',
+        'Pengajuan Penjualan Lelang Pinjaman Bermasalah',
+        'Penjualan Lelang Pinjaman Bermasalah',
+      ]),
+      roleGroup('Utilitas', ['Tes Print']),
+      roleGroup('Manajemen Surat Bukti Gadai/Rahn', [
+        'Pengajuan Cetak Ulang SBG/SBR',
+        'Pembaruan Nomor Seri SBG/SBR',
+      ]),
+      roleGroup('Titipan Emas Syariah', [
+        'Pengajuan Titipan Emas Syariah',
+        'Pembayaran dan Pelunasan Titipan Emas Syariah',
+        'Cetak Dokumen Titipan Emas Syariah',
+      ]),
+      roleGroup('Pasca Kredit PUMK', [
+        'Realisasi Restrukturisasi PUMK',
+        'Realisasi Reklasifikasi PUMK',
+      ]),
+      roleGroup('Pinjaman Karyawan', ['Pengajuan dan Konfirmasi Pinjaman Karyawan']),
+    ],
+    [
+      roleGroup('Pinjaman Rahn', ['Pengajuan Rahn', 'Pencairan Rahn']),
+      roleGroup('Pinjaman Gadai', [
+        'Pengajuan Gadai Dari Rumah',
+        'Pengajuan Gadai',
+        'Pencairan Gadai',
+      ]),
+      roleGroup('E-Form', ['Proses Transaksi', 'Manajemen Transaksi']),
+      roleGroup('EGC / OGC', [
+        'Input Data EGC/OGC',
+        'EGC Leads Reaktivasi',
+        'Daftar Leads EGC - CRM',
+        'Follow Up EGC - CRM',
+      ]),
+      roleGroup('Deposito Emas', [
+        'Pengajuan Pembukaan Deposito Emas',
+        'Konfirmasi Pembukaan Deposito Emas',
+        'Pengajuan Penarikan Deposito Emas',
+        'Konfirmasi Penarikan Deposito Emas',
+        'Pengajuan Pembatalan/Perpanjangan Otomatis',
+        'Konfirmasi Pembatalan/Perpanjangan Otomatis',
+        'Cetak Dokumen Deposito Emas',
+      ]),
+      roleGroup('Program UMK (PUMK)', [
+        'Permohonan Dana Program UMK',
+        'Pembayaran Angsuran dan Pelunasan PUMK',
+        'Pembayaran PUMK Belum Teridentifikasi',
+        'Pengembalian Kelebihan Bayar PUMK',
+        'Pelaporan Harian Kas dan Bank PUMK',
+        'Transfer Modal Kerja (RAK)',
+        'Transaksi Kas',
+        'Inquiry Jurnal Transaksi',
+      ]),
+    ],
+    [
+      roleGroup('Laporan', [
+        'OSL Rata Harian',
+        'Realisasi KPI',
+        'Saldo List Gadai/Rahn',
+        'Saldo List Mikro',
+        'Dashboard Kinerja Non Gadai',
+        'Dashboard Prospek Non Gadai',
+        'Riwayat EGC (Reaktivasi)',
+        'Riwayat EGC (CRM)',
+        'Portofolio Kredit',
+        'Daftar Pinjaman',
+        'Laporan Rekening Deposito Emas',
+        'Data Mitra Program UMK',
+        'Dashboard Program UMK',
+      ]),
+      roleGroup('Monitoring', [
+        'Laporan Aktivitas Gadai Dari Rumah',
+        'Laporan Restrukturisasi',
+        'Laporan Penyelesaian Pinjaman Bermasalah',
+        'Monitoring Aktivitas Deposito Emas',
+        'Monitoring Titipan Emas Syariah',
+        'Monitoring Program UMK',
+        'Monitoring Arrum Multiguna Internal',
+      ]),
+    ],
   ],
+  Pinca: pincaFeatureColumns,
+  CRO: pincaFeatureColumns,
   Penaksir: [
     [
       roleGroup('Prospek', ['Prospek Baru', 'Daftar Prospek']),

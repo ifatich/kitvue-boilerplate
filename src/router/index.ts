@@ -26,6 +26,24 @@ const router = createRouter({
       component: () => import('../views/EntryPointView.vue'),
     },
     {
+      path: '/entry-point/kanwil',
+      name: 'entry-point-kanwil',
+      component: () => import('../views/EntryPointView.vue'),
+      props: { stage: 'kanwil' },
+    },
+    {
+      path: '/entry-point/role',
+      name: 'entry-point-role',
+      component: () => import('../views/EntryPointView.vue'),
+      props: { stage: 'role' },
+    },
+    {
+      path: '/entry-point/tasks',
+      name: 'entry-point-tasks',
+      component: () => import('../views/EntryPointView.vue'),
+      props: { stage: 'tasks' },
+    },
+    {
       path: '/login',
       name: 'admin-login',
       component: () => import('../views/AdminLoginView.vue'),

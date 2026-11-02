@@ -14,6 +14,7 @@ const demoUsers = [
   { role: 'Kasir', email: 'kasir@pegadaian.co.id' },
   { role: 'Penaksir', email: 'penaksir@pegadaian.co.id' },
   { role: 'Pinca', email: 'pinca@pegadaian.co.id' },
+  { role: 'CRO', email: 'cro@pegadaian.co.id' },
 ]
 
 function selectDemoUser(email: string) {
@@ -21,7 +22,14 @@ function selectDemoUser(email: string) {
 }
 
 onMounted(() => {
-  if (isAdminAuthenticated() && route.query.roleSelection !== 'true') {
+  if (typeof route.query.role === 'string') {
+    const matched = demoUsers.find((u) => u.role.toLowerCase() === (route.query.role as string).toLowerCase())
+    if (matched) {
+      selectDemoUser(matched.email)
+    }
+  }
+
+  if (isAdminAuthenticated() && route.query.roleSelection !== 'true' && !route.query.role) {
     const redirect = route.query.redirect
     router.replace(typeof redirect === 'string' && redirect.startsWith('/') ? redirect : '/beranda')
   }

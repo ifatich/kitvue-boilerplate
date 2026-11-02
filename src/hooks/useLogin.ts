@@ -14,7 +14,9 @@ export function useLogin() {
   const authStore = useAuthStore()
 
   const requiresRoleSelection = route.query.roleSelection === 'true'
-  const username = ref(requiresRoleSelection ? 'kasir@pegadaian.co.id' : 'admin@pegadaian.co.id')
+  const roleQuery = typeof route.query.role === 'string' ? route.query.role : null
+  const defaultDemoEmail = roleQuery ? `${roleQuery.toLowerCase()}@pegadaian.co.id` : 'kasir@pegadaian.co.id'
+  const username = ref(roleQuery || requiresRoleSelection ? defaultDemoEmail : 'admin@pegadaian.co.id')
   const password = ref('Pegadaian2026!')
   const loading = ref(false)
   const { showAlert } = useAppAlert()
@@ -42,9 +44,9 @@ export function useLogin() {
       return
     }
 
-    if (requiresRoleSelection && !getPrototypeRoleForEmail(username.value)) {
+    if ((requiresRoleSelection || roleQuery) && !getPrototypeRoleForEmail(username.value)) {
       showAlert({
-        label: 'Gunakan email demo kasir@, pinca@, atau penaksir@pegadaian.co.id untuk memilih role.',
+        label: 'Gunakan email demo kasir@, pinca@, penaksir@, atau cro@pegadaian.co.id untuk memilih role.',
         variant: 'warning',
       })
       return
