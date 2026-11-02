@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import PosHeader from '../components/PosHeader.vue'
 import PosSidebar, { type PosNavLabel } from '../components/PosSidebar.vue'
 import { usePosSidebar } from '../composables/usePosSidebar'
@@ -26,6 +26,8 @@ import { printReceiptInNewTab } from './receipt-utils'
 import './style.css'
 
 const router = useRouter()
+const route = useRoute()
+const routePrefix = route.path.startsWith('/pos') ? '/pos' : ''
 const { isCollapsed, isMobile, isOpen, menuExpanded, toggle, close } = usePosSidebar()
 
 // Transaction & Form State
@@ -115,18 +117,18 @@ watch(installmentAmount, (val) => {
 function selectNavigation(item: PosNavLabel) {
   close()
   if (item === 'Dashboard') {
-    void router?.push('/')
+    void router?.push(routePrefix || '/')
     return
   }
   if (item === 'Pembayaran') {
-    void router?.push('/pembayaran')
+    void router?.push(`${routePrefix}/pembayaran`)
     return
   }
   announce(`${item} belum tersedia pada pratinjau POS ini.`)
 }
 
 function resetFlowToHome() {
-  void router?.push('/pembayaran')
+  void router?.push(`${routePrefix}/pembayaran`)
 }
 
 // 16-Digit Credit Contract Search

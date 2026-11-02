@@ -370,7 +370,7 @@ const copySubmissionNumber = async () => {
 
 const returnToEntryPage = () => {
   showSubmissionModal.value = false
-  void router.push('/')
+  void router.push('/beranda')
 }
 
 watch([loanAmount, tariffChange, specialTariffRate, totalAppraisal], () => {
@@ -398,8 +398,8 @@ watch(nik, (value) => {
 <template>
   <SprintModuleShell
     title="Pengajuan Gadai"
-    :breadcrumbs="[{ label: 'Beranda', to: '/' }, { label: 'Pinjaman Gadai' }, 'Pengajuan Gadai']"
-    back-to="/"
+    :breadcrumbs="[{ label: 'Beranda', to: '/beranda' }, { label: 'Pinjaman Gadai' }, 'Pengajuan Gadai']"
+    back-to="/beranda"
     :wide="true"
     entry-navbar
     search-placeholder="Cari (contoh: Pengajuan Gadai/Rahn)"

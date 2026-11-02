@@ -5,7 +5,8 @@
  * nama, email, nomor hp, nip, jabatan, hak akses, password, konfirmasi password.
  */
 
-export type AdminRole = 'Super Admin' | 'Administrator'
+export type PrototypeRole = 'Kasir' | 'Pinca' | 'Penaksir'
+export type AdminRole = 'Super Admin' | 'Administrator' | PrototypeRole
 export type AdminAccountStatus = 'Active' | 'Inactive'
 
 /**

@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "composite": true,
     "types": ["vite/client"],
     "allowSyntheticDefaultImports": true,
     "target": "ESNext",

@@ -64,7 +64,7 @@ const incomeOptions = [{ value: '5 - 10 Juta', label: '5 - 10 Juta' }]
   <SprintModuleShell
     title="Pengajuan Rahn"
     :breadcrumbs="[
-      { label: 'Beranda', to: '/' },
+      { label: 'Beranda', to: '/beranda' },
       { label: 'Pengajuan Rahn', to: '/pengajuan-gadai' },
       'Detail Data Beneficial Owner',
     ]"

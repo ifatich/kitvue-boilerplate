@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import PosGoldCard from './components/PosGoldCard.vue'
 import PosHeader from './components/PosHeader.vue'
 import PosMetricCard from './components/PosMetricCard.vue'
@@ -10,6 +10,8 @@ import { usePosSidebar } from './composables/usePosSidebar'
 
 const activeItem = ref<PosNavLabel>('Dashboard')
 const router = useRouter()
+const route = useRoute()
+const routePrefix = route.path.startsWith('/pos') ? '/pos' : ''
 const { isCollapsed, isMobile, isOpen, menuExpanded, toggle, close } = usePosSidebar()
 const announcement = ref('')
 let announcementTimeout: ReturnType<typeof setTimeout> | undefined
@@ -32,7 +34,7 @@ function selectNavigation(item: PosNavLabel) {
   close()
   activeItem.value = 'Dashboard'
   if (item === 'Pembayaran') {
-    void router.push('/pembayaran')
+    void router.push(`${routePrefix}/pembayaran`)
     return
   }
   if (item !== 'Dashboard') announce(`${item} belum tersedia pada pratinjau POS ini.`)

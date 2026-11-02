@@ -5,6 +5,7 @@
 import { ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAppAlert } from '@/hooks/useAppAlert'
+import { getPrototypeRoleForEmail } from '@/services/authService'
 import { useAuthStore } from '@/stores/authStore'
 
 export function useLogin() {
@@ -12,7 +13,8 @@ export function useLogin() {
   const route = useRoute()
   const authStore = useAuthStore()
 
-  const username = ref('admin@pegadaian.co.id')
+  const requiresRoleSelection = route.query.roleSelection === 'true'
+  const username = ref(requiresRoleSelection ? 'kasir@pegadaian.co.id' : 'admin@pegadaian.co.id')
   const password = ref('Pegadaian2026!')
   const loading = ref(false)
   const { showAlert } = useAppAlert()
@@ -27,7 +29,7 @@ export function useLogin() {
     ) {
       router.push(target)
     } else {
-      router.push('/')
+      router.push('/beranda')
     }
   }
 
@@ -35,6 +37,14 @@ export function useLogin() {
     if (!username.value || !password.value) {
       showAlert({
         label: 'Username dan kata sandi wajib diisi.',
+        variant: 'warning',
+      })
+      return
+    }
+
+    if (requiresRoleSelection && !getPrototypeRoleForEmail(username.value)) {
+      showAlert({
+        label: 'Gunakan email demo kasir@, pinca@, atau penaksir@pegadaian.co.id untuk memilih role.',
         variant: 'warning',
       })
       return
@@ -61,6 +71,12 @@ export function useLogin() {
   }
 
   const quickLogin = () => {
+    if (requiresRoleSelection) {
+      authStore.login({ emailOrNip: username.value.trim() })
+      navigateToTarget()
+      return
+    }
+
     authStore.login({ emailOrNip: 'admin@pegadaian.co.id' })
     showAlert({
       label: 'Login cepat (1-Click) berhasil.',

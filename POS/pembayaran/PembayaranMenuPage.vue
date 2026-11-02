@@ -13,12 +13,14 @@
  * Clicking "Bayar Gadai" navigates to "/pembayaran-gadai".
  */
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import PosHeader from '../components/PosHeader.vue'
 import PosSidebar, { type PosNavLabel } from '../components/PosSidebar.vue'
 import { usePosSidebar } from '../composables/usePosSidebar'
 
 const router = useRouter()
+const route = useRoute()
+const routePrefix = route.path.startsWith('/pos') ? '/pos' : ''
 const activeItem = ref<PosNavLabel>('Pembayaran')
 const { isCollapsed, isMobile, isOpen, menuExpanded, toggle, close } = usePosSidebar()
 const announcement = ref('')
@@ -35,7 +37,7 @@ function announce(message: string) {
 function selectNavigation(item: PosNavLabel) {
   close()
   if (item === 'Dashboard') {
-    void router.push('/')
+    void router.push(routePrefix || '/')
     return
   }
   if (item === 'Pembayaran') {
@@ -46,7 +48,7 @@ function selectNavigation(item: PosNavLabel) {
 
 function handleServiceClick(serviceName: string) {
   if (serviceName === 'Bayar Gadai') {
-    void router.push('/pembayaran-gadai')
+    void router.push(`${routePrefix}/pembayaran-gadai`)
     return
   }
   announce(`Layanan ${serviceName} belum tersedia pada pratinjau POS ini.`)

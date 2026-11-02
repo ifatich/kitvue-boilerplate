@@ -2,8 +2,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
-
-import { GBreadcrumb } from '@/components'
+import GBreadcrumb from 'kitvue-public/src/components/Breadcrumb/Breadcrumb.vue'
 
 type BreadcrumbItem =
   | string
@@ -60,10 +59,10 @@ const handleClick = (event: MouseEvent) => {
   display: flex;
   align-items: center;
   width: 100%;
-  height: 100%;
+  height: auto;
   min-width: 0;
   box-sizing: border-box;
-  border-bottom: 1px solid var(--g-kit-black-20);
+  border-bottom: 1px solid var(--g-kit-black-20, #eeeeef);
 }
 
 .app-breadcrumb :deep(.breadcrumb) {

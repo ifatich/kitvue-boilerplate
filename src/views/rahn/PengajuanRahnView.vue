@@ -456,7 +456,7 @@ const prevStep = async () => {
   if (activeStep.value > 1) {
     await transitionToStep(activeStep.value - 1)
   } else {
-    router.push('/')
+    router.push('/beranda')
   }
 }
 
@@ -544,8 +544,8 @@ provide(rahnFlowKey, {
   <SprintModuleShell
     v-else
     title="Pengajuan Gadai"
-    :breadcrumbs="[{ label: 'Beranda', to: '/' }, { label: 'Pinjaman Gadai' }, 'Pengajuan Gadai']"
-    back-to="/"
+    :breadcrumbs="[{ label: 'Beranda', to: '/beranda' }, { label: 'Pinjaman Gadai' }, 'Pengajuan Gadai']"
+    back-to="/beranda"
     profile-role="Penaksir"
     :show-auth-toggle="false"
     entry-navbar

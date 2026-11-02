@@ -1,0 +1,11 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="171.635" height="169.556" viewBox="0 0 171.635 169.556" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Group 626597">
+<path id="Vector" d="M97.4362 88.4576C105.771 51.8132 94.0956 17.9173 71.3569 12.7489C48.6183 7.5806 23.4276 33.0971 15.0923 69.7414C6.7571 106.386 18.4336 140.282 41.1722 145.45C63.9109 150.618 89.101 125.102 97.4362 88.4576Z" fill="#C6E5B4" fill-opacity="0.15"/>
+<foreignObject x="-51.7468" y="-62.2734" width="263.996" height="290.853"><div xmlns="http://www.w3.org/1999/xhtml" style="backdrop-filter:blur(40px);clip-path:url(#bgblur_0_0_12269_clip_path);height:100%;width:100%"></div></foreignObject><path id="Vector_2" data-figma-bg-blur-radius="80" d="M112.749 104.468C135.166 70.3155 138.788 33.0866 120.84 21.3148C102.892 9.54296 70.17 27.6859 47.7532 61.8382C25.3365 95.9906 21.714 133.219 39.6621 144.991C57.6102 156.763 90.3324 138.62 112.749 104.468Z" fill="#C6E5B4" fill-opacity="0.2"/>
+<foreignObject x="-44.5889" y="-33.3748" width="278.907" height="263.747"><div xmlns="http://www.w3.org/1999/xhtml" style="backdrop-filter:blur(40px);clip-path:url(#bgblur_1_0_12269_clip_path);height:100%;width:100%"></div></foreignObject><path id="Vector_3" data-figma-bg-blur-radius="80" d="M116.134 124.933C146.786 100.288 162.112 68.4743 150.366 53.8752C138.619 39.2761 104.248 47.4196 73.5953 72.0646C42.9426 96.7095 27.6164 128.523 39.363 143.122C51.1096 157.721 85.4808 149.578 116.134 124.933Z" fill="#C6E5B4" fill-opacity="0.25"/>
+</g>
+<defs>
+<clipPath id="bgblur_0_0_12269_clip_path" transform="translate(51.7468 62.2734)"><path d="M112.749 104.468C135.166 70.3155 138.788 33.0866 120.84 21.3148C102.892 9.54296 70.17 27.6859 47.7532 61.8382C25.3365 95.9906 21.714 133.219 39.6621 144.991C57.6102 156.763 90.3324 138.62 112.749 104.468Z"/>
+</clipPath><clipPath id="bgblur_1_0_12269_clip_path" transform="translate(44.5889 33.3748)"><path d="M116.134 124.933C146.786 100.288 162.112 68.4743 150.366 53.8752C138.619 39.2761 104.248 47.4196 73.5953 72.0646C42.9426 96.7095 27.6164 128.523 39.363 143.122C51.1096 157.721 85.4808 149.578 116.134 124.933Z"/>
+</clipPath></defs>
+</svg>

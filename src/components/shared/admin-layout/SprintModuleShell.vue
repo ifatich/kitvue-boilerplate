@@ -31,7 +31,7 @@ const props = withDefaults(
   }>(),
   {
     breadcrumbs: () => [],
-    backTo: '/',
+    backTo: '/beranda',
     profileRole: 'Penaksir',
     showAuthToggle: false,
     wide: false,
@@ -79,7 +79,7 @@ const handleBack = () => {
 
     <div v-if="breadcrumbs && breadcrumbs.length" class="sprint-module-shell__breadcrumb-band">
       <div class="sprint-module-shell__breadcrumb-inner">
-        <Breadcrumb :items="breadcrumbs" />
+        <Breadcrumb class="sprint-module-shell__breadcrumb" :items="breadcrumbs" />
       </div>
     </div>
 
@@ -135,6 +135,10 @@ const handleBack = () => {
   width: min(calc(100% - 32px), 1152px);
   height: 100%;
   margin: 0 auto;
+}
+
+.sprint-module-shell__breadcrumb {
+  height: 100%;
 }
 
 .sprint-module-shell__footer {

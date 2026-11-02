@@ -11,7 +11,13 @@
     "test": "vitest run",
     "pos:dev": "pnpm --filter pos-tablet dev",
     "pos:type-check": "pnpm --filter pos-tablet type-check",
-    "pos:build": "pnpm --filter pos-tablet build"
+    "pos:build": "pnpm --filter pos-tablet build",
+    "proto1:dev": "pnpm --filter sprint-proto-1 dev",
+    "proto1:type-check": "pnpm --filter sprint-proto-1 type-check",
+    "proto1:build": "pnpm --filter sprint-proto-1 build",
+    "proto2:dev": "pnpm --filter sprint-proto-2 dev",
+    "proto2:type-check": "pnpm --filter sprint-proto-2 type-check",
+    "proto2:build": "pnpm --filter sprint-proto-2 build"
   },
   "dependencies": {
     "@vueuse/core": "^12.6.1",

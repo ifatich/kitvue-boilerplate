@@ -1,61 +1,82 @@
 <script setup lang="ts">
-withDefaults(
-  defineProps<{
-    title?: string
-    subtitle?: string
-  }>(),
-  {
-    title: 'Tokenized Gold Receipt',
-    subtitle: 'Back Office - Bullion Wallet',
-  },
-)
+import sprintMark from '@/assets/images/sprint/sprint-mark.svg'
+import sprintWordmark from '@/assets/images/sprint/sprint-wordmark-dark.svg'
 </script>
 
 <template>
-  <div class="header">
-    <div class="icon-wrapper">
-      <img src="@/assets/images/bullion-bank-logo.svg" alt="Bullion Bank" />
+  <header class="login-header">
+    <div class="sprint-logo" aria-label="SPRINT">
+      <img class="sprint-logo__mark" :src="sprintMark" alt="" />
+      <img class="sprint-logo__wordmark" :src="sprintWordmark" alt="SPRINT" />
     </div>
-
-    <h3>{{ title }}</h3>
-
-    <span>{{ subtitle }}</span>
-  </div>
+    <div class="tagline">
+      <p>Single Platform for</p>
+      <p>Rapid Information &amp; Transaction</p>
+    </div>
+  </header>
 </template>
 
 <style scoped>
-.header {
+.login-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.sprint-logo {
+  display: flex;
+  min-height: 85px;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 8px;
+
+  padding: 1rem;
+}
+
+.sprint-logo__mark {
+  display: block;
+  width: 61px;
+  height: 85px;
+}
+
+.sprint-logo__wordmark {
+  display: block;
+  width: 193px;
+  height: 38px;
+}
+
+.tagline {
+  color: var(--g-kit-broccoli-50, #004d43);
+  font-size: 18px;
+  font-weight: var(--g-kit-font-weight-bold, 800);
+  line-height: 26px;
   text-align: center;
-  margin-bottom: 40px;
 }
 
-.icon-wrapper {
-  width: 80px;
-  height: 80px;
-  margin: auto;
-  margin-bottom: 16px;
-  overflow: hidden;
-  border-radius: 50%;
+.tagline p {
+  margin: 0;
 }
 
-.icon-wrapper img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
+@media (max-width: 420px) {
+  .sprint-logo {
+    gap: 12px;
+  }
 
-h3 {
-  margin: 0 0 4px;
-  color: var(--g-kit-black-80);
-  font-size: var(--g-kit-font-size-lambda);
-  line-height: var(--g-kit-line-height-lambda);
-  font-weight: var(--g-kit-font-weight-bold);
-}
+  .sprint-logo__mark {
+    width: 48px;
+    height: 67px;
+  }
 
-span {
-  color: rgba(48, 48, 48, 0.6);
-  font-size: var(--g-kit-font-size-omicron);
-  line-height: var(--g-kit-line-height-omicron);
-  font-weight: var(--g-kit-font-weight-normal);
+  .sprint-logo__wordmark {
+    width: 154px;
+    height: 30px;
+  }
+
+  .tagline {
+    font-size: 16px;
+    line-height: 24px;
+  }
 }
 </style>

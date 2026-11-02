@@ -5,18 +5,21 @@
  */
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import { getPrototypeRoleForEmail } from '@/services/authService'
+import type { PrototypeRole } from '@/types/admin'
 
 export interface AuthUser {
   id: string
   name: string
   nip: string
   email: string
-  role: 'Super Admin' | 'Administrator' | 'Guest'
+  role: 'Super Admin' | 'Administrator' | 'Guest' | PrototypeRole
   position: string
   avatar?: string
 }
 
 const STORAGE_KEY = 'kitvue_auth_state'
+const USER_STORAGE_KEY = 'kitvue_auth_user'
 
 const DEFAULT_DUMMY_USER: AuthUser = {
   id: 'adm-001',
@@ -67,6 +70,9 @@ export const useAuthStore = defineStore('auth', () => {
 
   const persistState = () => {
     setStorageItem(STORAGE_KEY, String(isAuthenticated.value))
+    if (user.value) {
+      setStorageItem(USER_STORAGE_KEY, JSON.stringify(user.value))
+    }
   }
 
   const toggleAuth = () => {
@@ -78,10 +84,12 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   const login = (payload?: { emailOrNip?: string; password?: string }): { success: boolean } => {
+    const email = payload?.emailOrNip || DEFAULT_DUMMY_USER.email
     isAuthenticated.value = true
     user.value = {
       ...DEFAULT_DUMMY_USER,
-      email: payload?.emailOrNip || DEFAULT_DUMMY_USER.email,
+      email,
+      role: getPrototypeRoleForEmail(email) ?? 'Super Admin',
     }
     persistState()
     return { success: true }
@@ -91,7 +99,7 @@ export const useAuthStore = defineStore('auth', () => {
     isAuthenticated.value = false
     user.value = null
     persistState()
-    removeStorageItem('kitvue_auth_user')
+    removeStorageItem(USER_STORAGE_KEY)
   }
 
   return {

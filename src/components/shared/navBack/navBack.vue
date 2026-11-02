@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 
-import arrowLeftGreen from 'kitvue/src/assets/images/arrow-left-green.svg'
+import arrowLeftGreen from 'kitvue-public/src/assets/images/arrow-left-green.svg'
 
 defineOptions({
   name: 'NavBackNavigator',

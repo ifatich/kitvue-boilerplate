@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { RouterLink, useRouter } from 'vue-router'
 import SprintNavbar from '@/components/shared/admin-layout/SprintNavbar.vue'
 import rahnIcon from 'kitvue-public/src/assets/icon/Pengajuan-Rahn.svg'
 import confirmationIcon from 'kitvue-public/src/assets/icon/gadai2.svg'
@@ -33,6 +33,15 @@ const openModule = ref<string | null>('Pengajuan')
 const chevronDown = chevronDownAsset as unknown as string
 const infoIcon = infoIconAsset as unknown as string
 const dashboardPage = ref(0)
+const searchItems = [
+  {
+    group: 'Pinjaman Gadai',
+    label: 'Pengajuan Gadai',
+    icon: loanApplyIcon as unknown as string,
+    to: '/proto-existing/task-complete',
+  },
+]
+
 const dashboardSlides = [
   ['egc', 'osl', 'npl'],
   ['omset', 'profitability', 'gold'],
@@ -158,9 +167,14 @@ const handleSlideClick = () => {
       :show-auth-toggle="false"
       :show-mobile-bottom-nav="true"
       search-placeholder="Cari (contoh: Pengajuan Gadai/Rahn)"
+      :search-items="searchItems"
     />
 
     <main class="entry-content">
+      <RouterLink class="entry-point-shortcut" to="/entry-point">
+        Buka daftar aplikasi dan prototype
+        <span aria-hidden="true">→</span>
+      </RouterLink>
       <div class="entry-grid">
         <div class="entry-top-grid">
           <section class="panel dashboard-panel">
@@ -638,6 +652,23 @@ const handleSlideClick = () => {
   flex: 1;
   width: min(calc(100% - 32px), 1312px);
   margin: 24px auto 0;
+}
+
+.entry-point-shortcut {
+  display: flex;
+  width: fit-content;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  color: var(--g-kit-lime-50);
+  font-size: var(--g-kit-font-size-sigma);
+  font-weight: var(--g-kit-font-weight-normal);
+  text-decoration: none;
+}
+
+.entry-point-shortcut:hover {
+  color: var(--g-kit-lime-60);
+  text-decoration: underline;
 }
 
 .entry-grid {

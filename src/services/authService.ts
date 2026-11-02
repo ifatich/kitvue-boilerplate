@@ -3,10 +3,17 @@
  * @description Layanan autentikasi layer frontend untuk kitvue-starter-template.
  * Mengelola sinkronisasi status login lokal dan menyediakan adapter helper bagi router dan komponen.
  */
-import type { AdminUserAccount } from '@/types/admin'
+import type { AdminUserAccount, PrototypeRole } from '@/types/admin'
 
 const STORAGE_KEY = 'kitvue_auth_state'
 const USER_KEY = 'kitvue_auth_user'
+
+const PROTOTYPE_ROLE_BY_EMAIL: Record<string, PrototypeRole> = {
+  'kasir@pegadaian.co.id': 'Kasir',
+  'pinca@pegadaian.co.id': 'Pinca',
+  'pimpinan.cabang@pegadaian.co.id': 'Pinca',
+  'penaksir@pegadaian.co.id': 'Penaksir',
+}
 
 const DEFAULT_MOCK_USER: AdminUserAccount = {
   id: 'adm-001',
@@ -18,6 +25,12 @@ const DEFAULT_MOCK_USER: AdminUserAccount = {
   phoneNumber: '+6281234567890',
   status: 'Active',
   twoStepVerified: false,
+}
+
+export function getPrototypeRoleForEmail(identifier: string): PrototypeRole | null {
+  const email = identifier.trim().toLowerCase()
+  const normalizedEmail = email.includes('@') ? email : `${email}@pegadaian.co.id`
+  return PROTOTYPE_ROLE_BY_EMAIL[normalizedEmail] ?? null
 }
 
 const getStorage = (key: string): string | null => {
@@ -72,6 +85,12 @@ export function getSessionUser(): AdminUserAccount | null {
   }
 }
 
+export function getPrototypeRoleFromSession(): PrototypeRole | null {
+  const user = getSessionUser()
+  if (!user) return null
+  return getPrototypeRoleForEmail(user.email)
+}
+
 /**
  * Simpan user ke sesi frontend
  */
@@ -103,6 +122,7 @@ export function authenticateAdmin(
     ...DEFAULT_MOCK_USER,
     email: identifier.includes('@') ? identifier : `${identifier}@pegadaian.co.id`,
     namaLengkap: identifier.includes('@') ? identifier.split('@')[0] : identifier,
+    role: getPrototypeRoleForEmail(identifier) ?? DEFAULT_MOCK_USER.role,
   }
 
   setSessionUser(user)

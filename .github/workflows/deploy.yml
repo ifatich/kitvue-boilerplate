@@ -58,6 +58,9 @@ jobs:
           mkdir -p ./dist/POS
           cp -R ./POS/dist/. ./dist/POS/
 
+      - name: Configure SPA deep links for GitHub Pages
+        run: cp ./dist/index.html ./dist/404.html
+
       - name: Setup GitHub Pages
         uses: actions/configure-pages@v5
         with:

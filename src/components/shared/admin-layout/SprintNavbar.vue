@@ -10,6 +10,7 @@ import headerPatternAsset from '@/assets/images/sprint/header-pattern.svg'
 import sprintMarkAsset from '@/assets/images/sprint/sprint-mark.svg'
 import sprintWordmarkAsset from '@/assets/images/sprint/sprint-wordmark.svg'
 import searchIconAsset from '@/assets/images/sprint/search.svg'
+import searchClearIconAsset from '@/assets/images/sprint/search-clear.svg'
 import historyIconAsset from '@/assets/images/sprint/history.svg'
 import notificationIconAsset from '@/assets/images/sprint/notification.svg'
 import chevronIconAsset from '@/assets/images/sprint/chevron.svg'
@@ -21,6 +22,15 @@ import mobileInfoAsset from 'kitvue-public/src/assets/icon/icon-system/icon-info
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
 
+interface SprintSearchItem {
+  group: string
+  label: string
+  icon: string
+  imageIncludesLabel?: boolean
+  figmaQuery?: string
+  to?: string
+}
+
 const props = withDefaults(defineProps<{
   embedded?: boolean
   entryLayout?: boolean
@@ -29,7 +39,9 @@ const props = withDefaults(defineProps<{
   searchPlaceholder?: string
   mobileTitle?: string
   mobileBackTo?: string
+  homeTo?: string
   showMobileBottomNav?: boolean
+  searchItems?: SprintSearchItem[]
 }>(), {
   embedded: false,
   entryLayout: false,
@@ -37,13 +49,16 @@ const props = withDefaults(defineProps<{
   showAuthToggle: true,
   searchPlaceholder: 'Cari (contoh: pengajuan kredit)',
   mobileTitle: '',
-  mobileBackTo: '/',
+  mobileBackTo: '/beranda',
+  homeTo: '/beranda',
   showMobileBottomNav: false,
+  searchItems: () => [],
 })
 
 const emit = defineEmits<{
   (e: 'back'): void
   (e: 'info'): void
+  (e: 'search-select', item: SprintSearchItem): void
 }>()
 
 const instance = getCurrentInstance()
@@ -51,6 +66,7 @@ const headerPattern = headerPatternAsset as unknown as string
 const sprintMark = sprintMarkAsset as unknown as string
 const sprintWordmark = sprintWordmarkAsset as unknown as string
 const searchIcon = searchIconAsset as unknown as string
+const searchClearIcon = searchClearIconAsset as unknown as string
 const historyIcon = historyIconAsset as unknown as string
 const notificationIcon = notificationIconAsset as unknown as string
 const chevronIcon = chevronIconAsset as unknown as string
@@ -61,6 +77,8 @@ const mobileProfileIdle = mobileProfileIdleAsset as unknown as string
 const mobileInfo = mobileInfoAsset as unknown as string
 const router = useRouter()
 const authStore = useAuthStore()
+const desktopSearchInput = ref<HTMLInputElement | null>(null)
+const mobileSearchInput = ref<HTMLInputElement | null>(null)
 
 const handleBack = () => {
   if (instance?.vnode.props?.onBack) {
@@ -71,12 +89,37 @@ const handleBack = () => {
 }
 
 const searchQuery = ref('')
+const isSearchOpen = ref(false)
 const navbarElement = ref<HTMLElement | null>(null)
 const activePopover = ref<'history' | 'notifications' | 'profile' | null>(null)
 const isProfileOpen = computed(() => activePopover.value === 'profile')
+const groupedSearchResults = computed(() => {
+  const query = searchQuery.value.trim().toLowerCase()
+  if (!query) return []
+
+  const groups = new Map<string, SprintSearchItem[]>()
+  for (const item of props.searchItems) {
+    const matchesQuery = item.label.toLowerCase().includes(query) || item.group.toLowerCase().includes(query)
+    const hasRegularMatch = item.figmaQuery && props.searchItems.some((candidate) => (
+      !candidate.figmaQuery && candidate.group === item.group && candidate.label === item.label
+    ))
+    const matches = query === 'gadai'
+      ? item.figmaQuery === query
+      : matchesQuery && (!item.figmaQuery || !hasRegularMatch)
+    if (!matches) continue
+    const items = groups.get(item.group) ?? []
+    items.push(item)
+    groups.set(item.group, items)
+  }
+
+  return Array.from(groups, ([group, items]) => ({ group, items }))
+})
+const showSearchResults = computed(() => (
+  props.searchItems.length > 0 && isSearchOpen.value && Boolean(searchQuery.value.trim())
+))
 
 const handleBrandClick = () => {
-  router.push('/')
+  router.push(props.homeTo)
 }
 
 const togglePopover = (popover: 'history' | 'notifications' | 'profile') => {
@@ -92,23 +135,78 @@ const goToPengajuan = () => {
   router.push('/pengajuan-gadai')
 }
 
+const selectSearchItem = (item: SprintSearchItem) => {
+  isSearchOpen.value = false
+  searchQuery.value = ''
+  if (item.to) {
+    void router.push(item.to)
+    return
+  }
+  emit('search-select', item)
+}
+
 const submitSearch = () => {
   if (!searchQuery.value.trim()) return
+  if (props.searchItems.length > 0) {
+    const firstResult = groupedSearchResults.value[0]?.items[0]
+    if (firstResult) selectSearchItem(firstResult)
+    return
+  }
   goToPengajuan()
 }
 
 const handleDocumentClick = (event: MouseEvent) => {
-  if (!navbarElement.value?.contains(event.target as Node)) closePopover()
+  if (!navbarElement.value?.contains(event.target as Node)) {
+    closePopover()
+    isSearchOpen.value = false
+  }
 }
 
 const handleDocumentKeydown = (event: KeyboardEvent) => {
-  if (event.key === 'Escape') closePopover()
+  if (event.key === 'Escape') {
+    closePopover()
+    isSearchOpen.value = false
+  }
+}
+
+const clearSearch = (input: HTMLInputElement | null) => {
+  searchQuery.value = ''
+  isSearchOpen.value = false
+  input?.focus()
+}
+
+const searchLabelParts = (label: string) => {
+  const query = searchQuery.value.trim()
+  const matchIndex = label.toLowerCase().indexOf(query.toLowerCase())
+  if (matchIndex === -1 || !query) return [{ text: label, highlighted: false }]
+
+  const matchEnd = matchIndex + query.length
+  return [
+    { text: label.slice(0, matchIndex), highlighted: false },
+    { text: label.slice(matchIndex, matchEnd), highlighted: true },
+    { text: label.slice(matchEnd), highlighted: false },
+  ].filter((part) => part.text)
 }
 
 const handleLogout = () => {
   closePopover()
   authStore.logout()
-  router.push('/login')
+
+  const currentRoute = router.currentRoute.value
+  const prototypeRoute = currentRoute.matched.find((record) => record.meta.requiresPrototypeRole)
+
+  if (prototypeRoute) {
+    void router.push({
+      path: '/login',
+      query: {
+        redirect: prototypeRoute.path,
+        roleSelection: 'true',
+      },
+    })
+    return
+  }
+
+  void router.push('/login')
 }
 
 onMounted(() => {
@@ -131,6 +229,7 @@ onBeforeUnmount(() => {
         'sprint-navbar--floating': props.embedded,
         'sprint-navbar--entry-layout': props.entryLayout,
         'sprint-navbar--mobile-module': props.mobileTitle,
+        'sprint-navbar--search-enabled': props.searchItems.length > 0,
       },
     ]"
     role="banner"
@@ -159,7 +258,29 @@ onBeforeUnmount(() => {
     </div>
     <form v-else class="sprint-mobile-entry-search" role="search" @submit.prevent="submitSearch">
       <img :src="searchIcon" alt="" aria-hidden="true" />
-      <input v-model="searchQuery" type="search" :placeholder="props.searchPlaceholder" aria-label="Cari pengajuan kredit atau dokumen" />
+      <input
+        ref="mobileSearchInput"
+        v-model="searchQuery"
+        :type="props.searchItems.length ? 'text' : 'search'"
+        :role="props.searchItems.length ? 'combobox' : undefined"
+        :aria-autocomplete="props.searchItems.length ? 'list' : undefined"
+        :aria-controls="props.searchItems.length ? 'sprint-search-results' : undefined"
+        :aria-expanded="props.searchItems.length ? showSearchResults : undefined"
+        :placeholder="props.searchPlaceholder"
+        aria-label="Cari pengajuan kredit atau dokumen"
+        @focus="isSearchOpen = true"
+        @input="isSearchOpen = true"
+        @keydown.enter.prevent="submitSearch"
+      />
+      <button
+        v-if="searchQuery && props.searchItems.length"
+        type="button"
+        class="sprint-search-clear"
+        aria-label="Hapus pencarian"
+        @click="clearSearch(mobileSearchInput)"
+      >
+        <img :src="searchClearIcon" alt="" aria-hidden="true" />
+      </button>
     </form>
     <div class="sprint-navbar__container">
       <!-- Left: SPRINT Brand Logo -->
@@ -179,13 +300,29 @@ onBeforeUnmount(() => {
         <div class="sprint-search-input-group">
           <img :src="searchIcon" class="sprint-search-icon" alt="" aria-hidden="true" />
           <input
+            ref="desktopSearchInput"
             v-model="searchQuery"
             type="text"
             class="sprint-search-input"
+            :role="props.searchItems.length ? 'combobox' : undefined"
+            :aria-autocomplete="props.searchItems.length ? 'list' : undefined"
+            :aria-controls="props.searchItems.length ? 'sprint-search-results' : undefined"
+            :aria-expanded="props.searchItems.length ? showSearchResults : undefined"
             :placeholder="props.searchPlaceholder"
             aria-label="Cari pengajuan kredit atau dokumen"
+            @focus="isSearchOpen = true"
+            @input="isSearchOpen = true"
             @keydown.enter.prevent="submitSearch"
           />
+          <button
+            v-if="searchQuery && props.searchItems.length"
+            type="button"
+            class="sprint-search-clear"
+            aria-label="Hapus pencarian"
+            @click="clearSearch(desktopSearchInput)"
+          >
+            <img :src="searchClearIcon" alt="" aria-hidden="true" />
+          </button>
         </div>
       </div>
 
@@ -307,6 +444,61 @@ onBeforeUnmount(() => {
         <span>Profil</span>
       </button>
     </nav>
+    <div
+      v-if="showSearchResults"
+      id="sprint-search-results"
+      class="sprint-search-results"
+      role="listbox"
+      aria-label="Hasil pencarian"
+    >
+      <p class="sprint-search-results__summary">
+        Hasil Pencarian untuk “<strong>{{ searchQuery.trim() }}</strong>”
+      </p>
+      <template v-if="groupedSearchResults.length">
+        <section
+          v-for="(group, groupIndex) in groupedSearchResults"
+          :key="group.group"
+          class="sprint-search-results__group"
+          :class="{ 'sprint-search-results__group--last': groupIndex === groupedSearchResults.length - 1 }"
+          role="group"
+          :aria-label="group.group"
+        >
+          <h2>{{ group.group }}</h2>
+          <div class="sprint-search-results__items">
+            <button
+              v-for="item in group.items"
+              :key="`${group.group}-${item.label}`"
+              type="button"
+              class="sprint-search-result"
+              role="option"
+              :aria-label="item.label"
+              :aria-selected="false"
+              @click="selectSearchItem(item)"
+            >
+              <img
+                v-if="item.imageIncludesLabel"
+                :src="item.icon"
+                class="sprint-search-result__tile"
+                alt=""
+                aria-hidden="true"
+              />
+              <template v-else>
+                <span class="sprint-search-result__icon">
+                  <img :src="item.icon" alt="" aria-hidden="true" />
+                </span>
+                <span class="sprint-search-result__label">
+                  <template v-for="(part, partIndex) in searchLabelParts(item.label)" :key="partIndex">
+                    <strong v-if="part.highlighted">{{ part.text }}</strong>
+                    <span v-else>{{ part.text }}</span>
+                  </template>
+                </span>
+              </template>
+            </button>
+          </div>
+        </section>
+      </template>
+      <p v-else class="sprint-search-results__empty">Tidak ada hasil yang cocok.</p>
+    </div>
     <div v-if="props.showMobileBottomNav && activePopover" class="sprint-mobile-popover" role="dialog" aria-modal="false">
       <template v-if="activePopover === 'history'">
         <strong>Riwayat</strong>
@@ -337,7 +529,7 @@ onBeforeUnmount(() => {
 }
 
 .sprint-navbar--floating {
-  width: min(calc(100% - 32px), 1152px);
+  width: min(calc(100% - 32px), 1312px);
   height: 76px;
   margin: 16px auto 0;
   border-radius: 16px;
@@ -383,6 +575,10 @@ onBeforeUnmount(() => {
     border-radius: 12px;
   }
 
+  .sprint-navbar--entry-layout.sprint-navbar--search-enabled {
+    width: min(calc(100% - 32px), 1312px);
+  }
+
   .sprint-navbar--entry-layout .sprint-navbar__container {
     position: relative;
     display: block;
@@ -421,6 +617,17 @@ onBeforeUnmount(() => {
     font-size: 14px;
   }
 
+  .sprint-navbar--entry-layout.sprint-navbar--search-enabled .sprint-search-input {
+    padding-right: 44px;
+  }
+
+  .sprint-navbar--entry-layout.sprint-navbar--search-enabled .sprint-search-input:focus {
+    padding-right: 43px;
+    padding-left: 43px;
+    border: 1px solid var(--g-kit-lime-50);
+    box-shadow: none;
+  }
+
   .sprint-navbar--entry-layout .sprint-nav-actions {
     position: absolute;
     top: 10px;
@@ -429,6 +636,10 @@ onBeforeUnmount(() => {
     width: max-content;
     height: 56px;
     gap: 24px;
+  }
+
+  .sprint-navbar--entry-layout.sprint-navbar--search-enabled .sprint-nav-actions {
+    right: min(636px, calc(100% - 516px));
   }
 
   .sprint-navbar--entry-layout .sprint-action-btn {
@@ -553,6 +764,148 @@ onBeforeUnmount(() => {
 
 .sprint-search-input::placeholder {
   color: var(--g-kit-black-50);
+}
+
+.sprint-search-clear {
+  position: absolute;
+  right: 11px;
+  display: grid;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  place-items: center;
+  background: transparent;
+  cursor: pointer;
+
+  img {
+    display: block;
+  }
+}
+
+.sprint-search-results {
+  position: absolute;
+  z-index: 20;
+  top: 64px;
+  left: 225px;
+  width: 547px;
+  max-height: 600px;
+  overflow: auto;
+  padding: 24px 0;
+  border-radius: 6px 6px 12px 12px;
+  color: var(--g-kit-black-80);
+  background: var(--g-kit-white);
+  box-shadow: inherit;
+}
+
+.sprint-search-results__summary {
+  width: calc(100% - 32px);
+  margin: 0 auto 16px;
+  color: var(--g-kit-black-80);
+  font-size: 14px;
+  font-weight: var(--g-kit-font-weight-normal);
+  line-height: 20px;
+
+  strong {
+    font-weight: var(--g-kit-font-weight-bold);
+  }
+}
+
+.sprint-search-results__group {
+  padding: 0 16px 16px;
+
+  &::after {
+    display: block;
+    height: 1px;
+    margin: 16px 0 0;
+    background: var(--g-kit-black-20);
+    content: '';
+  }
+
+  h2 {
+    margin: 0 0 16px;
+    color: var(--g-kit-black-80);
+    font-size: 18px;
+    font-weight: var(--g-kit-font-weight-bold);
+    line-height: 26px;
+  }
+}
+
+.sprint-search-results__group--last {
+  padding-top: 16px;
+  padding-bottom: 0;
+
+  &::after {
+    display: none;
+  }
+}
+
+.sprint-search-results__items {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.sprint-search-result {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--g-kit-black-80);
+  cursor: pointer;
+  font: inherit;
+  text-align: center;
+}
+
+.sprint-search-result__icon {
+  display: grid;
+  width: 56px;
+  height: 56px;
+  place-items: center;
+
+  img {
+    display: block;
+    max-width: 56px;
+    max-height: 56px;
+    object-fit: contain;
+  }
+}
+
+.sprint-search-result__tile {
+  display: block;
+  width: 100%;
+  max-width: 102px;
+  height: auto;
+  object-fit: contain;
+}
+
+.sprint-search-result__label {
+  width: 100%;
+  font-size: 14px;
+  font-weight: var(--g-kit-font-weight-normal);
+  line-height: 20px;
+  overflow-wrap: anywhere;
+
+  strong {
+    font-weight: var(--g-kit-font-weight-bold);
+  }
+}
+
+.sprint-search-result:hover .sprint-search-result__label {
+  color: var(--g-kit-lime-60);
+}
+
+.sprint-search-results__empty {
+  margin: 0;
+  padding: 0 16px;
+  color: var(--g-kit-black-60);
+  font-size: 14px;
+  line-height: 20px;
+  text-align: center;
 }
 
 .sprint-mobile-entry-search,
@@ -784,6 +1137,21 @@ onBeforeUnmount(() => {
   .sprint-user-role {
     display: none;
   }
+
+  .sprint-navbar--search-enabled .sprint-navbar__container .sprint-search-wrapper {
+    position: relative;
+    top: auto;
+    left: auto;
+    display: block;
+    width: auto;
+    max-width: 360px;
+    flex: 1 1 0;
+  }
+
+  .sprint-navbar--search-enabled .sprint-search-results {
+    top: 52px;
+    left: 167px;
+  }
 }
 
 @media (max-width: 767px) {
@@ -833,6 +1201,21 @@ onBeforeUnmount(() => {
     font: inherit;
     font-size: var(--g-kit-font-size-sigma);
     outline: none;
+  }
+
+  .sprint-navbar--search-enabled .sprint-mobile-entry-search input {
+    padding-right: 44px;
+  }
+
+  .sprint-navbar--search-enabled .sprint-mobile-entry-search input:focus {
+    border: 1px solid var(--g-kit-lime-50);
+  }
+
+  .sprint-navbar--search-enabled .sprint-search-results {
+    top: 84px;
+    left: 16px;
+    width: calc(100% - 32px);
+    max-height: calc(100vh - 168px);
   }
 
   .sprint-navbar--mobile-module {
