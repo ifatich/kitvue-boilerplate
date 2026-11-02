@@ -38,7 +38,7 @@ const searchItems = [
     group: 'Pinjaman Gadai',
     label: 'Pengajuan Gadai',
     icon: loanApplyIcon as unknown as string,
-    to: '/proto-existing/task-complete',
+    to: '/pengajuan-gadai',
   },
 ]
 

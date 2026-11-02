@@ -1,16 +1,18 @@
 <script setup lang="ts">
 /**
  * @file App.vue
- * @description Root application component with view outlet and global alert host.
+ * @description Root application component with view outlet, global alert host, and task success modal host.
  */
 import { RouterView } from 'vue-router'
 import AppAlertHost from '@/components/shared/alert/AppAlertHost.vue'
+import TaskSuccessModalHost from '@/components/shared/modal/TaskSuccessModalHost.vue'
 </script>
 
 <template>
   <div class="app-root">
     <RouterView />
     <AppAlertHost />
+    <TaskSuccessModalHost />
   </div>
 </template>
 

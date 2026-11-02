@@ -12,6 +12,7 @@
 import { computed, nextTick, provide, ref, watch } from 'vue'
 import { useMediaQuery } from '@vueuse/core'
 import { useRoute, useRouter } from 'vue-router'
+import { useTaskSuccessModal } from '@/composables/useTaskSuccessModal'
 import { GAlert, GButton, GLoading, GModal, GStepper } from '@/components'
 import submissionCloseIcon from 'kitvue-public/src/assets/icon/icon-system/icon-cross-fill.svg'
 import {
@@ -369,9 +370,13 @@ const copySubmissionNumber = async () => {
   }
 }
 
+const { showTaskSuccessModal } = useTaskSuccessModal()
+
 const returnToEntryPage = async () => {
   showSubmissionConfirmation.value = false
-  await router.push({ name: 'home' })
+  showTaskSuccessModal({
+    taskName: 'Pengajuan Gadai (Stepper)',
+  })
 }
 
 const searchBeneficialOwner = () => {

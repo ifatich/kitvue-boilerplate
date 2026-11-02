@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useTaskSuccessModal } from '@/composables/useTaskSuccessModal'
 import PosHeader from '../components/PosHeader.vue'
 import PosSidebar, { type PosNavLabel } from '../components/PosSidebar.vue'
 import { usePosSidebar } from '../composables/usePosSidebar'
@@ -127,7 +128,15 @@ function selectNavigation(item: PosNavLabel) {
   announce(`${item} belum tersedia pada pratinjau POS ini.`)
 }
 
+const { showTaskSuccessModal } = useTaskSuccessModal()
+
 function resetFlowToHome() {
+  if (resultStatus.value === 'success') {
+    showTaskSuccessModal({
+      taskName: 'POS (Pembayaran Gadai)',
+    })
+    return
+  }
   void router?.push(`${routePrefix}/pembayaran`)
 }
 

@@ -290,8 +290,29 @@ const photosStartingAt = (photos: string[], startIndex: number) => [
   height: 81px;
   overflow: hidden;
   border-radius: 8px;
+  cursor: pointer;
+
+  :deep(.image-view-title) {
+    display: none;
+  }
+
+  :deep(.image-view) {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  :deep(.image-container) {
+    width: 100%;
+    height: 100%;
+    border-color: var(--g-kit-black-40, #bbbdc0);
+    border-radius: 8px;
+  }
 
   :deep(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
     border-radius: 8px;
   }
 }
@@ -303,7 +324,11 @@ const photosStartingAt = (photos: string[], startIndex: number) => [
   place-items: center;
   background-color: rgb(0 0 0 / 50%);
   color: var(--g-kit-white, #ffffff);
+  font-size: 14px;
   font-weight: var(--g-kit-font-weight-bold, 800);
+  pointer-events: none;
+  border-radius: 8px;
+  user-select: none;
 }
 
 @media (max-width: 767px) {

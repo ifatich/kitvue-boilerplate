@@ -1,24 +1,34 @@
 <script setup lang="ts">
 import ButtonComponent from 'kitvue-public/src/components/Button/Button.vue'
+import { useTaskSuccessModal } from '@/composables/useTaskSuccessModal'
+
+const { showTaskSuccessModal } = useTaskSuccessModal()
 
 const tasks = [
   { label: 'Pinjaman Rahn', value: '2' },
   { label: 'Pinjaman Non Gadai', value: '99+' },
   { label: 'Restrukturisasi Pinjaman', value: '99+' },
 ]
+
+const handleTaskClick = (label: string) => {
+  showTaskSuccessModal({
+    taskName: `Beranda Eksisting (${label})`,
+  })
+}
 </script>
 
 <template>
   <section class="panel task-panel" aria-labelledby="task-title">
     <div class="task-panel__heading">
       <h2 id="task-title">Tugasku <span>99+</span></h2>
-      <ButtonComponent label="Lihat Semua" type="outline" size="sm" />
+      <ButtonComponent label="Lihat Semua" type="outline" size="sm" @click="handleTaskClick('Tugasku')" />
     </div>
     <button
       v-for="task in tasks"
       :key="task.label"
       type="button"
       class="task-row"
+      @click="handleTaskClick(task.label)"
     >
       <span>{{ task.label }}</span>
       <b>{{ task.value }}</b>

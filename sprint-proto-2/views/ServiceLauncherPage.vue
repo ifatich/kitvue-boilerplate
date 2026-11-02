@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted, watch, type CSSProperties } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useTaskSuccessModal } from '@/composables/useTaskSuccessModal'
 import chevronRightIcon from 'kitvue-public/src/assets/icon/icon-system/icon-chevron-right.svg'
 import infoIcon from 'kitvue-public/src/assets/icon/icon-system/icon-info.svg'
 import searchIcon from 'kitvue-public/src/assets/icon/icon-system/icon-search-v2.svg'
@@ -48,6 +49,7 @@ const props = withDefaults(defineProps<{ initialRole?: SidebarRoleId }>(), {
 
 const router = useRouter()
 const route = useRoute()
+const { showTaskSuccessModal } = useTaskSuccessModal()
 
 // Drawer open/collapsed state (Figma 525:348350 Group 626388 toggle)
 const isDrawerOpen = ref(false)
@@ -746,10 +748,10 @@ function handleDrawerItemClick(groupLabel: string, item: string) {
         <div style="width: 40px;" />
       </header>
 
-      <RouterView v-if="isPengajuanGadaiRoute" />
+      <RouterView v-if="isPengajuanGadaiRoute || route.name === 'sprint-proto-2-task-complete'" />
 
       <!-- Area Konten (Figma: Area Konten ~1058px) -->
-      <div v-else class="proto2-content">
+      <div v-if="!isPengajuanGadaiRoute" class="proto2-content">
         <h1 class="proto2-page-title">Beranda</h1>
         <div class="proto2-content__under-breadcrumbs">
           <!-- Welcome Banner (with Pegadaian character illustration on the right) -->
@@ -1118,14 +1120,19 @@ function handleDrawerItemClick(groupLabel: string, item: string) {
                     <h2 class="proto2-card-title">Tugasku</h2>
                     <span class="proto2-task-count">5</span>
                   </div>
-                  <button type="button" class="proto2-text-button">
+                  <button type="button" class="proto2-text-button" @click="showTaskSuccessModal({ taskName: 'Beranda Opsi 2 (Tugasku)' })">
                     Lihat Semua
                   </button>
                 </header>
 
                 <div class="proto2-task-list">
-                  <div v-for="(t, idx) in taskItems" :key="`${t.title}-${idx}`"
-                    class="proto2-task-row">
+                  <div
+                    v-for="(t, idx) in taskItems"
+                    :key="`${t.title}-${idx}`"
+                    class="proto2-task-row"
+                    style="cursor: pointer;"
+                    @click="showTaskSuccessModal({ taskName: `Beranda Opsi 2 (${t.title})` })"
+                  >
                     <span>{{ t.title }}</span>
                     <strong :class="{ 'proto2-task-count--zero': t.count === 0 }">{{ t.count }}</strong>
                   </div>

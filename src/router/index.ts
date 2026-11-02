@@ -136,7 +136,7 @@ const router = createRouter({
     {
       path: '/proto-existing/task-complete',
       name: 'proto-existing-task-complete',
-      alias: ['/sprint-existing/task-complete'],
+      alias: ['/sprint-existing/task-complete', '/task-complete'],
       component: () => import('../views/proto-existing/TaskCompleteDummyView.vue'),
       meta: { requiresAuth: true, requiresPrototypeRole: true },
     },

@@ -152,8 +152,13 @@ const openNativePicker = (source: 'gallery' | 'camera') => {
   }, 200)
 }
 
-const removeFile = () => {
+const removeFile = (event?: Event) => {
+  event?.stopPropagation()
+  event?.preventDefault()
   localError.value = ''
+  previewUrl.value = ''
+  if (galleryInput.value) galleryInput.value.value = ''
+  if (cameraInput.value) cameraInput.value.value = ''
   emit('input', null)
 }
 </script>
@@ -191,8 +196,13 @@ const removeFile = () => {
       >
         <img :src="previewUrl" alt="Pratinjau foto" />
       </button>
-      <button type="button" class="file-picker-sm__remove" aria-label="Hapus foto" @click="removeFile">
-        <span aria-hidden="true">×</span>
+      <button
+        type="button"
+        class="file-picker-sm__remove"
+        aria-label="Hapus foto"
+        @click.stop.prevent="removeFile"
+      >
+        <span aria-hidden="true">&times;</span>
       </button>
     </div>
     <button
@@ -338,6 +348,7 @@ const removeFile = () => {
   position: absolute;
   top: -6px;
   right: -6px;
+  z-index: 2;
   display: grid;
   place-items: center;
   width: 20px;
@@ -347,7 +358,19 @@ const removeFile = () => {
   border-radius: 50%;
   background: var(--g-kit-black-60, #58585b);
   color: var(--g-kit-white, #ffffff);
+  font-size: 14px;
   line-height: 1;
+  cursor: pointer;
+  transition: background-color 160ms ease, transform 160ms ease;
+}
+
+.file-picker-sm__remove:hover {
+  background: var(--g-kit-black-80, #252528);
+  transform: scale(1.1);
+}
+
+.file-picker-sm__remove span {
+  pointer-events: none;
 }
 
 .file-picker-sm__spinner {

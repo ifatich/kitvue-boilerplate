@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useTaskSuccessModal } from '@/composables/useTaskSuccessModal'
 import announcementIcon from '../assets/dashboard/announcement.svg'
 import infoIcon from '../assets/dashboard/info.svg'
 import chartGrid from '../assets/dashboard/chart-grid.svg'
@@ -24,6 +25,7 @@ const expandedMenuGroups = ref<string[]>([])
 const isRoleMenuOpen = ref(false)
 const router = useRouter()
 const route = useRoute()
+const { showTaskSuccessModal } = useTaskSuccessModal()
 const isPengajuanGadaiRoute = computed(() => (
   route.name === 'proto-existing-pengajuan-gadai' || route.name === 'sprint-proto-1-pengajuan-gadai'
 ))
@@ -471,10 +473,10 @@ function selectNav(id: string) {
         </div>
       </header>
 
-      <RouterView v-if="isPengajuanGadaiRoute" />
+      <RouterView v-if="isPengajuanGadaiRoute || route.name === 'sprint-proto-1-task-complete'" />
 
       <!-- Area Konten (Figma: Breadcrumbs, Title, Welcome Banner, Dashboard, 3-Columns) -->
-      <div v-else class="cms-content">
+      <div v-if="!isPengajuanGadaiRoute" class="cms-content">
         <!-- Breadcrumbs (Height: 52px) -->
         <nav class="cms-breadcrumbs" aria-label="Breadcrumb">
           <span style="font-size: 14px; font-weight: 600; color: #58585b;">Beranda</span>
@@ -743,7 +745,7 @@ function selectNav(id: string) {
                     5
                   </span>
                 </div>
-                <button class="cms-panel-action" type="button">
+                <button class="cms-panel-action" type="button" @click="showTaskSuccessModal({ taskName: 'Beranda Opsi 1 (Tugasku)' })">
                   Lihat Semua
                 </button>
               </header>
@@ -753,6 +755,8 @@ function selectNav(id: string) {
                   v-for="(t, idx) in taskItems"
                   :key="`${t.title}-${idx}`"
                   class="cms-task-row"
+                  style="cursor: pointer;"
+                  @click="showTaskSuccessModal({ taskName: `Beranda Opsi 1 (${t.title})` })"
                 >
                   <span style="font-size: 14px; font-weight: 600; color: #252528;">{{ t.title }}</span>
                   <span class="cms-task-row__count">{{ t.count }}</span>

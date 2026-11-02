@@ -12,7 +12,7 @@ import {
 } from '@/components'
 import type { RahnCollateral } from '@/views/rahn/rahnFlow'
 
-type PhotoValue = string | File | null
+type PhotoValue = string | File
 
 const props = withDefaults(defineProps<{
   rubric: string
@@ -72,15 +72,7 @@ const denominationOptions = [
   { value: '100,000', label: '100,000 gram' },
 ]
 
-const availablePhotos = computed(() => draft.photos.filter((photo): photo is string | File => photo !== null))
-const photoPickerIndexes = computed(() => {
-  const lastFilledIndex = draft.photos.reduce((lastIndex, photo, index) => (
-    photo !== null ? index : lastIndex
-  ), -1)
-  const slotCount = Math.min(lastFilledIndex + 2, 3)
-  return Array.from({ length: Math.max(slotCount, 1) }, (_, index) => index)
-    .sort((left, right) => Number(draft.photos[left] !== null) - Number(draft.photos[right] !== null))
-})
+const availablePhotos = computed(() => draft.photos)
 const estimatedValue = computed(() => {
   const denomination = Number(draft.denomination.replace(',', '.'))
   const pieces = Number(draft.pieces)
@@ -107,7 +99,7 @@ watch(model, (isOpen) => {
         denomination: initial.denomination,
         pieces: String(initial.pieces),
         description: initial.description,
-        photos: [...initial.photos, null],
+        photos: [...initial.photos],
       }
     : {
         rubric: props.rubric || 'Barang Kantong',
@@ -117,7 +109,7 @@ watch(model, (isOpen) => {
         denomination: '',
         pieces: '',
         description: '',
-        photos: [null],
+        photos: [],
       })
   hasTriedSave.value = false
   photoReadError.value = ''
@@ -129,16 +121,28 @@ const continueToDetails = () => {
 
 const handlePhotoInput = (file: File | null, index: number) => {
   if (!file) {
-    const remainingPhotos = draft.photos.filter((photo): photo is string | File => photo !== null)
-    draft.photos.splice(0, draft.photos.length, ...remainingPhotos, null)
-    photoReadError.value = ''
-    return
+    draft.photos.splice(index, 1)
+  } else {
+    draft.photos[index] = file
   }
-
-  draft.photos[index] = file
   photoReadError.value = ''
-  while (draft.photos.length > 1 && draft.photos[draft.photos.length - 1] === null) draft.photos.pop()
-  if (file && index === draft.photos.length - 1 && draft.photos.length < 3) draft.photos.push(null)
+}
+
+const handleAddPhoto = (file: File | null) => {
+  if (file && draft.photos.length < 3) {
+    draft.photos.push(file)
+    photoReadError.value = ''
+  }
+}
+
+const getPhotoKey = (photo: PhotoValue, index: number): string => {
+  if (photo instanceof File) {
+    return `file-${photo.name}-${photo.size}-${photo.lastModified}`
+  }
+  if (typeof photo === 'string') {
+    return `url-${index}-${photo.slice(0, 32)}`
+  }
+  return `photo-${index}`
 }
 
 const photoAsDataUrl = async (photo: string | File): Promise<string> => {
@@ -296,12 +300,20 @@ const saveCollateral = async () => {
             <span class="rahn-collateral-photo-label">Foto Barang Jaminan</span>
             <div class="rahn-collateral-photo-list">
               <GFilePickerSM
-                v-for="index in photoPickerIndexes"
-                :key="`photo-${index}`"
-                :file="draft.photos[index] ?? null"
+                v-for="(photo, index) in draft.photos"
+                :key="getPhotoKey(photo, index)"
+                :file="photo"
                 :image-only="true"
                 :unique-key="`photo-${index}`"
                 @input="(file) => handlePhotoInput(file, index)"
+              />
+              <GFilePickerSM
+                v-if="draft.photos.length < 3"
+                key="photo-add-slot"
+                :file="null"
+                :image-only="true"
+                unique-key="photo-add-slot"
+                @input="handleAddPhoto"
               />
             </div>
             <span v-if="hasTriedSave && !availablePhotos.length" class="rahn-collateral-validation">

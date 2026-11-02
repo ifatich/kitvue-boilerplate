@@ -309,6 +309,7 @@ watch(() => props.items.length, (nextLength, previousLength) => {
   height: 81px;
   overflow: hidden;
   border-radius: 8px;
+  cursor: pointer;
 
   :deep(.image-view-title) {
     display: none;
@@ -338,6 +339,8 @@ watch(() => props.items.length, (nextLength, previousLength) => {
   font-size: 14px;
   font-weight: var(--g-kit-font-weight-bold, 800);
   pointer-events: none;
+  border-radius: 8px;
+  user-select: none;
 }
 
 .rahn-collateral-table-component__actions {

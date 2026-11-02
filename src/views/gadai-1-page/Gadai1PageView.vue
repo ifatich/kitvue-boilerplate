@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useMediaQuery } from '@vueuse/core'
-import { useRouter } from 'vue-router'
+import { useTaskSuccessModal } from '@/composables/useTaskSuccessModal'
 import { GAlert, GButton, GDropdown, GInputNominalStart, GInputText, GModal, GRadio, GTooltip } from '@/components'
 import submissionCloseIcon from 'kitvue-public/src/assets/icon/icon-system/icon-cross-fill.svg'
 import RahnApplicationDropdowns from '@/components/modules/rahn/RahnApplicationDropdowns.vue'
@@ -33,7 +33,6 @@ interface Collateral extends RahnCollateral {
   id: number
 }
 
-const router = useRouter()
 const { showAlert } = useAppAlert()
 const isMobile = useMediaQuery('(max-width: 767px)')
 const customerType = ref('Perorangan')
@@ -368,9 +367,13 @@ const copySubmissionNumber = async () => {
   }
 }
 
+const { showTaskSuccessModal } = useTaskSuccessModal()
+
 const returnToEntryPage = () => {
   showSubmissionModal.value = false
-  void router.push('/beranda')
+  showTaskSuccessModal({
+    taskName: 'Pengajuan Gadai (Non Stepper)',
+  })
 }
 
 watch([loanAmount, tariffChange, specialTariffRate, totalAppraisal], () => {
