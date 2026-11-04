@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { RouterLink, useRoute, useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import SprintNavbar from '@/components/shared/admin-layout/SprintNavbar.vue'
 import rahnIcon from 'kitvue-public/src/assets/icon/Pengajuan-Rahn.svg'
 import confirmationIcon from 'kitvue-public/src/assets/icon/gadai2.svg'
@@ -211,10 +211,10 @@ const handleSlideClick = () => {
     />
 
     <main class="entry-content">
-      <RouterLink class="entry-point-shortcut" to="/entry-point">
+      <!-- <RouterLink class="entry-point-shortcut" to="/entry-point">
         Buka daftar aplikasi dan prototype
         <span aria-hidden="true">→</span>
-      </RouterLink>
+      </RouterLink> -->
       <div class="entry-grid">
         <div class="entry-top-grid">
           <section class="panel dashboard-panel">
@@ -715,6 +715,7 @@ const handleSlideClick = () => {
   display: flex;
   flex-direction: column;
   gap: 24px;
+  padding-bottom: 24px;
 }
 
 .panel {

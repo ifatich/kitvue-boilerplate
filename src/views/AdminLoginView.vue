@@ -125,12 +125,13 @@ onMounted(() => {
 }
 
 .building-image {
-  position: absolute;
-  top: 3%;
-  left: -33%;
-  width: 120%;
-  height: 139%;
-  max-width: none;
+    position: absolute;
+    top: 3%;
+    left: -33%;
+    width: 120%;
+    height: 139%;
+    max-width: none;
+    object-fit: cover;
 }
 
 .right-side {
@@ -138,7 +139,7 @@ onMounted(() => {
   z-index: 2;
   top: 50%;
   left: min(
-    calc(50% + 24.6vw),
+    calc(50% + 32.5vw),
     calc(100% - 230px)
   );
   display: flex;
@@ -164,8 +165,8 @@ footer {
 .demo-price-panel {
   position: absolute;
   z-index: 1;
-  top: 77%;
-  left: 13.1%;
+  top: 80%;
+  left: 4%;
   display: grid;
   width: 632px;
   gap: 8px;

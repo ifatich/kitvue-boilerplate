@@ -22,8 +22,12 @@ const emit = defineEmits<{
       <div class="pos-gold-offer">
         <div class="pos-gold-offer__title">Beli Emas</div>
         <div class="pos-gold-offer__price">
-          <img :src="trendUpIcon" alt="" width="12" height="12" />
-          <span>Rp23.600 / 0,01 gr</span>
+          <img class="pos-gold-offer__trend-icon" :src="trendUpIcon" alt="Naik" width="12" height="12" />
+          <div class="pos-gold-offer__price-val">
+            <span class="pos-gold-offer__currency">Rp</span>
+            <span class="pos-gold-offer__amount">23.600</span>
+            <span class="pos-gold-offer__unit">/ 0,01 gr</span>
+          </div>
         </div>
         <ButtonComponent
           class="pos-gold-offer__button pos-gold-offer__button--primary"
@@ -39,8 +43,12 @@ const emit = defineEmits<{
       <div class="pos-gold-offer">
         <div class="pos-gold-offer__title">Jual Emas</div>
         <div class="pos-gold-offer__price">
-          <img :src="trendDownIcon" alt="" width="12" height="12" />
-          <span>Rp22.770.000 / 0,01 gr</span>
+          <img class="pos-gold-offer__trend-icon" :src="trendDownIcon" alt="Turun" width="12" height="12" />
+          <div class="pos-gold-offer__price-val">
+            <span class="pos-gold-offer__currency">Rp</span>
+            <span class="pos-gold-offer__amount">22.770.000</span>
+            <span class="pos-gold-offer__unit">/ 0,01 gr</span>
+          </div>
         </div>
         <ButtonComponent
           class="pos-gold-offer__button pos-gold-offer__button--secondary"

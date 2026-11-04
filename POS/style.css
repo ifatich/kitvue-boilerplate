@@ -545,7 +545,7 @@ button {
   flex-direction: column;
   justify-content: space-between;
   min-width: 0;
-  gap: 2px;
+  gap: 6px;
 }
 
 .pos-gold-offer__title {
@@ -560,7 +560,7 @@ button {
 .pos-gold-offer__price {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 6px;
   min-width: 0;
   overflow: hidden;
   font-size: 12px;
@@ -570,9 +570,30 @@ button {
   white-space: nowrap;
 }
 
-.pos-gold-offer__price img {
+.pos-gold-offer__trend-icon {
   display: block;
   flex: 0 0 auto;
+}
+
+.pos-gold-offer__price-val {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.pos-gold-offer__currency {
+  font-weight: var(--g-kit-font-weight-title-bold);
+}
+
+.pos-gold-offer__amount {
+  font-weight: var(--g-kit-font-weight-title-bold);
+}
+
+.pos-gold-offer__unit {
+  font-weight: var(--g-kit-font-weight-normal);
+  color: var(--g-kit-black-80);
 }
 
 .pos-gold-card__divider {
@@ -612,14 +633,14 @@ button {
 .pos-gold-offer__button--primary {
   background: var(--g-kit-emerald-50);
   color: var(--g-kit-white);
-  margin-top: 10px;
+  margin-top: 8px;
 }
 
 .pos-gold-card button.pos-gold-offer__button--secondary,
 .pos-gold-offer__button--secondary {
   background: transparent;
   color: var(--g-kit-emerald-50);
-  margin-top: 10px;
+  margin-top: 8px;
 }
 
 .pos-gold-card button.pos-gold-offer__button:hover,
@@ -631,11 +652,12 @@ button {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  width: calc(100% + 4px);
+  width: 100%;
   height: 280px;
   padding: 16px;
   border-radius: 24px;
   background: var(--g-kit-black-20);
+  overflow: hidden;
 }
 
 .pos-weekly-card__highlight {
@@ -689,8 +711,8 @@ button {
   bottom: 0;
   left: 0;
   display: grid;
-  grid-template-columns: repeat(7, minmax(40px, 1fr));
-  column-gap: 24px;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  column-gap: clamp(4px, 1.5vw, 20px);
   width: 100%;
   align-items: flex-end;
 }
@@ -717,8 +739,8 @@ button {
 
 .pos-weekly-card__labels {
   display: grid;
-  grid-template-columns: repeat(7, minmax(40px, 1fr));
-  column-gap: 24px;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  column-gap: clamp(4px, 1.5vw, 20px);
   width: 100%;
   color: var(--g-kit-gray-500);
   font-size: 12px;
@@ -729,6 +751,7 @@ button {
 .pos-weekly-card__labels span {
   text-align: center;
   white-space: nowrap;
+  font-size: clamp(10px, 1.1vw, 12px);
 }
 
 .pos-announcement {
@@ -998,7 +1021,7 @@ button {
   .pos-weekly-card__bars,
   .pos-weekly-card__labels {
     grid-template-columns: repeat(7, minmax(0, 1fr));
-    column-gap: clamp(0px, calc((100% - 280px) / 6), 24px);
+    column-gap: clamp(2px, 1.5vw, 12px);
   }
 
   .pos-weekly-card__bar-slot,
