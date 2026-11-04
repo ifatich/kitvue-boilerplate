@@ -1,6 +1,24 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { useTaskSuccessModal } from '@/composables/useTaskSuccessModal'
 
+const storage = new Map<string, string>()
+const storageMock = {
+  getItem: (key: string) => storage.get(key) ?? null,
+  setItem: (key: string, value: string) => storage.set(key, String(value)),
+  removeItem: (key: string) => storage.delete(key),
+  clear: () => storage.clear(),
+}
+
+if (typeof window === 'undefined') {
+  Object.defineProperty(globalThis, 'window', {
+    value: {
+      sessionStorage: storageMock,
+    },
+    writable: true,
+  })
+}
+Object.defineProperty(globalThis, 'sessionStorage', { value: storageMock, writable: true })
+
 describe('useTaskSuccessModal Composable', () => {
   const {
     isTaskModalOpen,
@@ -107,6 +125,22 @@ describe('useTaskSuccessModal Composable', () => {
     expect(isTaskModalOpen.value).toBe(false)
     expect(isDismissedForExploration.value).toBe(false)
     expect(hasCompletedTask.value).toBe(false)
+  })
+
+  it('navigates to entry-point-tasks using session storage context when query params are absent', () => {
+    sessionStorage.setItem('sprint_research_team', 'team-2')
+    sessionStorage.setItem('sprint_research_cp', 'dps-cbg-renon')
+    sessionStorage.setItem('sprint_research_role', 'CRO')
+
+    showTaskSuccessModal({
+      title: 'Task Selesai',
+      taskName: 'Beranda Opsi 1 (Pencarian Pengajuan Gadai)',
+      confirmLabel: 'Kembali ke Menu Task',
+    })
+    expect(isTaskModalOpen.value).toBe(true)
+
+    handleConfirm()
+    expect(isTaskModalOpen.value).toBe(false)
   })
 })
 

@@ -7,7 +7,7 @@
  * 3. Role (Kasir, Penaksir, Pinca, CRO)
  * 4. Tasks (Scenario Matrix 1-6 automatic task assignment)
  */
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import sprintPattern from '@/assets/images/sprint/entry-background-pattern.svg'
 import sprintHeaderPattern from '@/assets/images/sprint/entry-header-pattern.svg'
@@ -19,6 +19,8 @@ type EntryPointStage = 'teams' | 'kanwil' | 'role' | 'tasks'
 interface EntryPointOption {
   id: string
   label: string
+  title?: string
+  subtitle?: string
   description?: string
   targetRoute?: string
   requiresLogin?: boolean
@@ -78,14 +80,39 @@ function getQueryValue(value: unknown): string | undefined {
   return typeof value === 'string' ? value : undefined
 }
 
-const selectedTeam = computed(() => (
-  teams.find((team) => team.id === getQueryValue(route.query.team)) ?? teams[0]
-))
+function getStoredValue(key: string): string | undefined {
+  if (typeof window !== 'undefined' && window.sessionStorage) {
+    try {
+      const val = window.sessionStorage.getItem(key)
+      return val ?? undefined
+    } catch {
+      return undefined
+    }
+  }
+  return undefined
+}
+
+function persistResearchContext(teamId: string, cpId: string, roleId: string) {
+  if (typeof window !== 'undefined' && window.sessionStorage) {
+    try {
+      window.sessionStorage.setItem('sprint_research_team', teamId)
+      window.sessionStorage.setItem('sprint_research_cp', cpId)
+      window.sessionStorage.setItem('sprint_research_role', roleId)
+    } catch {
+      // ignore storage quota / sandbox limits
+    }
+  }
+}
+
+const selectedTeam = computed(() => {
+  const queryTeam = getQueryValue(route.query.team) || getStoredValue('sprint_research_team')
+  return teams.find((team) => team.id === queryTeam) ?? teams[0]
+})
 
 const availableBranches = computed(() => branchesByTeam[selectedTeam.value.id] ?? branchesByTeam['team-1'])
 
 const selectedBranch = computed<BranchOption>(() => {
-  const queryCp = getQueryValue(route.query.cp)
+  const queryCp = getQueryValue(route.query.cp) || getStoredValue('sprint_research_cp')
   if (!queryCp) return availableBranches.value[0]
   const exact = availableBranches.value.find((b) => b.id.toLowerCase() === queryCp.toLowerCase())
   if (exact) return exact
@@ -105,7 +132,7 @@ const selectedBranch = computed<BranchOption>(() => {
 })
 
 const selectedRole = computed(() => {
-  const queryRole = getQueryValue(route.query.role)
+  const queryRole = getQueryValue(route.query.role) || getStoredValue('sprint_research_role')
   if (!queryRole) return undefined
   return roles.find((role) => role.id.toLowerCase() === queryRole.toLowerCase())
 })
@@ -127,6 +154,8 @@ const currentTasks = computed<EntryPointOption[]>(() => {
     ? {
         id: 'task-beranda',
         label: isLeadership ? 'Task 1' : 'Task 2',
+        title: 'Beranda Opsi 1',
+        subtitle: 'Alur perbandingan (Next view: Beranda Opsi 2)',
         description: 'Beranda Opsi 1 (Next view: Beranda Opsi 2)',
         targetRoute: '/sprint-proto-1?nextView=proto-2',
         requiresLogin: true,
@@ -134,6 +163,8 @@ const currentTasks = computed<EntryPointOption[]>(() => {
     : {
         id: 'task-beranda',
         label: isLeadership ? 'Task 1' : 'Task 2',
+        title: 'Beranda Opsi 2',
+        subtitle: 'Alur perbandingan (Next view: Beranda Opsi 1)',
         description: 'Beranda Opsi 2 (Next view: Beranda Opsi 1)',
         targetRoute: '/sprint-proto-2?nextView=proto-1',
         requiresLogin: true,
@@ -142,6 +173,8 @@ const currentTasks = computed<EntryPointOption[]>(() => {
   const posTask: EntryPointOption = {
     id: 'task-pos',
     label: isLeadership ? 'Task 2' : 'Task 3',
+    title: 'Point of Sales (PoS)',
+    subtitle: 'Pembayaran Gadai & Simulasi Kasir',
     description: 'PoS',
     targetRoute: '/pos',
     requiresLogin: false,
@@ -155,6 +188,8 @@ const currentTasks = computed<EntryPointOption[]>(() => {
     ? {
         id: 'task-gadai',
         label: 'Task 1',
+        title: 'Pengajuan Gadai',
+        subtitle: 'Form Tunggal Non Stepper (1 Halaman)',
         description: 'Pengajuan Gadai Non Stepper',
         targetRoute: '/beranda?targetGadai=non-stepper',
         requiresLogin: true,
@@ -162,6 +197,8 @@ const currentTasks = computed<EntryPointOption[]>(() => {
     : {
         id: 'task-gadai',
         label: 'Task 1',
+        title: 'Pengajuan Gadai',
+        subtitle: 'Multi-Step Stepper (Bertahap)',
         description: 'Pengajuan Gadai Stepper',
         targetRoute: '/beranda?targetGadai=stepper',
         requiresLogin: true,
@@ -180,11 +217,11 @@ const stageContent = computed<Record<EntryPointStage, { title: string; options: 
     options: availableBranches.value,
   },
   role: {
-    title: `ROLE CP [${selectedBranch.value.label}] - Kanwil ${selectedTeam.value.kanwil} (${selectedBranch.value.tier})`,
+    title: `Role • ${selectedBranch.value.label} (Kanwil ${selectedTeam.value.kanwil} - ${selectedBranch.value.tier})`,
     options: roles,
   },
   tasks: {
-    title: `Task [${currentRole.value.label}] CP [${selectedBranch.value.label}] - Kanwil ${selectedTeam.value.kanwil} (${selectedBranch.value.tier})`,
+    title: `Task [${currentRole.value.label}] • ${selectedBranch.value.label} (Kanwil ${selectedTeam.value.kanwil} - ${selectedBranch.value.tier})`,
     options: currentTasks.value,
   },
 }))
@@ -202,8 +239,13 @@ function isOptionSelected(option: EntryPointOption): boolean {
   return false
 }
 
+onMounted(() => {
+  persistResearchContext(selectedTeam.value.id, selectedBranch.value.id, currentRole.value.id)
+})
+
 function selectOption(option: EntryPointOption) {
   if (props.stage === 'teams') {
+    persistResearchContext(option.id, availableBranches.value[0]?.id || '', currentRole.value.id)
     void router.push({
       name: 'entry-point-kanwil',
       query: { team: option.id },
@@ -212,6 +254,7 @@ function selectOption(option: EntryPointOption) {
   }
 
   if (props.stage === 'kanwil') {
+    persistResearchContext(selectedTeam.value.id, option.id, currentRole.value.id)
     void router.push({
       name: 'entry-point-role',
       query: { team: selectedTeam.value.id, cp: option.id },
@@ -220,6 +263,7 @@ function selectOption(option: EntryPointOption) {
   }
 
   if (props.stage === 'role') {
+    persistResearchContext(selectedTeam.value.id, selectedBranch.value.id, option.id)
     void router.push({
       name: 'entry-point-tasks',
       query: { team: selectedTeam.value.id, cp: selectedBranch.value.id, role: option.id },
@@ -228,6 +272,7 @@ function selectOption(option: EntryPointOption) {
   }
 
   if (props.stage === 'tasks') {
+    persistResearchContext(selectedTeam.value.id, selectedBranch.value.id, currentRole.value.id)
     const rawTargetRoute = option.targetRoute ?? '/sprint-proto-1'
     const [path, queryString] = rawTargetRoute.split('?')
     const extraParams = new URLSearchParams(queryString ?? '')
@@ -297,18 +342,44 @@ function handleBack() {
         {{ stageContent[props.stage].title }}
       </h1>
 
-      <div class="entry-point-options" :class="`entry-point-options--${props.stage}`">
+      <div
+        class="entry-point-options"
+        :class="[
+          `entry-point-options--${props.stage}`,
+          props.stage === 'tasks' ? `entry-point-options--tasks-${stageContent[props.stage].options.length}` : ''
+        ]"
+      >
         <button
           v-for="option in stageContent[props.stage].options"
           :key="option.id"
           class="entry-point-option"
-          :class="{ 'entry-point-option--selected': isOptionSelected(option) }"
+          :class="[
+            { 'entry-point-option--selected': isOptionSelected(option) },
+            props.stage === 'tasks' ? 'entry-point-option--task' : ''
+          ]"
           type="button"
           :aria-pressed="isOptionSelected(option)"
           @click="selectOption(option)"
         >
-          <span class="entry-point-option__label">{{ option.label }}</span>
-          <span v-if="option.description" class="entry-point-option__desc">{{ option.description }}</span>
+          <template v-if="props.stage === 'tasks'">
+            <span class="entry-point-task-badge">{{ option.label }}</span>
+            <div class="entry-point-task-body">
+              <span class="entry-point-task-title">{{ option.title || option.label }}</span>
+              <span v-if="option.subtitle || option.description" class="entry-point-task-sub">
+                {{ option.subtitle || option.description }}
+              </span>
+            </div>
+            <div class="entry-point-task-action" aria-hidden="true">
+              <span>Mulai Task</span>
+              <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 10h10M11 6l4 4-4 4" />
+              </svg>
+            </div>
+          </template>
+          <template v-else>
+            <span class="entry-point-option__label">{{ option.label }}</span>
+            <span v-if="option.description" class="entry-point-option__desc">{{ option.description }}</span>
+          </template>
         </button>
       </div>
 
@@ -429,6 +500,16 @@ function handleBack() {
   justify-content: center;
 }
 
+.entry-point-options--tasks {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: stretch;
+  gap: 28px;
+  width: min(1060px, 100%);
+  margin-top: 48px;
+}
+
 .entry-point-option {
   display: flex;
   min-width: 0;
@@ -449,6 +530,87 @@ function handleBack() {
   text-align: center;
   cursor: pointer;
   transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.entry-point-option--task {
+  flex: 0 1 320px;
+  width: 320px;
+  max-width: 100%;
+  min-height: 228px;
+  height: auto;
+  padding: 24px 20px;
+  border-radius: 24px;
+  border: 1.5px solid var(--g-kit-lime-50, #00ab4e);
+  background: var(--g-kit-white, #ffffff);
+  box-shadow: 0 4px 16px rgba(0, 77, 67, 0.06);
+  justify-content: space-between;
+  gap: 16px;
+  color: inherit;
+}
+
+.entry-point-option--task:hover {
+  transform: translateY(-4px);
+  border-color: var(--g-kit-lime-60, #00873d);
+  box-shadow: 0 12px 28px rgba(0, 77, 67, 0.14);
+}
+
+.entry-point-task-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 14px;
+  border-radius: 9999px;
+  background: var(--g-kit-emerald-10, #e6f5ef);
+  border: 1px solid var(--g-kit-lime-30, #66cd95);
+  color: var(--g-kit-emerald-50, #004d43);
+  font-size: 13px;
+  font-weight: var(--g-kit-font-weight-bold, 800);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.entry-point-task-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.entry-point-task-title {
+  display: block;
+  font-size: 19px;
+  font-weight: var(--g-kit-font-weight-bold, 800);
+  line-height: 26px;
+  color: var(--g-kit-black-80, #252528);
+}
+
+.entry-point-task-sub {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 19px;
+  color: var(--g-kit-black-50, #727278);
+  max-width: 250px;
+}
+
+.entry-point-task-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 18px;
+  border-radius: 9999px;
+  border: 1px solid var(--g-kit-lime-50, #00ab4e);
+  background: var(--g-kit-white, #ffffff);
+  color: var(--g-kit-lime-50, #00ab4e);
+  font-size: 13px;
+  font-weight: 700;
+  transition: all 160ms ease;
+}
+
+.entry-point-option--task:hover .entry-point-task-action {
+  background: var(--g-kit-lime-50, #00ab4e);
+  color: var(--g-kit-white, #ffffff);
 }
 
 .entry-point-option__label {
@@ -568,11 +730,27 @@ function handleBack() {
     margin-top: 48px;
   }
 
+  .entry-point-options--tasks {
+    width: min(100%, 360px);
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    margin-top: 32px;
+  }
+
   .entry-point-option {
     height: 220px;
     border-radius: 32px;
     font-size: 18px;
     line-height: 28px;
+  }
+
+  .entry-point-option--task {
+    width: 100%;
+    min-height: 200px;
+    height: auto;
+    padding: 20px 16px;
+    border-radius: 20px;
   }
 
   .entry-point-footer {
@@ -585,8 +763,17 @@ function handleBack() {
     margin-top: clamp(48px, calc(100vh - 672px), 140px);
   }
 
+  .entry-point-options--tasks {
+    margin-top: clamp(24px, 4vh, 48px);
+  }
+
   .entry-point-option {
     height: clamp(240px, 43.6vh, 363px);
+  }
+
+  .entry-point-option--task {
+    min-height: 210px;
+    height: auto;
   }
 }
 </style>

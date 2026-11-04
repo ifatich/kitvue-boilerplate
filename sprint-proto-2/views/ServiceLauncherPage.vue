@@ -51,6 +51,17 @@ const router = useRouter()
 const route = useRoute()
 const { showTaskSuccessModal } = useTaskSuccessModal()
 
+const returnToTaskMenu = () => {
+  const team = (route.query.team as string | undefined) || (typeof window !== 'undefined' ? window.sessionStorage?.getItem('sprint_research_team') : null) || 'team-1'
+  const cp = (route.query.cp as string | undefined) || (typeof window !== 'undefined' ? window.sessionStorage?.getItem('sprint_research_cp') : null) || 'mks-cbg-talasalapang'
+  const role = (route.query.role as string | undefined) || (typeof window !== 'undefined' ? window.sessionStorage?.getItem('sprint_research_role') : null) || 'Kasir'
+
+  void router.push({
+    name: 'entry-point-tasks',
+    query: { team, cp, role },
+  })
+}
+
 const handleBerandaTaskSuccess = (taskLabel: string) => {
   const isComparing = route.query.nextView === 'proto-1'
   if (isComparing) {
@@ -77,6 +88,7 @@ const handleBerandaTaskSuccess = (taskLabel: string) => {
       taskName: `Beranda Opsi 2 (${taskLabel})`,
       message: 'Selamat Anda sudah menyelesaikan task!',
       confirmLabel: 'Kembali ke Menu Task',
+      onConfirm: returnToTaskMenu,
     })
   }
 }
@@ -126,6 +138,7 @@ const handleBerandaSearchSuccess = () => {
       taskName: 'Beranda Opsi 2 (Pencarian Pengajuan Gadai)',
       message: 'Selamat, Anda berhasil menemukan menu Pengajuan Gadai melalui pencarian!',
       confirmLabel: 'Kembali ke Menu Task',
+      onConfirm: returnToTaskMenu,
     })
   }
 }

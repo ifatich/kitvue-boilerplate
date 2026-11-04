@@ -217,8 +217,8 @@ describe('SPRINT Remote Research Entry Point & Scenario Matrix', () => {
 
       const step1Title = 'Team Riset - Pilih Kantor Wilayah'
       const step2Title = `Team Kanwil [${team.kanwil}] - ${team.label} (${team.tier}) - Pilih Cabang Kunjungan`
-      const step3Title = `ROLE CP [${branch.label}] - Kanwil ${team.kanwil} (${branch.tier})`
-      const step4Title = `Task [${role.label}] CP [${branch.label}] - Kanwil ${team.kanwil} (${branch.tier})`
+      const step3Title = `Role • ${branch.label} (Kanwil ${team.kanwil} - ${branch.tier})`
+      const step4Title = `Task [${role.label}] • ${branch.label} (Kanwil ${team.kanwil} - ${branch.tier})`
 
       expect(step1Title).toContain('Team Riset')
       expect(step1Title).toContain('Kantor Wilayah')
@@ -228,14 +228,14 @@ describe('SPRINT Remote Research Entry Point & Scenario Matrix', () => {
       expect(step2Title).toContain('Tim 1')
       expect(step2Title).toContain('Pilih Cabang')
 
-      expect(step3Title).toBe('ROLE CP [CP Talasalapang] - Kanwil Makassar (Urban)')
-      expect(step3Title).toContain('ROLE CP [CP Talasalapang]')
+      expect(step3Title).toBe('Role • CP Talasalapang (Kanwil Makassar - Urban)')
+      expect(step3Title).toContain('Role • CP Talasalapang')
       expect(step3Title).toContain('Kanwil Makassar')
       expect(step3Title).toContain('Urban')
 
-      expect(step4Title).toBe('Task [Kasir] CP [CP Talasalapang] - Kanwil Makassar (Urban)')
+      expect(step4Title).toBe('Task [Kasir] • CP Talasalapang (Kanwil Makassar - Urban)')
       expect(step4Title).toContain('Task [Kasir]')
-      expect(step4Title).toContain('CP [CP Talasalapang]')
+      expect(step4Title).toContain('CP Talasalapang')
       expect(step4Title).toContain('Kanwil Makassar')
       expect(step4Title).toContain('Urban')
     })

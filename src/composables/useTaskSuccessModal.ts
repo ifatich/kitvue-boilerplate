@@ -82,18 +82,27 @@ export function useTaskSuccessModal() {
 
     if (router) {
       const currentQuery = router.currentRoute.value.query
-      if (currentQuery.team && currentQuery.cp) {
+      const sessionTeam = typeof window !== 'undefined' ? window.sessionStorage?.getItem('sprint_research_team') : null
+      const sessionCp = typeof window !== 'undefined' ? window.sessionStorage?.getItem('sprint_research_cp') : null
+      const sessionRole = typeof window !== 'undefined' ? window.sessionStorage?.getItem('sprint_research_role') : null
+
+      const team = (currentQuery.team as string | undefined) || sessionTeam || undefined
+      const cp = (currentQuery.cp as string | undefined) || sessionCp || undefined
+      const role = (currentQuery.role as string | undefined) || sessionRole || undefined
+
+      if (team && cp) {
         void router.push({
           name: 'entry-point-tasks',
           query: {
-            team: currentQuery.team,
-            cp: currentQuery.cp,
-            role: currentQuery.role,
+            team,
+            cp,
+            ...(role ? { role } : {}),
           },
         })
         return
       }
-      void router.push('/beranda')
+
+      void router.push({ name: 'entry-point-tasks' })
     }
   }
 
