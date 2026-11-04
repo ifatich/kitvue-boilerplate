@@ -1564,47 +1564,9 @@ button {
   line-height: 18px;
 }
 
-/* Footer (Height: 48px) */
-.proto2-footer {
-  margin-top: auto;
-  height: 48px;
-  background: var(--g-kit-white);
-  border-top: 1px solid var(--g-kit-black-20);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 12px;
-  font-weight: var(--g-kit-font-weight-normal);
-  color: var(--g-kit-black-50);
-  text-align: center;
-  padding: 0 16px;
-}
-
-@media (min-width: 768px) {
-  .proto2-layout--form .proto2-nav-shell {
-    bottom: 64px;
-  }
-
-  .proto2-layout--form .proto2-footer--form {
-    position: fixed;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    z-index: 90;
-    justify-content: space-between;
-    padding: 0 32px;
-  }
-}
-
-@media (max-width: 767px) {
-  .proto2-footer--form {
-    height: auto;
-    min-height: 48px;
-    flex-direction: column;
-    justify-content: center;
-    gap: 4px;
-    padding: 8px 16px;
-  }
+/* Bottom Safe Zone for Floating Badge */
+.proto2-layout--form .pengajuan-gadai-page {
+  padding-bottom: 1rem;
 }
 
 /* ==========================================================================

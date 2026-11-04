@@ -1264,17 +1264,6 @@ function handleDrawerItemClick(groupLabel: string, item: string) {
           </section>
         </div>
       </div>
-
-      <!-- Sticky / Bottom Footer (Height: 48px) -->
-      <footer class="proto2-footer" :class="{ 'proto2-footer--form': isPengajuanGadaiRoute }">
-        <template v-if="isPengajuanGadaiRoute">
-          <span>Copyright © 2024 PT. Pegadaian (Persero), All Rights Reserved.</span>
-          <span>Version 0.0.29</span>
-        </template>
-        <template v-else>
-          Copyright © 2024 PT. Pegadaian (Persero), All Rights Reserved. Versi dev 0.0.20
-        </template>
-      </footer>
     </main>
   </div>
 </template>
