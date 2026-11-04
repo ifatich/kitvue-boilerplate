@@ -56,11 +56,25 @@ onMounted(() => {
         <span class="market-divider" aria-hidden="true" />
         <div class="gold-prices">
           <div class="gold-price">
-            <span>Harga Beli <span class="price-indicator price-indicator--up" aria-hidden="true">⌃</span></span>
+            <span class="gold-price__label">
+              Harga Beli
+              <span class="price-indicator price-indicator--up" aria-hidden="true">
+                <svg class="price-indicator__icon" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M5.2 9.2L8 6.4L10.8 9.2" />
+                </svg>
+              </span>
+            </span>
             <strong>Rp 9.150 <small>/ 0,01 gr</small></strong>
           </div>
           <div class="gold-price">
-            <span>Harga Jual <span class="price-indicator price-indicator--down" aria-hidden="true">⌄</span></span>
+            <span class="gold-price__label">
+              Harga Jual
+              <span class="price-indicator price-indicator--down" aria-hidden="true">
+                <svg class="price-indicator__icon" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M5.2 6.8L8 9.6L10.8 6.8" />
+                </svg>
+              </span>
+            </span>
             <strong>Rp 8.648 <small>/ 0,01 gr</small></strong>
           </div>
         </div>
@@ -207,7 +221,7 @@ footer {
 }
 
 .gold-heading > span,
-.gold-price > span {
+.gold-price__label {
   font-size: 14px;
   line-height: 20px;
 }
@@ -222,7 +236,10 @@ footer {
   gap: 2px;
 }
 
-.gold-price > span {
+.gold-price__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   white-space: nowrap;
 }
 
@@ -241,15 +258,21 @@ footer {
 
 .price-indicator {
   display: inline-grid;
+  place-items: center;
+  flex: 0 0 16px;
   width: 16px;
   height: 16px;
-  place-items: center;
   border-radius: 50%;
   color: var(--g-kit-white, #ffffff);
-  font-size: 14px;
-  font-weight: var(--g-kit-font-weight-bold, 800);
-  line-height: 16px;
-  vertical-align: -2px;
+  line-height: 0;
+  font-size: 0;
+  vertical-align: middle;
+}
+
+.price-indicator__icon {
+  display: block;
+  width: 16px;
+  height: 16px;
 }
 
 .price-indicator--up {

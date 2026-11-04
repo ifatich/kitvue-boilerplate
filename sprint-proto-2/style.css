@@ -1025,18 +1025,21 @@ button {
 }
 
 .proto2-price-direction {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  display: inline-grid;
+  place-items: center;
   width: 14px;
   height: 14px;
   border-radius: 50%;
   color: var(--g-kit-white);
-  font-size: 11px;
-  font-style: normal;
-  font-weight: var(--g-kit-font-weight-bold);
-  line-height: 14px;
-  vertical-align: 1px;
+  line-height: 0;
+  font-size: 0;
+  vertical-align: middle;
+}
+
+.proto2-price-direction svg {
+  display: block;
+  width: 14px;
+  height: 14px;
 }
 
 .proto2-price-direction--up {

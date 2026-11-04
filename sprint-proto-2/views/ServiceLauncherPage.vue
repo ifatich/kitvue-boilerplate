@@ -1078,11 +1078,25 @@ function handleDrawerItemClick(groupLabel: string, item: string) {
                   </div>
                   <div class="proto2-price-values">
                     <div>
-                      <span class="proto2-price-label">Harga Beli <i class="proto2-price-direction proto2-price-direction--up">↑</i></span>
+                      <span class="proto2-price-label">
+                        Harga Beli
+                        <span class="proto2-price-direction proto2-price-direction--up" aria-hidden="true">
+                          <svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4.5 8.2L7 5.6L9.5 8.2" />
+                          </svg>
+                        </span>
+                      </span>
                       <strong>Rp 9.150 <small>/ 0,01 gr</small></strong>
                     </div>
                     <div>
-                      <span class="proto2-price-label">Harga Jual <i class="proto2-price-direction proto2-price-direction--down">↓</i></span>
+                      <span class="proto2-price-label">
+                        Harga Jual
+                        <span class="proto2-price-direction proto2-price-direction--down" aria-hidden="true">
+                          <svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4.5 5.8L7 8.4L9.5 5.8" />
+                          </svg>
+                        </span>
+                      </span>
                       <strong>Rp 8.648 <small>/ 0,01 gr</small></strong>
                     </div>
                   </div>
