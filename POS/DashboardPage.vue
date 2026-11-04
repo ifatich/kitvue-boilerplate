@@ -34,7 +34,10 @@ function selectNavigation(item: PosNavLabel) {
   close()
   activeItem.value = 'Dashboard'
   if (item === 'Pembayaran') {
-    void router.push(`${routePrefix}/pembayaran`)
+    void router.push({
+      path: `${routePrefix}/pembayaran`,
+      query: route.query,
+    })
     return
   }
   if (item !== 'Dashboard') announce(`${item} belum tersedia pada pratinjau POS ini.`)

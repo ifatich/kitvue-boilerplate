@@ -1177,12 +1177,49 @@
   border: 0;
   background: var(--g-kit-emerald-50);
   color: var(--g-kit-white);
+  transition: all 0.2s ease;
 }
 
-.pgd-button--secondary {
-  border: 1px solid var(--g-kit-emerald-50);
-  background: transparent;
-  color: var(--g-kit-emerald-50);
+.pgd-button--primary:hover,
+.pgd-button--primary:focus,
+.pgd-button--primary:active {
+  background: var(--g-kit-emerald-80) !important;
+  color: var(--g-kit-white) !important;
+}
+
+.pgd-button--secondary,
+.btn.pgd-button--secondary,
+.btn-outline-primary.pgd-button--secondary {
+  border: 1.5px solid var(--g-kit-emerald-50) !important;
+  background: var(--g-kit-white) !important;
+  background-color: var(--g-kit-white) !important;
+  color: var(--g-kit-emerald-50) !important;
+  transition: all 0.2s ease !important;
+}
+
+.pgd-button--secondary:hover,
+.pgd-button--secondary:focus,
+.pgd-button--secondary:active,
+.btn.pgd-button--secondary:hover,
+.btn.pgd-button--secondary:focus,
+.btn.pgd-button--secondary:active,
+.btn-outline-primary.pgd-button--secondary:hover,
+.btn-outline-primary.pgd-button--secondary:focus,
+.btn-outline-primary.pgd-button--secondary:active {
+  background: var(--g-kit-white) !important;
+  background-color: var(--g-kit-white) !important;
+  border-color: var(--g-kit-emerald-80) !important;
+  color: var(--g-kit-emerald-80) !important;
+  box-shadow: 0 2px 6px rgba(0, 30, 26, 0.12) !important;
+}
+
+.pgd-button--secondary:hover *,
+.pgd-button--secondary:focus *,
+.pgd-button--secondary:active *,
+.btn.pgd-button--secondary:hover *,
+.btn.pgd-button--secondary:focus *,
+.btn.pgd-button--secondary:active * {
+  color: var(--g-kit-emerald-80) !important;
 }
 
 .pgd-sr-only {

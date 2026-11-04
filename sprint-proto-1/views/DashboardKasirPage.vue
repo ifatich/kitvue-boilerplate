@@ -26,9 +26,91 @@ const isRoleMenuOpen = ref(false)
 const router = useRouter()
 const route = useRoute()
 const { showTaskSuccessModal } = useTaskSuccessModal()
+
+const hasSearched = ref(false)
+watch(searchMenu, (val) => {
+  if (val.trim().length > 0) {
+    hasSearched.value = true
+  }
+})
+
+let searchSuccessTimer: ReturnType<typeof setTimeout> | null = null
+
+const handleBerandaSearchSuccess = () => {
+  const isComparing = route.query.nextView === 'proto-2'
+  if (isComparing) {
+    showTaskSuccessModal({
+      title: 'Task Selesai',
+      taskName: 'Beranda Opsi 1 (Pencarian Pengajuan Gadai)',
+      message: 'Selamat, Anda berhasil menemukan menu Pengajuan Gadai melalui pencarian! Lanjut ke Beranda Opsi 2 untuk membandingkan tampilan.',
+      confirmLabel: 'Lanjut ke Beranda Opsi 2',
+      onConfirm: () => {
+        void router.push({
+          path: '/sprint-proto-2',
+          query: {
+            team: route.query.team as string | undefined,
+            cp: route.query.cp as string | undefined,
+            role: route.query.role as string | undefined,
+            fromCompare: 'proto-1',
+          },
+        })
+      },
+    })
+  } else {
+    showTaskSuccessModal({
+      title: 'Task Selesai',
+      taskName: 'Beranda Opsi 1 (Pencarian Pengajuan Gadai)',
+      message: 'Selamat, Anda berhasil menemukan menu Pengajuan Gadai melalui pencarian!',
+      confirmLabel: 'Kembali ke Menu Task',
+    })
+  }
+}
+
+const handleBerandaTaskSuccess = (taskLabel: string) => {
+  const isComparing = route.query.nextView === 'proto-2'
+  if (isComparing) {
+    showTaskSuccessModal({
+      title: 'Task Selesai',
+      taskName: `Beranda Opsi 1 (${taskLabel})`,
+      message: 'Lanjut ke Beranda Opsi 2 untuk membandingkan tampilan.',
+      confirmLabel: 'Lanjut ke Beranda Opsi 2',
+      onConfirm: () => {
+        void router.push({
+          path: '/sprint-proto-2',
+          query: {
+            team: route.query.team as string | undefined,
+            cp: route.query.cp as string | undefined,
+            role: route.query.role as string | undefined,
+            fromCompare: 'proto-1',
+          },
+        })
+      },
+    })
+  } else {
+    showTaskSuccessModal({
+      title: 'Task Selesai',
+      taskName: `Beranda Opsi 1 (${taskLabel})`,
+      message: 'Selamat Anda sudah menyelesaikan task!',
+      confirmLabel: 'Kembali ke Menu Task',
+    })
+  }
+}
 const isPengajuanGadaiRoute = computed(() => (
   route.name === 'proto-existing-pengajuan-gadai' || route.name === 'sprint-proto-1-pengajuan-gadai'
 ))
+watch(isPengajuanGadaiRoute, (isRoute) => {
+  if (isRoute && (route.query.viaSearch === '1' || hasSearched.value)) {
+    if (searchSuccessTimer) clearTimeout(searchSuccessTimer)
+    searchSuccessTimer = setTimeout(() => {
+      handleBerandaSearchSuccess()
+    }, 5000)
+  } else {
+    if (searchSuccessTimer) {
+      clearTimeout(searchSuccessTimer)
+      searchSuccessTimer = null
+    }
+  }
+}, { immediate: true })
 watch(() => route.name, (name) => {
   if (name === 'proto-existing-pengajuan-gadai' || name === 'sprint-proto-1-pengajuan-gadai') {
     activeNav.value = normalizeMenuSearch('Pengajuan Gadai')
@@ -196,7 +278,13 @@ function handleAnnouncementFocusOut(event: FocusEvent) {
 }
 
 onMounted(startAnnouncementAutoplay)
-onUnmounted(pauseAnnouncementAutoplay)
+onUnmounted(() => {
+  pauseAnnouncementAutoplay()
+  if (searchSuccessTimer) {
+    clearTimeout(searchSuccessTimer)
+    searchSuccessTimer = null
+  }
+})
 
 function normalizeMenuSearch(value: string) {
   return value.trim().toLocaleLowerCase('id-ID').replace(/\s+/g, ' ')
@@ -228,10 +316,17 @@ function selectMenuItem(label: string) {
   isMobileOpen.value = false
 
   if (normalizeMenuSearch(label) === 'pengajuan gadai') {
+    const wasViaSearch = hasSearched.value && Boolean(searchMenu.value.trim())
     const formPath = route.path.startsWith('/sprint-proto-1')
       ? '/sprint-proto-1/pengajuan-gadai'
       : '/proto-existing/pengajuan-gadai'
-    void router.push(formPath)
+    void router.push({
+      path: formPath,
+      query: {
+        ...route.query,
+        viaSearch: wasViaSearch ? '1' : undefined,
+      },
+    })
   }
 }
 
@@ -745,7 +840,7 @@ function selectNav(id: string) {
                     5
                   </span>
                 </div>
-                <button class="cms-panel-action" type="button" @click="showTaskSuccessModal({ taskName: 'Beranda Opsi 1 (Tugasku)' })">
+                <button class="cms-panel-action" type="button" @click="handleBerandaTaskSuccess('Tugasku')">
                   Lihat Semua
                 </button>
               </header>
@@ -756,7 +851,7 @@ function selectNav(id: string) {
                   :key="`${t.title}-${idx}`"
                   class="cms-task-row"
                   style="cursor: pointer;"
-                  @click="showTaskSuccessModal({ taskName: `Beranda Opsi 1 (${t.title})` })"
+                  @click="handleBerandaTaskSuccess(t.title)"
                 >
                   <span style="font-size: 14px; font-weight: 600; color: #252528;">{{ t.title }}</span>
                   <span class="cms-task-row__count">{{ t.count }}</span>

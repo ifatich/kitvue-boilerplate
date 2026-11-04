@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useMediaQuery } from '@vueuse/core'
 import { useTaskSuccessModal } from '@/composables/useTaskSuccessModal'
 import { GAlert, GButton, GDropdown, GInputNominalStart, GInputText, GModal, GRadio, GTooltip } from '@/components'
@@ -369,8 +370,9 @@ const copySubmissionNumber = async () => {
 
 const { showTaskSuccessModal } = useTaskSuccessModal()
 
-const returnToEntryPage = () => {
+const returnToEntryPage = async () => {
   showSubmissionModal.value = false
+  await nextTick()
   showTaskSuccessModal({
     taskName: 'Pengajuan Gadai (Non Stepper)',
   })
@@ -396,16 +398,34 @@ watch(nik, (value) => {
   customerDetailsExpanded.value = false
   customerSearchError.value = ''
 })
+
+const router = useRouter()
+const route = useRoute()
+
+const berandaUrl = computed(() => {
+  const query = { ...route.query }
+  const queryStr = new URLSearchParams(query as Record<string, string>).toString()
+  return queryStr ? `/beranda?${queryStr}` : '/beranda'
+})
+
+const handleModuleBack = () => {
+  void router.push({
+    path: '/beranda',
+    query: route.query,
+  })
+}
 </script>
 
 <template>
   <SprintModuleShell
     title="Pengajuan Gadai"
-    :breadcrumbs="[{ label: 'Beranda', to: '/beranda' }, { label: 'Pinjaman Gadai' }, 'Pengajuan Gadai']"
-    back-to="/beranda"
+    :breadcrumbs="[{ label: 'Beranda', to: berandaUrl }, { label: 'Pinjaman Gadai' }, 'Pengajuan Gadai']"
+    :back-to="berandaUrl"
+    :profile-role="(route.query.role as string) || 'Penaksir'"
     :wide="true"
     entry-navbar
     search-placeholder="Cari (contoh: Pengajuan Gadai/Rahn)"
+    @back="handleModuleBack"
   >
     <div class="gadai-one-page">
       <div class="gadai-one-page__sections">

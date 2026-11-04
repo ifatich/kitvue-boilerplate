@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { RouterLink, useRouter } from 'vue-router'
+import { computed, ref } from 'vue'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 import SprintNavbar from '@/components/shared/admin-layout/SprintNavbar.vue'
 import rahnIcon from 'kitvue-public/src/assets/icon/Pengajuan-Rahn.svg'
 import confirmationIcon from 'kitvue-public/src/assets/icon/gadai2.svg'
@@ -28,19 +28,59 @@ import reportKpiIcon from '@/assets/figma/entry/report-kpi.svg'
 import reportBalanceIcon from '@/assets/figma/entry/report-balance.svg'
 
 const router = useRouter()
-const openPengajuan = () => router.push('/pengajuan-gadai')
+const route = useRoute()
+
+const isNonStepper = computed(() => {
+  if (route.query.targetGadai === 'non-stepper') return true
+  if (route.query.targetGadai === 'stepper') return false
+  const cp = (route.query.cp as string | undefined)?.toLowerCase() || ''
+  return (
+    cp.includes('talasalapang') ||
+    cp.includes('palangga') ||
+    cp.includes('renon') ||
+    (cp.includes('denpasar') && !cp.includes('ubung'))
+  )
+})
+
+const pengajuanPath = computed(() => (isNonStepper.value ? '/pengajuan-gadai-non-stepper' : '/pengajuan-gadai'))
+
+const pengajuanTo = computed(() => {
+  const query = { ...route.query }
+  const queryStr = new URLSearchParams(query as Record<string, string>).toString()
+  return queryStr ? `${pengajuanPath.value}?${queryStr}` : pengajuanPath.value
+})
+
+const openPengajuan = () => {
+  void router.push({
+    path: pengajuanPath.value,
+    query: route.query,
+  })
+}
+
+const handleMenuItemClick = (label: string) => {
+  if (label === 'Pengajuan Gadai' || label === 'Pengajuan') {
+    openPengajuan()
+  }
+}
+
+const handleModuleClick = (module: { title: string; to?: string }) => {
+  if (module.title === 'Pengajuan' && module.to) {
+    void router.push(module.to)
+  }
+}
+
 const openModule = ref<string | null>('Pengajuan')
 const chevronDown = chevronDownAsset as unknown as string
 const infoIcon = infoIconAsset as unknown as string
 const dashboardPage = ref(0)
-const searchItems = [
+const searchItems = computed(() => [
   {
     group: 'Pinjaman Gadai',
-    label: 'Pengajuan Gadai',
+    label: isNonStepper.value ? 'Pengajuan Gadai (Non Stepper)' : 'Pengajuan Gadai',
     icon: loanApplyIcon as unknown as string,
-    to: '/pengajuan-gadai',
+    to: pengajuanTo.value,
   },
-]
+])
 
 const dashboardSlides = [
   ['egc', 'osl', 'npl'],
@@ -53,12 +93,12 @@ const tasks = [
   { label: 'Verifikasi', value: '99+' },
 ]
 
-const modules = [
-  { title: 'Pengajuan', label: 'Pengajuan Gadai/Rahn', icon: rahnIcon as unknown as string, to: '/pengajuan-gadai', slot: 'submission' },
-  { title: 'Konfirmasi', label: 'Konfirmasi Gadai/Rahn', icon: confirmationIcon as unknown as string, to: '/pengajuan-gadai', slot: 'confirmation' },
-  { title: 'Verifikasi', label: 'Verifikasi Gadai/Rahn', icon: verificationIcon as unknown as string, to: '/pengajuan-gadai', slot: 'verification' },
-  { title: 'Laporan', label: 'Daftar Pinjaman', icon: reportIcon as unknown as string, to: '/pengajuan-gadai', slot: 'report' },
-]
+const modules = computed(() => [
+  { title: 'Pengajuan', label: 'Pengajuan Gadai/Rahn', icon: rahnIcon as unknown as string, to: pengajuanTo.value, slot: 'submission' },
+  { title: 'Konfirmasi', label: 'Konfirmasi Gadai/Rahn', icon: confirmationIcon as unknown as string, to: '', slot: 'confirmation' },
+  { title: 'Verifikasi', label: 'Verifikasi Gadai/Rahn', icon: verificationIcon as unknown as string, to: '', slot: 'verification' },
+  { title: 'Laporan', label: 'Daftar Pinjaman', icon: reportIcon as unknown as string, to: '', slot: 'report' },
+])
 
 const entryGroups = [
   {
@@ -163,7 +203,7 @@ const handleSlideClick = () => {
     <SprintNavbar
       embedded
       entry-layout
-      profile-role="Penaksir"
+      :profile-role="(route.query.role as string) || 'Penaksir'"
       :show-auth-toggle="false"
       :show-mobile-bottom-nav="true"
       search-placeholder="Cari (contoh: Pengajuan Gadai/Rahn)"
@@ -300,14 +340,14 @@ const handleSlideClick = () => {
           <section class="panel task-panel">
             <div class="panel-heading">
               <h2>Tugasku <span>99+</span></h2>
-              <button type="button" @click="openPengajuan">Lihat Semua</button>
+              <button type="button">Lihat Semua</button>
             </div>
             <button
               v-for="task in tasks"
               :key="task.label"
               type="button"
               class="task-row"
-              @click="openPengajuan"
+              @click="handleMenuItemClick(task.label)"
             >
               <span>{{ task.label }}</span>
               <b>{{ task.value }}</b>
@@ -325,7 +365,7 @@ const handleSlideClick = () => {
                   :key="item.label"
                   type="button"
                   class="feature-menu__item"
-                  @click="openPengajuan"
+                  @click="handleMenuItemClick(item.label)"
                 >
                   <img :src="item.icon" alt="" aria-hidden="true" />
                   <span>{{ item.label }}</span>
@@ -341,7 +381,7 @@ const handleSlideClick = () => {
                   :key="item.label"
                   type="button"
                   class="feature-menu__item"
-                  @click="openPengajuan"
+                  @click="handleMenuItemClick(item.label)"
                 >
                   <img :src="item.icon" alt="" aria-hidden="true" />
                   <span>{{ item.label }}</span>
@@ -359,7 +399,7 @@ const handleSlideClick = () => {
                   :key="item.label"
                   type="button"
                   class="feature-menu__item"
-                  @click="openPengajuan"
+                  @click="handleMenuItemClick(item.label)"
                 >
                   <img :src="item.icon" alt="" aria-hidden="true" />
                   <span>{{ item.label }}</span>
@@ -375,7 +415,7 @@ const handleSlideClick = () => {
                   :key="item.label"
                   type="button"
                   class="feature-menu__item"
-                  @click="openPengajuan"
+                  @click="handleMenuItemClick(item.label)"
                 >
                   <img :src="item.icon" alt="" aria-hidden="true" />
                   <span>{{ item.label }}</span>
@@ -388,10 +428,10 @@ const handleSlideClick = () => {
             <section class="panel feature-panel feature-panel--favorite">
               <div class="panel-heading">
                 <h2>Menu Favorit</h2>
-                <button type="button" @click="openPengajuan">Atur</button>
+                <button type="button">Atur</button>
               </div>
               <div class="favorite-menu">
-                <button type="button" class="favorite-menu__add" @click="openPengajuan">
+                <button type="button" class="favorite-menu__add">
                   <span class="favorite-menu__icon">
                     <span aria-hidden="true">+</span>
                   </span>
@@ -408,7 +448,7 @@ const handleSlideClick = () => {
                   :key="item.label"
                   type="button"
                   class="feature-menu__item"
-                  @click="openPengajuan"
+                  @click="handleMenuItemClick(item.label)"
                 >
                   <img :src="item.icon" alt="" aria-hidden="true" />
                   <span>{{ item.label }}</span>
@@ -577,7 +617,7 @@ const handleSlideClick = () => {
               Tugasku
               <b>99+</b>
             </h2>
-            <button type="button" @click="openPengajuan">Lihat Semua</button>
+            <button type="button">Lihat Semua</button>
           </header>
           <div class="mobile-task-list">
             <button
@@ -585,7 +625,7 @@ const handleSlideClick = () => {
               :key="`mobile-${task.label}`"
               type="button"
               class="mobile-task-row"
-              @click="openPengajuan"
+              @click="handleMenuItemClick(task.label)"
             >
               <span>{{ task.label }}</span>
               <b>{{ task.value }}</b>
@@ -597,10 +637,10 @@ const handleSlideClick = () => {
         <section class="mobile-card mobile-favorite-card">
           <header>
             <h2>Menu Favorit</h2>
-            <button type="button" @click="openPengajuan">Atur</button>
+            <button type="button">Atur</button>
           </header>
           <div class="mobile-favorite-body">
-            <button type="button" class="mobile-add-menu" @click="openPengajuan">
+            <button type="button" class="mobile-add-menu">
               <span class="mobile-add-menu__circle">
                 <span class="mobile-add-menu__badge">+</span>
               </span>
@@ -625,7 +665,7 @@ const handleSlideClick = () => {
             <img :class="{ 'is-open': openModule === module.title }" :src="chevronDown" alt="" aria-hidden="true" />
           </button>
           <div v-show="openModule === module.title" class="mobile-feature-menu">
-            <button type="button" @click="router.push(module.to)">
+            <button type="button" @click="handleModuleClick(module)">
               <span class="mobile-feature-icon-wrapper">
                 <img :src="module.icon" alt="" aria-hidden="true" />
               </span>

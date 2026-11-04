@@ -32,6 +32,8 @@ interface TeamOption extends EntryPointOption {
 interface BranchOption extends EntryPointOption {
   shortLabel: string
   tier: string
+  gadaiType: 'stepper' | 'non-stepper'
+  berandaPrimary: 1 | 2
 }
 
 const props = withDefaults(defineProps<{ stage?: EntryPointStage }>(), {
@@ -42,26 +44,26 @@ const router = useRouter()
 const route = useRoute()
 
 const teams: TeamOption[] = [
-  { id: 'team-1', label: 'Tim 1', description: 'Kanwil Bandung', kanwil: 'Bandung', tier: 'Tier 1' },
+  { id: 'team-1', label: 'Tim 1', description: 'Kanwil Makassar', kanwil: 'Makassar', tier: 'Tier 1' },
   { id: 'team-2', label: 'Tim 2', description: 'Kanwil Denpasar', kanwil: 'Denpasar', tier: 'Tier 2' },
-  { id: 'team-3', label: 'Tim 3', description: 'Kanwil XXX', kanwil: 'XXX', tier: 'Tier 3' },
+  { id: 'team-3', label: 'Tim 3', description: 'Kanwil Bandung', kanwil: 'Bandung', tier: 'Tier 3' },
 ]
 
 const branchesByTeam: Record<string, BranchOption[]> = {
   'team-1': [
-    { id: 'bdg-cbg-a', label: 'bdg-cbg-a', description: 'Cabang A (Urban)', shortLabel: 'Cabang A', tier: 'Urban' },
-    { id: 'bdg-cbg-b', label: 'bdg-cbg-b', description: 'Cabang B (Sub Urban)', shortLabel: 'Cabang B', tier: 'Sub Urban' },
-    { id: 'bdg-cbg-c', label: 'bdg-cbg-c', description: 'Cabang C (Rural)', shortLabel: 'Cabang C', tier: 'Rural' },
+    { id: 'mks-cbg-talasalapang', label: 'CP Talasalapang', description: 'Urban', shortLabel: 'CP Talasalapang', tier: 'Urban', gadaiType: 'non-stepper', berandaPrimary: 1 },
+    { id: 'mks-cbg-palangga', label: 'CP Palangga', description: 'Sub Urban', shortLabel: 'CP Palangga', tier: 'Sub Urban', gadaiType: 'non-stepper', berandaPrimary: 2 },
+    { id: 'mks-cbg-takalar', label: 'CP Takalar', description: 'Rural', shortLabel: 'CP Takalar', tier: 'Rural', gadaiType: 'stepper', berandaPrimary: 1 },
   ],
   'team-2': [
-    { id: 'dps-cbg-a', label: 'dps-cbg-a', description: 'Cabang A (Urban)', shortLabel: 'Cabang A', tier: 'Urban' },
-    { id: 'dps-cbg-b', label: 'dps-cbg-b', description: 'Cabang B (Sub Urban)', shortLabel: 'Cabang B', tier: 'Sub Urban' },
-    { id: 'dps-cbg-c', label: 'dps-cbg-c', description: 'Cabang C (Rural)', shortLabel: 'Cabang C', tier: 'Rural' },
+    { id: 'dps-cbg-renon', label: 'CP Renon', description: 'Urban', shortLabel: 'CP Renon', tier: 'Urban', gadaiType: 'non-stepper', berandaPrimary: 2 },
+    { id: 'dps-cbg-denpasar', label: 'CP Denpasar', description: 'Sub Urban', shortLabel: 'CP Denpasar', tier: 'Sub Urban', gadaiType: 'non-stepper', berandaPrimary: 1 },
+    { id: 'dps-cbg-ubung', label: 'CP Ubung', description: 'Rural', shortLabel: 'CP Ubung', tier: 'Rural', gadaiType: 'stepper', berandaPrimary: 2 },
   ],
   'team-3': [
-    { id: 'xxx-cbg-a', label: 'xxx-cbg-a', description: 'Cabang A (Urban)', shortLabel: 'Cabang A', tier: 'Urban' },
-    { id: 'xxx-cbg-b', label: 'xxx-cbg-b', description: 'Cabang B (Sub Urban)', shortLabel: 'Cabang B', tier: 'Sub Urban' },
-    { id: 'xxx-cbg-c', label: 'xxx-cbg-c', description: 'Cabang C (Rural)', shortLabel: 'Cabang C', tier: 'Rural' },
+    { id: 'bdg-cbg-pungkur', label: 'CP Pungkur', description: 'Urban', shortLabel: 'CP Pungkur', tier: 'Urban', gadaiType: 'stepper', berandaPrimary: 1 },
+    { id: 'bdg-cbg-cimahi', label: 'CP Cimahi', description: 'Sub Urban', shortLabel: 'CP Cimahi', tier: 'Sub Urban', gadaiType: 'stepper', berandaPrimary: 2 },
+    { id: 'bdg-cbg-ujungberung', label: 'CP Ujung Berung', description: 'Rural', shortLabel: 'CP Ujung Berung', tier: 'Rural', gadaiType: 'stepper', berandaPrimary: 1 },
   ],
 }
 
@@ -71,43 +73,6 @@ const roles: EntryPointOption[] = [
   { id: 'Pinca', label: 'Pinca' },
   { id: 'CRO', label: 'CRO' },
 ]
-
-/**
- * Task definitions for Scenario 1 through 6
- * Derived from Figma Node 598:46219 and Node 625:403725
- */
-const sceneTasks: Record<number, EntryPointOption[]> = {
-  1: [
-    { id: 'task-1', label: 'Task 1', description: 'P. Gadai (Non Stepper)', targetRoute: '/gadai-1-page', requiresLogin: true },
-    { id: 'task-2', label: 'Task 2', description: 'Beranda Opsi 2', targetRoute: '/sprint-proto-2', requiresLogin: true },
-    { id: 'task-3', label: 'Task 3', description: 'POS', targetRoute: '/pos', requiresLogin: false },
-  ],
-  2: [
-    { id: 'task-1', label: 'Task 1', description: 'P. Gadai (Non Stepper)', targetRoute: '/gadai-1-page', requiresLogin: true },
-    { id: 'task-2', label: 'Task 2', description: 'Beranda Opsi 1', targetRoute: '/sprint-proto-1', requiresLogin: true },
-    { id: 'task-3', label: 'Task 3', description: 'POS', targetRoute: '/pos', requiresLogin: false },
-  ],
-  3: [
-    { id: 'task-1', label: 'Task 1', description: 'P. Gadai (Stepper)', targetRoute: '/pengajuan-gadai', requiresLogin: true },
-    { id: 'task-2', label: 'Task 2', description: 'Beranda Opsi 2', targetRoute: '/sprint-proto-2', requiresLogin: true },
-    { id: 'task-3', label: 'Task 3', description: 'POS', targetRoute: '/pos', requiresLogin: false },
-  ],
-  4: [
-    { id: 'task-1', label: 'Task 1', description: 'P. Gadai (Stepper)', targetRoute: '/pengajuan-gadai', requiresLogin: true },
-    { id: 'task-2', label: 'Task 2', description: 'Beranda Opsi 1', targetRoute: '/sprint-proto-1', requiresLogin: true },
-    { id: 'task-3', label: 'Task 3', description: 'POS', targetRoute: '/pos', requiresLogin: false },
-  ],
-  5: [
-    { id: 'task-1', label: 'Task 1', description: 'Beranda Eksisting', targetRoute: '/sprint-existing', requiresLogin: true },
-    { id: 'task-2', label: 'Task 2', description: 'Beranda Opsi 2', targetRoute: '/sprint-proto-2', requiresLogin: true },
-    { id: 'task-3', label: 'Task 3', description: 'POS', targetRoute: '/pos', requiresLogin: false },
-  ],
-  6: [
-    { id: 'task-1', label: 'Task 1', description: 'Beranda Eksisting', targetRoute: '/sprint-existing', requiresLogin: true },
-    { id: 'task-2', label: 'Task 2', description: 'Beranda Opsi 1', targetRoute: '/sprint-proto-1', requiresLogin: true },
-    { id: 'task-3', label: 'Task 3', description: 'POS', targetRoute: '/pos', requiresLogin: false },
-  ],
-}
 
 function getQueryValue(value: unknown): string | undefined {
   return typeof value === 'string' ? value : undefined
@@ -125,10 +90,17 @@ const selectedBranch = computed<BranchOption>(() => {
   const exact = availableBranches.value.find((b) => b.id.toLowerCase() === queryCp.toLowerCase())
   if (exact) return exact
 
-  // Backward compatibility fallback for legacy CP X / Y / Z
-  if (queryCp.toUpperCase().includes('X') || queryCp.toUpperCase().includes('A')) return availableBranches.value[0]
-  if (queryCp.toUpperCase().includes('Y') || queryCp.toUpperCase().includes('B')) return availableBranches.value[1]
-  if (queryCp.toUpperCase().includes('Z') || queryCp.toUpperCase().includes('C')) return availableBranches.value[2]
+  // Fallback for legacy branch IDs or names
+  const q = queryCp.toLowerCase()
+  if (q.includes('talasalapang') || q.includes('renon') || q.includes('pungkur') || q.endsWith('-a') || (q.includes('urban') && !q.includes('sub'))) {
+    return availableBranches.value[0]
+  }
+  if (q.includes('palangga') || q.includes('denpasar') || q.includes('cimahi') || q.endsWith('-b') || q.includes('sub')) {
+    return availableBranches.value[1]
+  }
+  if (q.includes('takalar') || q.includes('ubung') || q.includes('ujung') || q.endsWith('-c') || q.includes('rural')) {
+    return availableBranches.value[2]
+  }
   return availableBranches.value[0]
 })
 
@@ -143,38 +115,59 @@ const currentRole = computed(() => selectedRole.value ?? roles[0])
 const isLeadershipRole = computed(() => currentRole.value.id === 'Pinca' || currentRole.value.id === 'CRO')
 
 /**
- * Computes exact Scene (1 to 6) based on Scenario Matrix:
- * Kanwil A (Bandung): Urban (A) -> S1/S5, Sub Urban (B) -> S2/S6, Rural (C) -> S3/S5
- * Kanwil B (Denpasar): Urban (A) -> S1/S6, Sub Urban (B) -> S2/S5, Rural (C) -> S3/S6
- * Kanwil C (XXX): Urban (A) -> S4/S5, Sub Urban (B) -> S4/S6, Rural (C) -> S4/S5
+ * Computes exact tasks according to the updated research matrix:
+ * - Kasir & Penaksir: 3 tasks (Task 1: Gadai, Task 2: Beranda, Task 3: PoS)
+ * - Pinca & CRO: 2 tasks (Task 1: Beranda, Task 2: PoS)
  */
-const currentScene = computed<number>(() => {
-  const teamId = selectedTeam.value.id
-  const branchId = selectedBranch.value.id
+const currentTasks = computed<EntryPointOption[]>(() => {
+  const branch = selectedBranch.value
   const isLeadership = isLeadershipRole.value
 
-  // Tim 1: Kanwil Bandung
-  if (teamId === 'team-1') {
-    if (branchId.endsWith('-a')) return isLeadership ? 5 : 1
-    if (branchId.endsWith('-b')) return isLeadership ? 6 : 2
-    if (branchId.endsWith('-c')) return isLeadership ? 5 : 3
+  const berandaTask: EntryPointOption = branch.berandaPrimary === 1
+    ? {
+        id: 'task-beranda',
+        label: isLeadership ? 'Task 1' : 'Task 2',
+        description: 'Beranda Opsi 1 (Next view: Beranda Opsi 2)',
+        targetRoute: '/sprint-proto-1?nextView=proto-2',
+        requiresLogin: true,
+      }
+    : {
+        id: 'task-beranda',
+        label: isLeadership ? 'Task 1' : 'Task 2',
+        description: 'Beranda Opsi 2 (Next view: Beranda Opsi 1)',
+        targetRoute: '/sprint-proto-2?nextView=proto-1',
+        requiresLogin: true,
+      }
+
+  const posTask: EntryPointOption = {
+    id: 'task-pos',
+    label: isLeadership ? 'Task 2' : 'Task 3',
+    description: 'PoS',
+    targetRoute: '/pos',
+    requiresLogin: false,
   }
 
-  // Tim 2: Kanwil Denpasar
-  if (teamId === 'team-2') {
-    if (branchId.endsWith('-a')) return isLeadership ? 6 : 1
-    if (branchId.endsWith('-b')) return isLeadership ? 5 : 2
-    if (branchId.endsWith('-c')) return isLeadership ? 6 : 3
+  if (isLeadership) {
+    return [berandaTask, posTask]
   }
 
-  // Tim 3: Kanwil XXX
-  if (teamId === 'team-3') {
-    if (branchId.endsWith('-a')) return isLeadership ? 5 : 4
-    if (branchId.endsWith('-b')) return isLeadership ? 6 : 4
-    if (branchId.endsWith('-c')) return isLeadership ? 5 : 4
-  }
+  const gadaiTask: EntryPointOption = branch.gadaiType === 'non-stepper'
+    ? {
+        id: 'task-gadai',
+        label: 'Task 1',
+        description: 'Pengajuan Gadai Non Stepper',
+        targetRoute: '/beranda?targetGadai=non-stepper',
+        requiresLogin: true,
+      }
+    : {
+        id: 'task-gadai',
+        label: 'Task 1',
+        description: 'Pengajuan Gadai Stepper',
+        targetRoute: '/beranda?targetGadai=stepper',
+        requiresLogin: true,
+      }
 
-  return 1
+  return [gadaiTask, berandaTask, posTask]
 })
 
 const stageContent = computed<Record<EntryPointStage, { title: string; options: EntryPointOption[] }>>(() => ({
@@ -187,12 +180,12 @@ const stageContent = computed<Record<EntryPointStage, { title: string; options: 
     options: availableBranches.value,
   },
   role: {
-    title: `ROLE CP [${selectedBranch.value.label}] - Kanwil ${selectedTeam.value.kanwil} - ${selectedBranch.value.shortLabel} (${selectedBranch.value.tier})`,
+    title: `ROLE CP [${selectedBranch.value.label}] - Kanwil ${selectedTeam.value.kanwil} (${selectedBranch.value.tier})`,
     options: roles,
   },
   tasks: {
-    title: `Task [${currentRole.value.label}] CP [${selectedBranch.value.label}] - Kanwil ${selectedTeam.value.kanwil} - ${selectedBranch.value.shortLabel} (${selectedBranch.value.tier} - Scene ${currentScene.value})`,
-    options: sceneTasks[currentScene.value] ?? sceneTasks[1],
+    title: `Task [${currentRole.value.label}] CP [${selectedBranch.value.label}] - Kanwil ${selectedTeam.value.kanwil} (${selectedBranch.value.tier})`,
+    options: currentTasks.value,
   },
 }))
 
@@ -235,17 +228,32 @@ function selectOption(option: EntryPointOption) {
   }
 
   if (props.stage === 'tasks') {
-    const targetRoute = option.targetRoute ?? '/sprint-proto-1'
+    const rawTargetRoute = option.targetRoute ?? '/sprint-proto-1'
+    const [path, queryString] = rawTargetRoute.split('?')
+    const extraParams = new URLSearchParams(queryString ?? '')
+    const targetQuery: Record<string, string> = {
+      team: selectedTeam.value.id,
+      cp: selectedBranch.value.id,
+      role: currentRole.value.id,
+    }
+    extraParams.forEach((val, key) => {
+      targetQuery[key] = val
+    })
+
     if (option.requiresLogin) {
       void router.push({
         path: '/login',
         query: {
           role: currentRole.value.id,
-          redirect: targetRoute,
+          redirect: path,
+          ...targetQuery,
         },
       })
     } else {
-      void router.push(targetRoute)
+      void router.push({
+        path,
+        query: targetQuery,
+      })
     }
   }
 }

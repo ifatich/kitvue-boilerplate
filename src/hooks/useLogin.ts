@@ -29,7 +29,11 @@ export function useLogin() {
       !target.startsWith('//') &&
       !target.startsWith('/\\')
     ) {
-      router.push(target)
+      const { redirect: _redirect, roleSelection: _roleSelection, ...forwardQueries } = route.query
+      router.push({
+        path: target,
+        query: forwardQueries,
+      })
     } else {
       router.push('/beranda')
     }

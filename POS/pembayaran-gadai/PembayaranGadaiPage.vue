@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useTaskSuccessModal } from '@/composables/useTaskSuccessModal'
+import { useTaskSuccessModal } from '../../src/composables/useTaskSuccessModal'
 import PosHeader from '../components/PosHeader.vue'
 import PosSidebar, { type PosNavLabel } from '../components/PosSidebar.vue'
 import { usePosSidebar } from '../composables/usePosSidebar'
@@ -118,11 +118,17 @@ watch(installmentAmount, (val) => {
 function selectNavigation(item: PosNavLabel) {
   close()
   if (item === 'Dashboard') {
-    void router?.push(routePrefix || '/')
+    void router?.push({
+      path: routePrefix || '/',
+      query: route.query,
+    })
     return
   }
   if (item === 'Pembayaran') {
-    void router?.push(`${routePrefix}/pembayaran`)
+    void router?.push({
+      path: `${routePrefix}/pembayaran`,
+      query: route.query,
+    })
     return
   }
   announce(`${item} belum tersedia pada pratinjau POS ini.`)
@@ -130,14 +136,46 @@ function selectNavigation(item: PosNavLabel) {
 
 const { showTaskSuccessModal } = useTaskSuccessModal()
 
+let successModalTimer: ReturnType<typeof setTimeout> | null = null
+
+function triggerSuccessModal() {
+  if (successModalTimer) {
+    clearTimeout(successModalTimer)
+    successModalTimer = null
+  }
+  showTaskSuccessModal({
+    title: 'Task Selesai',
+    taskName: 'PoS (Pembayaran Gadai)',
+    message: 'Selamat, Anda berhasil menyelesaikan pembayaran di POS!',
+    confirmLabel: 'Kembali ke Menu Task',
+  })
+}
+
+const isSuccessResult = computed(() => stage.value === 'result' && resultStatus.value === 'success')
+
+watch(isSuccessResult, (isSuccess) => {
+  if (isSuccess) {
+    if (successModalTimer) clearTimeout(successModalTimer)
+    successModalTimer = setTimeout(() => {
+      triggerSuccessModal()
+    }, 5000)
+  } else {
+    if (successModalTimer) {
+      clearTimeout(successModalTimer)
+      successModalTimer = null
+    }
+  }
+}, { immediate: true })
+
 function resetFlowToHome() {
   if (resultStatus.value === 'success') {
-    showTaskSuccessModal({
-      taskName: 'POS (Pembayaran Gadai)',
-    })
+    triggerSuccessModal()
     return
   }
-  void router?.push(`${routePrefix}/pembayaran`)
+  void router?.push({
+    path: `${routePrefix}/pembayaran`,
+    query: route.query,
+  })
 }
 
 // 16-Digit Credit Contract Search
@@ -279,6 +317,10 @@ async function copyTransactionId(value: string) {
 onBeforeUnmount(() => {
   if (pollTimeout) clearTimeout(pollTimeout)
   if (announcementTimeout) clearTimeout(announcementTimeout)
+  if (successModalTimer) {
+    clearTimeout(successModalTimer)
+    successModalTimer = null
+  }
 })
 </script>
 

@@ -4,19 +4,24 @@ import { useTaskSuccessModal } from '@/composables/useTaskSuccessModal'
 describe('useTaskSuccessModal Composable', () => {
   const {
     isTaskModalOpen,
+    hasCompletedTask,
+    isDismissedForExploration,
     modalTitle,
     modalMessage,
     modalTaskName,
     modalConfirmLabel,
     modalSecondaryLabel,
     showTaskSuccessModal,
+    dismissToExplore,
+    reopenSuccessModal,
+    resetTaskCompletionState,
     closeTaskSuccessModal,
     handleConfirm,
     handleSecondary,
   } = useTaskSuccessModal()
 
   beforeEach(() => {
-    closeTaskSuccessModal()
+    resetTaskCompletionState()
   })
 
   it('initializes with modal closed', () => {
@@ -74,6 +79,34 @@ describe('useTaskSuccessModal Composable', () => {
     handleSecondary()
     expect(cancelled).toBe(true)
     expect(isTaskModalOpen.value).toBe(false)
+  })
+
+  it('handles dismissToExplore and reopenSuccessModal flow', () => {
+    showTaskSuccessModal({
+      taskName: 'PoS (Pembayaran Gadai)',
+    })
+    expect(isTaskModalOpen.value).toBe(true)
+    expect(hasCompletedTask.value).toBe(true)
+    expect(isDismissedForExploration.value).toBe(false)
+
+    // User clicks (X) to explore
+    dismissToExplore()
+    expect(isTaskModalOpen.value).toBe(false)
+    expect(isDismissedForExploration.value).toBe(true)
+    expect(hasCompletedTask.value).toBe(true)
+
+    // User clicks floating badge or footer to reopen
+    reopenSuccessModal()
+    expect(isTaskModalOpen.value).toBe(true)
+    expect(isDismissedForExploration.value).toBe(false)
+    expect(hasCompletedTask.value).toBe(true)
+    expect(modalTaskName.value).toBe('PoS (Pembayaran Gadai)')
+
+    // User confirms
+    handleConfirm()
+    expect(isTaskModalOpen.value).toBe(false)
+    expect(isDismissedForExploration.value).toBe(false)
+    expect(hasCompletedTask.value).toBe(false)
   })
 })
 

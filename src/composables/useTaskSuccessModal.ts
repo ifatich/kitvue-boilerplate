@@ -17,6 +17,8 @@ export interface TaskSuccessModalOptions {
 }
 
 const isTaskModalOpen = ref(false)
+const hasCompletedTask = ref(false)
+const isDismissedForExploration = ref(false)
 const modalTitle = ref('Task Selesai')
 const modalMessage = ref('Selamat Anda sudah menyelesaikan task!')
 const modalTaskName = ref('')
@@ -43,15 +45,36 @@ export function useTaskSuccessModal() {
     modalSecondaryLabel.value = options?.secondaryLabel ?? ''
     onConfirmFn.value = options?.onConfirm ?? null
     onSecondaryFn.value = options?.onSecondary ?? null
+    hasCompletedTask.value = true
+    isDismissedForExploration.value = false
     isTaskModalOpen.value = true
+  }
+
+  const dismissToExplore = () => {
+    isTaskModalOpen.value = false
+    isDismissedForExploration.value = true
+  }
+
+  const reopenSuccessModal = () => {
+    isDismissedForExploration.value = false
+    isTaskModalOpen.value = true
+  }
+
+  const resetTaskCompletionState = () => {
+    isTaskModalOpen.value = false
+    isDismissedForExploration.value = false
+    hasCompletedTask.value = false
   }
 
   const closeTaskSuccessModal = () => {
     isTaskModalOpen.value = false
+    isDismissedForExploration.value = false
   }
 
   const handleConfirm = () => {
     isTaskModalOpen.value = false
+    isDismissedForExploration.value = false
+    hasCompletedTask.value = false
     if (onConfirmFn.value) {
       onConfirmFn.value()
       return
@@ -62,7 +85,11 @@ export function useTaskSuccessModal() {
       if (currentQuery.team && currentQuery.cp) {
         void router.push({
           name: 'entry-point-tasks',
-          query: { team: currentQuery.team, cp: currentQuery.cp },
+          query: {
+            team: currentQuery.team,
+            cp: currentQuery.cp,
+            role: currentQuery.role,
+          },
         })
         return
       }
@@ -79,12 +106,17 @@ export function useTaskSuccessModal() {
 
   return {
     isTaskModalOpen,
+    hasCompletedTask,
+    isDismissedForExploration,
     modalTitle,
     modalMessage,
     modalTaskName,
     modalConfirmLabel,
     modalSecondaryLabel,
     showTaskSuccessModal,
+    dismissToExplore,
+    reopenSuccessModal,
+    resetTaskCompletionState,
     closeTaskSuccessModal,
     handleConfirm,
     handleSecondary,

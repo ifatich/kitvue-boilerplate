@@ -374,6 +374,7 @@ const { showTaskSuccessModal } = useTaskSuccessModal()
 
 const returnToEntryPage = async () => {
   showSubmissionConfirmation.value = false
+  await nextTick()
   showTaskSuccessModal({
     taskName: 'Pengajuan Gadai (Stepper)',
   })
@@ -457,11 +458,20 @@ const checkDukcapil = () => {
   dukcapilStatus.value = fields.value.nikBeneficialOwner.replace(/\D/g, '').length === 16 ? 'success' : 'failed'
 }
 
+const berandaUrl = computed(() => {
+  const query = { ...route.query }
+  const queryStr = new URLSearchParams(query as Record<string, string>).toString()
+  return queryStr ? `/beranda?${queryStr}` : '/beranda'
+})
+
 const prevStep = async () => {
   if (activeStep.value > 1) {
     await transitionToStep(activeStep.value - 1)
   } else {
-    router.push('/beranda')
+    router.push({
+      path: '/beranda',
+      query: route.query,
+    })
   }
 }
 
@@ -549,9 +559,9 @@ provide(rahnFlowKey, {
   <SprintModuleShell
     v-else
     title="Pengajuan Gadai"
-    :breadcrumbs="[{ label: 'Beranda', to: '/beranda' }, { label: 'Pinjaman Gadai' }, 'Pengajuan Gadai']"
-    back-to="/beranda"
-    profile-role="Penaksir"
+    :breadcrumbs="[{ label: 'Beranda', to: berandaUrl }, { label: 'Pinjaman Gadai' }, 'Pengajuan Gadai']"
+    :back-to="berandaUrl"
+    :profile-role="(route.query.role as string) || 'Penaksir'"
     :show-auth-toggle="false"
     entry-navbar
     :wide="activeStep <= 5"

@@ -51,6 +51,36 @@ const router = useRouter()
 const route = useRoute()
 const { showTaskSuccessModal } = useTaskSuccessModal()
 
+const handleBerandaTaskSuccess = (taskLabel: string) => {
+  const isComparing = route.query.nextView === 'proto-1'
+  if (isComparing) {
+    showTaskSuccessModal({
+      title: 'Task Selesai',
+      taskName: `Beranda Opsi 2 (${taskLabel})`,
+      message: 'Lanjut ke Beranda Opsi 1 untuk membandingkan tampilan.',
+      confirmLabel: 'Lanjut ke Beranda Opsi 1',
+      onConfirm: () => {
+        void router.push({
+          path: '/sprint-proto-1',
+          query: {
+            team: route.query.team as string | undefined,
+            cp: route.query.cp as string | undefined,
+            role: route.query.role as string | undefined,
+            fromCompare: 'proto-2',
+          },
+        })
+      },
+    })
+  } else {
+    showTaskSuccessModal({
+      title: 'Task Selesai',
+      taskName: `Beranda Opsi 2 (${taskLabel})`,
+      message: 'Selamat Anda sudah menyelesaikan task!',
+      confirmLabel: 'Kembali ke Menu Task',
+    })
+  }
+}
+
 // Drawer open/collapsed state (Figma 525:348350 Group 626388 toggle)
 const isDrawerOpen = ref(false)
 const isMobileNavOpen = ref(false)
@@ -61,6 +91,44 @@ const isRoleMenuOpen = ref(false)
 const activeNotifTab = ref<'tugasku' | 'informasi'>('tugasku')
 const activeChartFilter = ref<'1 Minggu' | '1 Bulan' | '6 Bulan' | '1 Tahun'>('1 Minggu')
 const searchDrawer = ref('')
+const hasSearched = ref(false)
+watch(searchDrawer, (val) => {
+  if (val.trim().length > 0) {
+    hasSearched.value = true
+  }
+})
+
+let searchSuccessTimer: ReturnType<typeof setTimeout> | null = null
+
+const handleBerandaSearchSuccess = () => {
+  const isComparing = route.query.nextView === 'proto-1'
+  if (isComparing) {
+    showTaskSuccessModal({
+      title: 'Task Selesai',
+      taskName: 'Beranda Opsi 2 (Pencarian Pengajuan Gadai)',
+      message: 'Selamat, Anda berhasil menemukan menu Pengajuan Gadai melalui pencarian! Lanjut ke Beranda Opsi 1 untuk membandingkan tampilan.',
+      confirmLabel: 'Lanjut ke Beranda Opsi 1',
+      onConfirm: () => {
+        void router.push({
+          path: '/sprint-proto-1',
+          query: {
+            team: route.query.team as string | undefined,
+            cp: route.query.cp as string | undefined,
+            role: route.query.role as string | undefined,
+            fromCompare: 'proto-2',
+          },
+        })
+      },
+    })
+  } else {
+    showTaskSuccessModal({
+      title: 'Task Selesai',
+      taskName: 'Beranda Opsi 2 (Pencarian Pengajuan Gadai)',
+      message: 'Selamat, Anda berhasil menemukan menu Pengajuan Gadai melalui pencarian!',
+      confirmLabel: 'Kembali ke Menu Task',
+    })
+  }
+}
 const expandedMenuGroups = ref(new Set<string>())
 const activeMenuItem = ref('')
 watch(() => route.name, (name) => {
@@ -72,6 +140,19 @@ watch(() => route.name, (name) => {
 const isPengajuanGadaiRoute = computed(() => (
   route.name === 'proto-existing-pengajuan-gadai' || route.name === 'sprint-proto-2-pengajuan-gadai'
 ))
+watch(isPengajuanGadaiRoute, (isRoute) => {
+  if (isRoute && (route.query.viaSearch === '1' || hasSearched.value)) {
+    if (searchSuccessTimer) clearTimeout(searchSuccessTimer)
+    searchSuccessTimer = setTimeout(() => {
+      handleBerandaSearchSuccess()
+    }, 5000)
+  } else {
+    if (searchSuccessTimer) {
+      clearTimeout(searchSuccessTimer)
+      searchSuccessTimer = null
+    }
+  }
+}, { immediate: true })
 const announcementIndex = ref(0)
 const announcementSlides = [
   'SPRINT akan menjalani pemeliharaan pada hari Sabtu 5 Maret 2024 pukul 23.00 WIB sampai dengan Minggu 6 Maret 2024 pukul 04:59 WIB.',
@@ -98,6 +179,10 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('resize', updateViewportState)
   pauseAnnouncementAutoplay()
+  if (searchSuccessTimer) {
+    clearTimeout(searchSuccessTimer)
+    searchSuccessTimer = null
+  }
 })
 
 function closeBackdrop() {
@@ -572,12 +657,19 @@ function handleDrawerItemClick(groupLabel: string, item: string) {
     isDrawerOpen.value = false
   }
   if (normalizeMenuSearch(item) === 'pengajuan gadai') {
+    const wasViaSearch = hasSearched.value && Boolean(searchDrawer.value.trim())
     activeRailItem.value = 'beranda'
     isDrawerOpen.value = false
     const formPath = route.path.startsWith('/sprint-proto-2')
       ? '/sprint-proto-2/pengajuan-gadai'
       : '/proto-existing/pengajuan-gadai'
-    void router.push(formPath)
+    void router.push({
+      path: formPath,
+      query: {
+        ...route.query,
+        viaSearch: wasViaSearch ? '1' : undefined,
+      },
+    })
   }
 }
 </script>
@@ -1120,7 +1212,7 @@ function handleDrawerItemClick(groupLabel: string, item: string) {
                     <h2 class="proto2-card-title">Tugasku</h2>
                     <span class="proto2-task-count">5</span>
                   </div>
-                  <button type="button" class="proto2-text-button" @click="showTaskSuccessModal({ taskName: 'Beranda Opsi 2 (Tugasku)' })">
+                  <button type="button" class="proto2-text-button" @click="handleBerandaTaskSuccess('Tugasku')">
                     Lihat Semua
                   </button>
                 </header>
@@ -1131,7 +1223,7 @@ function handleDrawerItemClick(groupLabel: string, item: string) {
                     :key="`${t.title}-${idx}`"
                     class="proto2-task-row"
                     style="cursor: pointer;"
-                    @click="showTaskSuccessModal({ taskName: `Beranda Opsi 2 (${t.title})` })"
+                    @click="handleBerandaTaskSuccess(t.title)"
                   >
                     <span>{{ t.title }}</span>
                     <strong :class="{ 'proto2-task-count--zero': t.count === 0 }">{{ t.count }}</strong>

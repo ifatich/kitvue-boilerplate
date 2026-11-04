@@ -57,9 +57,10 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
-      path: '/gadai-1-page',
-      name: 'gadai-1-page',
-      component: () => import('../views/gadai-1-page/Gadai1PageView.vue'),
+      path: '/pengajuan-gadai-non-stepper',
+      name: 'pengajuan-gadai-non-stepper',
+      alias: ['/gadai-1-page'],
+      component: () => import('../views/pengajuan-gadai-non-stepper/PengajuanGadaiNonStepperView.vue'),
     },
     {
       path: '/pos',

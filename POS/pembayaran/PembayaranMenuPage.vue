@@ -37,7 +37,10 @@ function announce(message: string) {
 function selectNavigation(item: PosNavLabel) {
   close()
   if (item === 'Dashboard') {
-    void router.push(routePrefix || '/')
+    void router.push({
+      path: routePrefix || '/',
+      query: route.query,
+    })
     return
   }
   if (item === 'Pembayaran') {
@@ -48,7 +51,10 @@ function selectNavigation(item: PosNavLabel) {
 
 function handleServiceClick(serviceName: string) {
   if (serviceName === 'Bayar Gadai') {
-    void router.push(`${routePrefix}/pembayaran-gadai`)
+    void router.push({
+      path: `${routePrefix}/pembayaran-gadai`,
+      query: route.query,
+    })
     return
   }
   announce(`Layanan ${serviceName} belum tersedia pada pratinjau POS ini.`)
