@@ -22,6 +22,8 @@ interface EntryPointOption {
   title?: string
   subtitle?: string
   description?: string
+  badge?: string
+  actionLabel?: string
   targetRoute?: string
   requiresLogin?: boolean
 }
@@ -46,34 +48,200 @@ const router = useRouter()
 const route = useRoute()
 
 const teams: TeamOption[] = [
-  { id: 'team-1', label: 'Tim 1', description: 'Kanwil Makassar', kanwil: 'Makassar', tier: 'Tier 1' },
-  { id: 'team-2', label: 'Tim 2', description: 'Kanwil Denpasar', kanwil: 'Denpasar', tier: 'Tier 2' },
-  { id: 'team-3', label: 'Tim 3', description: 'Kanwil Bandung', kanwil: 'Bandung', tier: 'Tier 3' },
+  {
+    id: 'team-1',
+    label: 'Tim 1',
+    badge: 'Tim Riset 1',
+    title: 'Kanwil Makassar',
+    subtitle: 'Kategori Tier 1',
+    description: 'Kanwil Makassar',
+    actionLabel: 'Pilih Tim',
+    kanwil: 'Makassar',
+    tier: 'Tier 1',
+  },
+  {
+    id: 'team-2',
+    label: 'Tim 2',
+    badge: 'Tim Riset 2',
+    title: 'Kanwil Denpasar',
+    subtitle: 'Kategori Tier 2',
+    description: 'Kanwil Denpasar',
+    actionLabel: 'Pilih Tim',
+    kanwil: 'Denpasar',
+    tier: 'Tier 2',
+  },
+  {
+    id: 'team-3',
+    label: 'Tim 3',
+    badge: 'Tim Riset 3',
+    title: 'Kanwil Bandung',
+    subtitle: 'Kategori Tier 3',
+    description: 'Kanwil Bandung',
+    actionLabel: 'Pilih Tim',
+    kanwil: 'Bandung',
+    tier: 'Tier 3',
+  },
 ]
 
 const branchesByTeam: Record<string, BranchOption[]> = {
   'team-1': [
-    { id: 'mks-cbg-talasalapang', label: 'CP Talasalapang', description: 'Urban', shortLabel: 'CP Talasalapang', tier: 'Urban', gadaiType: 'non-stepper', berandaPrimary: 1 },
-    { id: 'mks-cbg-palangga', label: 'CP Palangga', description: 'Sub Urban', shortLabel: 'CP Palangga', tier: 'Sub Urban', gadaiType: 'non-stepper', berandaPrimary: 2 },
-    { id: 'mks-cbg-takalar', label: 'CP Takalar', description: 'Rural', shortLabel: 'CP Takalar', tier: 'Rural', gadaiType: 'stepper', berandaPrimary: 1 },
+    {
+      id: 'mks-cbg-talasalapang',
+      label: 'CP Talasalapang',
+      badge: 'Cabang • Urban',
+      title: 'CP Talasalapang',
+      subtitle: 'Klasifikasi Wilayah Urban',
+      description: 'Urban',
+      shortLabel: 'CP Talasalapang',
+      tier: 'Urban',
+      actionLabel: 'Pilih Cabang',
+      gadaiType: 'non-stepper',
+      berandaPrimary: 1,
+    },
+    {
+      id: 'mks-cbg-palangga',
+      label: 'CP Palangga',
+      badge: 'Cabang • Sub Urban',
+      title: 'CP Palangga',
+      subtitle: 'Klasifikasi Wilayah Sub Urban',
+      description: 'Sub Urban',
+      shortLabel: 'CP Palangga',
+      tier: 'Sub Urban',
+      actionLabel: 'Pilih Cabang',
+      gadaiType: 'non-stepper',
+      berandaPrimary: 2,
+    },
+    {
+      id: 'mks-cbg-takalar',
+      label: 'CP Takalar',
+      badge: 'Cabang • Rural',
+      title: 'CP Takalar',
+      subtitle: 'Klasifikasi Wilayah Rural',
+      description: 'Rural',
+      shortLabel: 'CP Takalar',
+      tier: 'Rural',
+      actionLabel: 'Pilih Cabang',
+      gadaiType: 'stepper',
+      berandaPrimary: 1,
+    },
   ],
   'team-2': [
-    { id: 'dps-cbg-renon', label: 'CP Renon', description: 'Urban', shortLabel: 'CP Renon', tier: 'Urban', gadaiType: 'non-stepper', berandaPrimary: 2 },
-    { id: 'dps-cbg-denpasar', label: 'CP Denpasar', description: 'Sub Urban', shortLabel: 'CP Denpasar', tier: 'Sub Urban', gadaiType: 'non-stepper', berandaPrimary: 1 },
-    { id: 'dps-cbg-ubung', label: 'CP Ubung', description: 'Rural', shortLabel: 'CP Ubung', tier: 'Rural', gadaiType: 'stepper', berandaPrimary: 2 },
+    {
+      id: 'dps-cbg-renon',
+      label: 'CP Renon',
+      badge: 'Cabang • Urban',
+      title: 'CP Renon',
+      subtitle: 'Klasifikasi Wilayah Urban',
+      description: 'Urban',
+      shortLabel: 'CP Renon',
+      tier: 'Urban',
+      actionLabel: 'Pilih Cabang',
+      gadaiType: 'non-stepper',
+      berandaPrimary: 2,
+    },
+    {
+      id: 'dps-cbg-denpasar',
+      label: 'CP Denpasar',
+      badge: 'Cabang • Sub Urban',
+      title: 'CP Denpasar',
+      subtitle: 'Klasifikasi Wilayah Sub Urban',
+      description: 'Sub Urban',
+      shortLabel: 'CP Denpasar',
+      tier: 'Sub Urban',
+      actionLabel: 'Pilih Cabang',
+      gadaiType: 'non-stepper',
+      berandaPrimary: 1,
+    },
+    {
+      id: 'dps-cbg-ubung',
+      label: 'CP Ubung',
+      badge: 'Cabang • Rural',
+      title: 'CP Ubung',
+      subtitle: 'Klasifikasi Wilayah Rural',
+      description: 'Rural',
+      shortLabel: 'CP Ubung',
+      tier: 'Rural',
+      actionLabel: 'Pilih Cabang',
+      gadaiType: 'stepper',
+      berandaPrimary: 2,
+    },
   ],
   'team-3': [
-    { id: 'bdg-cbg-pungkur', label: 'CP Pungkur', description: 'Urban', shortLabel: 'CP Pungkur', tier: 'Urban', gadaiType: 'stepper', berandaPrimary: 1 },
-    { id: 'bdg-cbg-cimahi', label: 'CP Cimahi', description: 'Sub Urban', shortLabel: 'CP Cimahi', tier: 'Sub Urban', gadaiType: 'stepper', berandaPrimary: 2 },
-    { id: 'bdg-cbg-ujungberung', label: 'CP Ujung Berung', description: 'Rural', shortLabel: 'CP Ujung Berung', tier: 'Rural', gadaiType: 'stepper', berandaPrimary: 1 },
+    {
+      id: 'bdg-cbg-pungkur',
+      label: 'CP Pungkur',
+      badge: 'Cabang • Urban',
+      title: 'CP Pungkur',
+      subtitle: 'Klasifikasi Wilayah Urban',
+      description: 'Urban',
+      shortLabel: 'CP Pungkur',
+      tier: 'Urban',
+      actionLabel: 'Pilih Cabang',
+      gadaiType: 'stepper',
+      berandaPrimary: 1,
+    },
+    {
+      id: 'bdg-cbg-cimahi',
+      label: 'CP Cimahi',
+      badge: 'Cabang • Sub Urban',
+      title: 'CP Cimahi',
+      subtitle: 'Klasifikasi Wilayah Sub Urban',
+      description: 'Sub Urban',
+      shortLabel: 'CP Cimahi',
+      tier: 'Sub Urban',
+      actionLabel: 'Pilih Cabang',
+      gadaiType: 'stepper',
+      berandaPrimary: 2,
+    },
+    {
+      id: 'bdg-cbg-ujungberung',
+      label: 'CP Ujung Berung',
+      badge: 'Cabang • Rural',
+      title: 'CP Ujung Berung',
+      subtitle: 'Klasifikasi Wilayah Rural',
+      description: 'Rural',
+      shortLabel: 'CP Ujung Berung',
+      tier: 'Rural',
+      actionLabel: 'Pilih Cabang',
+      gadaiType: 'stepper',
+      berandaPrimary: 1,
+    },
   ],
 }
 
 const roles: EntryPointOption[] = [
-  { id: 'Kasir', label: 'Kasir' },
-  { id: 'Penaksir', label: 'Penaksir' },
-  { id: 'Pinca', label: 'Pinca' },
-  { id: 'CRO', label: 'CRO' },
+  {
+    id: 'Kasir',
+    label: 'Kasir',
+    badge: 'Frontliner',
+    title: 'Kasir',
+    subtitle: 'Layanan Pembayaran & Transaksi',
+    actionLabel: 'Pilih Role',
+  },
+  {
+    id: 'Penaksir',
+    label: 'Penaksir',
+    badge: 'Operasional',
+    title: 'Penaksir',
+    subtitle: 'Penaksiran & Verifikasi Agunan',
+    actionLabel: 'Pilih Role',
+  },
+  {
+    id: 'Pinca',
+    label: 'Pinca',
+    badge: 'Pimpinan',
+    title: 'Pinca',
+    subtitle: 'Pimpinan Cabang & Approval',
+    actionLabel: 'Pilih Role',
+  },
+  {
+    id: 'CRO',
+    label: 'CRO',
+    badge: 'Pemasaran',
+    title: 'CRO',
+    subtitle: 'Customer Relationship Officer',
+    actionLabel: 'Pilih Role',
+  },
 ]
 
 function getQueryValue(value: unknown): string | undefined {
@@ -154,18 +322,22 @@ const currentTasks = computed<EntryPointOption[]>(() => {
     ? {
         id: 'task-beranda',
         label: isLeadership ? 'Task 1' : 'Task 2',
+        badge: isLeadership ? 'Task 1' : 'Task 2',
         title: 'Beranda Opsi 1',
         subtitle: 'Alur perbandingan (Next view: Beranda Opsi 2)',
         description: 'Beranda Opsi 1 (Next view: Beranda Opsi 2)',
+        actionLabel: 'Mulai Task',
         targetRoute: '/sprint-proto-1?nextView=proto-2',
         requiresLogin: true,
       }
     : {
         id: 'task-beranda',
         label: isLeadership ? 'Task 1' : 'Task 2',
+        badge: isLeadership ? 'Task 1' : 'Task 2',
         title: 'Beranda Opsi 2',
         subtitle: 'Alur perbandingan (Next view: Beranda Opsi 1)',
         description: 'Beranda Opsi 2 (Next view: Beranda Opsi 1)',
+        actionLabel: 'Mulai Task',
         targetRoute: '/sprint-proto-2?nextView=proto-1',
         requiresLogin: true,
       }
@@ -173,9 +345,11 @@ const currentTasks = computed<EntryPointOption[]>(() => {
   const posTask: EntryPointOption = {
     id: 'task-pos',
     label: isLeadership ? 'Task 2' : 'Task 3',
+    badge: isLeadership ? 'Task 2' : 'Task 3',
     title: 'Point of Sales (PoS)',
     subtitle: 'Pembayaran Gadai & Simulasi Kasir',
     description: 'PoS',
+    actionLabel: 'Mulai Task',
     targetRoute: '/pos',
     requiresLogin: false,
   }
@@ -188,18 +362,22 @@ const currentTasks = computed<EntryPointOption[]>(() => {
     ? {
         id: 'task-gadai',
         label: 'Task 1',
+        badge: 'Task 1',
         title: 'Pengajuan Gadai',
         subtitle: 'Form Tunggal Non Stepper (1 Halaman)',
         description: 'Pengajuan Gadai Non Stepper',
+        actionLabel: 'Mulai Task',
         targetRoute: '/beranda?targetGadai=non-stepper',
         requiresLogin: true,
       }
     : {
         id: 'task-gadai',
         label: 'Task 1',
+        badge: 'Task 1',
         title: 'Pengajuan Gadai',
         subtitle: 'Multi-Step Stepper (Bertahap)',
         description: 'Pengajuan Gadai Stepper',
+        actionLabel: 'Mulai Task',
         targetRoute: '/beranda?targetGadai=stepper',
         requiresLogin: true,
       }
@@ -226,16 +404,8 @@ const stageContent = computed<Record<EntryPointStage, { title: string; options: 
   },
 }))
 
-function isOptionSelected(option: EntryPointOption): boolean {
-  if (props.stage === 'teams') {
-    return route.query.team === option.id
-  }
-  if (props.stage === 'kanwil') {
-    return route.query.cp === option.id
-  }
-  if (props.stage === 'role') {
-    return selectedRole.value?.id === option.id
-  }
+function isOptionSelected(_option: EntryPointOption): boolean {
+  // Semua kartu pada tahap pemilihan tampil netral dan siap dipilih (tidak ada yang otomatis aktif/pre-selected)
   return false
 }
 
@@ -338,57 +508,51 @@ function handleBack() {
 
     <section class="entry-point-scene" :aria-labelledby="`entry-point-title-${props.stage}`">
       <img class="entry-point-scene__pattern" :src="sprintPattern" alt="" aria-hidden="true" />
-      <h1 :id="`entry-point-title-${props.stage}`" class="entry-point-scene__title">
-        {{ stageContent[props.stage].title }}
-      </h1>
 
-      <div
-        class="entry-point-options"
-        :class="[
-          `entry-point-options--${props.stage}`,
-          props.stage === 'tasks' ? `entry-point-options--tasks-${stageContent[props.stage].options.length}` : ''
-        ]"
-      >
-        <button
-          v-for="option in stageContent[props.stage].options"
-          :key="option.id"
-          class="entry-point-option"
-          :class="[
-            { 'entry-point-option--selected': isOptionSelected(option) },
-            props.stage === 'tasks' ? 'entry-point-option--task' : ''
-          ]"
-          type="button"
-          :aria-pressed="isOptionSelected(option)"
-          @click="selectOption(option)"
+      <div class="entry-point-scene__content">
+        <h1 :id="`entry-point-title-${props.stage}`" class="entry-point-scene__title">
+          {{ stageContent[props.stage].title }}
+        </h1>
+
+        <div
+          class="entry-point-options"
+          :class="`entry-point-options--${props.stage}`"
         >
-          <template v-if="props.stage === 'tasks'">
-            <span class="entry-point-task-badge">{{ option.label }}</span>
-            <div class="entry-point-task-body">
-              <span class="entry-point-task-title">{{ option.title || option.label }}</span>
-              <span v-if="option.subtitle || option.description" class="entry-point-task-sub">
+          <button
+            v-for="option in stageContent[props.stage].options"
+            :key="option.id"
+            class="entry-point-option"
+            :class="[
+              { 'entry-point-option--selected': isOptionSelected(option) },
+              `entry-point-option--${props.stage}`
+            ]"
+            type="button"
+            :aria-pressed="isOptionSelected(option)"
+            @click="selectOption(option)"
+          >
+            <span class="entry-point-card-badge entry-point-option__label">{{ option.badge || option.label }}</span>
+            <div class="entry-point-card-body">
+              <span class="entry-point-card-title">{{ option.title || option.label }}</span>
+              <span v-if="option.subtitle || option.description" class="entry-point-card-sub entry-point-option__desc">
                 {{ option.subtitle || option.description }}
               </span>
             </div>
-            <div class="entry-point-task-action" aria-hidden="true">
-              <span>Mulai Task</span>
+            <div class="entry-point-card-action" aria-hidden="true">
+              <span>{{ option.actionLabel || 'Pilih' }}</span>
               <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M5 10h10M11 6l4 4-4 4" />
               </svg>
             </div>
-          </template>
-          <template v-else>
-            <span class="entry-point-option__label">{{ option.label }}</span>
-            <span v-if="option.description" class="entry-point-option__desc">{{ option.description }}</span>
-          </template>
-        </button>
-      </div>
+          </button>
+        </div>
 
-      <!-- Small footer back button (hidden on root teams stage) -->
-      <footer v-if="props.stage !== 'teams'" class="entry-point-footer">
-        <button class="entry-point-back" type="button" aria-label="Kembali ke tahap sebelumnya" @click="handleBack">
-          &larr; Kembali
-        </button>
-      </footer>
+        <!-- Small footer back button (hidden on root teams stage) -->
+        <footer v-if="props.stage !== 'teams'" class="entry-point-footer">
+          <button class="entry-point-back" type="button" aria-label="Kembali ke tahap sebelumnya" @click="handleBack">
+            &larr; Kembali
+          </button>
+        </footer>
+      </div>
     </section>
   </main>
 </template>
@@ -455,8 +619,10 @@ function handleBack() {
   min-height: 100svh;
   flex-direction: column;
   align-items: center;
-  padding: 126px 24px 48px;
+  justify-content: center;
+  padding: 120px 24px 36px;
   overflow-y: auto;
+  box-sizing: border-box;
 }
 
 .entry-point-scene__pattern {
@@ -470,11 +636,23 @@ function handleBack() {
   pointer-events: none;
 }
 
+.entry-point-scene__content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 1280px;
+  margin: auto 0;
+}
+
 .entry-point-scene__title {
   position: relative;
   z-index: 1;
   min-height: 30px;
-  max-width: min(1200px, 100%);
+  max-width: min(1100px, 100%);
   margin: 0 auto;
   color: var(--g-kit-black-80, #252528);
   font-size: 20px;
@@ -487,54 +665,20 @@ function handleBack() {
 .entry-point-options {
   position: relative;
   z-index: 1;
-  display: grid;
-  width: min(1272px, 100%);
-  grid-template-columns: repeat(3, minmax(0, 290px));
-  justify-content: center;
-  gap: 24px;
-  margin-top: 100px;
-}
-
-.entry-point-options--role {
-  grid-template-columns: repeat(4, minmax(0, 290px));
-  justify-content: center;
-}
-
-.entry-point-options--tasks {
   display: flex;
   flex-wrap: wrap;
+  width: 100%;
+  max-width: 1240px;
   justify-content: center;
   align-items: stretch;
-  gap: 28px;
-  width: min(1060px, 100%);
-  margin-top: 48px;
+  gap: 24px;
+  margin-top: 36px;
+  margin-bottom: 24px;
 }
 
 .entry-point-option {
-  display: flex;
-  min-width: 0;
-  height: 363px;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 12px 16px;
-  border: 1px solid var(--g-kit-lime-50, #00ab4e);
-  border-radius: 40px;
-  background: var(--g-kit-white, #ffffff);
-  color: var(--g-kit-lime-50, #00ab4e);
-  font-family: inherit;
-  font-size: 20px;
-  font-weight: var(--g-kit-font-weight-bold, 800);
-  line-height: 30px;
-  text-align: center;
-  cursor: pointer;
-  transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
-}
-
-.entry-point-option--task {
-  flex: 0 1 320px;
-  width: 320px;
+  flex: 0 1 285px;
+  width: 285px;
   max-width: 100%;
   min-height: 228px;
   height: auto;
@@ -542,19 +686,37 @@ function handleBack() {
   border-radius: 24px;
   border: 1.5px solid var(--g-kit-lime-50, #00ab4e);
   background: var(--g-kit-white, #ffffff);
+  color: var(--g-kit-black-80, #252528);
   box-shadow: 0 4px 16px rgba(0, 77, 67, 0.06);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-content: space-between;
+  text-align: center;
   gap: 16px;
-  color: inherit;
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease, background-color 180ms ease;
 }
 
-.entry-point-option--task:hover {
+.entry-point-option:hover {
   transform: translateY(-4px);
   border-color: var(--g-kit-lime-60, #00873d);
   box-shadow: 0 12px 28px rgba(0, 77, 67, 0.14);
 }
 
-.entry-point-task-badge {
+.entry-point-option:focus-visible {
+  outline: 3px solid var(--g-kit-broccoli-50, #004d43);
+  outline-offset: 4px;
+}
+
+.entry-point-option--selected {
+  border-width: 2px;
+  background: var(--g-kit-emerald-10, #e6f5ef);
+  box-shadow: 0 0 0 3px rgba(0, 171, 78, 0.2);
+}
+
+.entry-point-card-badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -569,14 +731,16 @@ function handleBack() {
   text-transform: uppercase;
 }
 
-.entry-point-task-body {
+.entry-point-card-body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 8px;
+  flex: 1 1 auto;
 }
 
-.entry-point-task-title {
+.entry-point-card-title {
   display: block;
   font-size: 19px;
   font-weight: var(--g-kit-font-weight-bold, 800);
@@ -584,16 +748,16 @@ function handleBack() {
   color: var(--g-kit-black-80, #252528);
 }
 
-.entry-point-task-sub {
+.entry-point-card-sub {
   display: block;
   font-size: 13px;
   font-weight: 600;
   line-height: 19px;
   color: var(--g-kit-black-50, #727278);
-  max-width: 250px;
+  max-width: 240px;
 }
 
-.entry-point-task-action {
+.entry-point-card-action {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -608,36 +772,9 @@ function handleBack() {
   transition: all 160ms ease;
 }
 
-.entry-point-option--task:hover .entry-point-task-action {
+.entry-point-option:hover .entry-point-card-action {
   background: var(--g-kit-lime-50, #00ab4e);
   color: var(--g-kit-white, #ffffff);
-}
-
-.entry-point-option__label {
-  display: block;
-}
-
-.entry-point-option__desc {
-  display: block;
-  font-size: 18px;
-  font-weight: var(--g-kit-font-weight-bold, 700);
-  opacity: 0.9;
-}
-
-.entry-point-option:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgb(0 77 67 / 10%);
-}
-
-.entry-point-option:focus-visible {
-  outline: 3px solid var(--g-kit-broccoli-50, #004d43);
-  outline-offset: 4px;
-}
-
-.entry-point-option--selected {
-  border-width: 2px;
-  background: var(--g-kit-black-10, #f8f8f8);
-  box-shadow: 0 0 0 3px rgb(0 171 78 / 12%);
 }
 
 .entry-point-footer {
@@ -645,7 +782,7 @@ function handleBack() {
   z-index: 1;
   display: flex;
   justify-content: center;
-  margin-top: 48px;
+  margin-top: 12px;
 }
 
 .entry-point-back {
@@ -677,34 +814,13 @@ function handleBack() {
   outline-offset: 2px;
 }
 
-@media (max-width: 1100px) {
-  .entry-point-options--role {
-    grid-template-columns: repeat(2, minmax(0, 290px));
-    justify-content: center;
-  }
-}
-
-@media (max-width: 980px) {
-  .entry-point-options,
-  .entry-point-options--role {
-    grid-template-columns: repeat(2, minmax(0, 290px));
-    justify-content: center;
-  }
-
-  .entry-point-options {
-    margin-top: 100px;
-  }
-}
-
 @media (max-width: 640px) {
   .entry-point-header {
     height: 82px;
   }
 
   .entry-point-scene {
-    min-height: 100vh;
-    min-height: 100svh;
-    padding: 106px 16px 32px;
+    padding: 96px 16px 28px;
   }
 
   .entry-point-brand__mark {
@@ -722,58 +838,24 @@ function handleBack() {
     line-height: 28px;
   }
 
-  .entry-point-options,
-  .entry-point-options--role {
-    width: min(100%, 360px);
-    grid-template-columns: minmax(0, 1fr);
-    gap: 16px;
-    margin-top: 48px;
-  }
-
-  .entry-point-options--tasks {
+  .entry-point-options {
     width: min(100%, 360px);
     flex-direction: column;
     align-items: center;
     gap: 16px;
-    margin-top: 32px;
+    margin-top: 24px;
+    margin-bottom: 20px;
   }
 
   .entry-point-option {
-    height: 220px;
-    border-radius: 32px;
-    font-size: 18px;
-    line-height: 28px;
-  }
-
-  .entry-point-option--task {
     width: 100%;
     min-height: 200px;
-    height: auto;
     padding: 20px 16px;
     border-radius: 20px;
   }
 
   .entry-point-footer {
-    margin-top: 32px;
-  }
-}
-
-@media (max-height: 760px) and (min-width: 641px) {
-  .entry-point-options {
-    margin-top: clamp(48px, calc(100vh - 672px), 140px);
-  }
-
-  .entry-point-options--tasks {
-    margin-top: clamp(24px, 4vh, 48px);
-  }
-
-  .entry-point-option {
-    height: clamp(240px, 43.6vh, 363px);
-  }
-
-  .entry-point-option--task {
-    min-height: 210px;
-    height: auto;
+    margin-top: 16px;
   }
 }
 </style>
