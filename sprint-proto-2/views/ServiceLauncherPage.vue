@@ -1,29 +1,11 @@
 <script setup lang="ts">
-import { computed, ref, onMounted, onUnmounted, watch, type CSSProperties } from 'vue'
+import { computed, ref, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useTaskSuccessModal } from '@/composables/useTaskSuccessModal'
 import chevronRightIcon from 'kitvue-public/src/assets/icon/icon-system/icon-chevron-right.svg'
 import infoIcon from 'kitvue-public/src/assets/icon/icon-system/icon-info.svg'
 import searchIcon from 'kitvue-public/src/assets/icon/icon-system/icon-search-v2.svg'
-import bannerThoriq from '../assets/welcome-banner/thoriq.svg'
-import bannerSparkles from '../assets/welcome-banner/sparkles.svg'
-import bannerHairBack from '../assets/welcome-banner/hair-back.svg'
-import bannerLeftUpperArm from '../assets/welcome-banner/left-upper-arm.svg'
-import bannerHandDetail from '../assets/welcome-banner/hand-detail.svg'
-import bannerDaster from '../assets/welcome-banner/daster.svg'
-import bannerNeck from '../assets/welcome-banner/neck.svg'
-import bannerRightJacket from '../assets/welcome-banner/right-jacket.svg'
-import bannerUnion from '../assets/welcome-banner/union.svg'
-import bannerNotebook from '../assets/welcome-banner/notebook.svg'
-import bannerNotebookDetail from '../assets/welcome-banner/notebook-detail.svg'
-import bannerHighlight from '../assets/welcome-banner/highlight.svg'
-import bannerHead from '../assets/welcome-banner/head.svg'
-import bannerLeftJacket from '../assets/welcome-banner/left-jacket.svg'
-import bannerRightUpperArm from '../assets/welcome-banner/right-upper-arm.svg'
-import bannerRightLowerArm from '../assets/welcome-banner/right-lower-arm.svg'
-import bannerLeftThumb from '../assets/welcome-banner/left-thumb.svg'
-import bannerLeftHand from '../assets/welcome-banner/left-hand.svg'
-import bannerHandSparkle from '../assets/welcome-banner/hand-sparkle.svg'
+import bannerCharacters from '../assets/welcome-banner/banner-characters.svg'
 import bannerNotification from '../assets/welcome-banner/notification.svg'
 import favoriteAddIcon from '../assets/favorites/add-menu.svg'
 import slipGajiIcon from '../assets/notifications/slip-gaji.png'
@@ -204,110 +186,6 @@ function closeBackdrop() {
     isDrawerOpen.value = false
   }
 }
-
-interface WelcomeBannerLayer {
-  source: string
-  box: CSSProperties
-  image: CSSProperties
-}
-
-const welcomeBannerLayers: WelcomeBannerLayer[] = [
-  {
-    source: bannerThoriq,
-    box: { left: '80.19px', top: '14.74px', width: '155.885px', height: '175.128px' },
-    image: { width: '143.394px', height: '164.351px', transform: 'rotate(-4.51deg)' },
-  },
-  {
-    source: bannerSparkles,
-    box: { left: '84.91px', top: 0, width: '129.243px', height: '67.061px' },
-    image: { width: '100%', height: '100%' },
-  },
-  {
-    source: bannerHairBack,
-    box: { left: '29.11px', top: '29.2px', width: '76.21px', height: '113.904px' },
-    image: { width: '56.494px', height: '104.758px', transform: 'scaleY(-1) rotate(-168.52deg)' },
-  },
-  {
-    source: bannerLeftUpperArm,
-    box: { left: '57.15px', top: '95.04px', width: '60.914px', height: '53.312px' },
-    image: { width: '39.196px', height: '51.179px', transform: 'scaleY(-1) rotate(108.35deg)' },
-  },
-  {
-    source: bannerHandDetail,
-    box: { left: '52.74px', top: '85.36px', width: '19.727px', height: '14.692px' },
-    image: { width: '19.727px', height: '14.692px', transform: 'scaleY(-1) rotate(180deg)' },
-  },
-  {
-    source: bannerDaster,
-    box: { left: '30.56px', top: '91.37px', width: '59.699px', height: '98.176px' },
-    image: { width: '59.699px', height: '98.176px', transform: 'scaleY(-1) rotate(180deg)' },
-  },
-  {
-    source: bannerNeck,
-    box: { left: '46.44px', top: '73.38px', width: '28.037px', height: '28.588px' },
-    image: { width: '20.847px', height: '21.951px', transform: 'rotate(-24.32deg)' },
-  },
-  {
-    source: bannerRightJacket,
-    box: { left: '66.78px', top: '89.85px', width: '32.804px', height: '83.133px' },
-    image: { width: '22.496px', height: '80.898px', transform: 'rotate(-7.46deg)' },
-  },
-  {
-    source: bannerUnion,
-    box: { left: '77.38px', top: '119.77px', width: '47.703px', height: '30.771px' },
-    image: { width: '100%', height: '100%', transform: 'scaleY(-1) rotate(180deg)' },
-  },
-  {
-    source: bannerNotebook,
-    box: { left: '77.49px', top: '120.95px', width: '48.187px', height: '30.786px' },
-    image: { width: '96.7%', height: '100%', transform: 'scaleY(-1) rotate(180deg)' },
-  },
-  {
-    source: bannerNotebookDetail,
-    box: { left: '91.63px', top: '130.08px', width: '22.285px', height: '22.226px' },
-    image: { width: '17.613px', height: '17.518px', transform: 'rotate(18.62deg)' },
-  },
-  {
-    source: bannerHighlight,
-    box: { left: '98.9px', top: '124.09px', width: '2.888px', height: '2.38px' },
-    image: { width: '2.483px', height: '1.664px', transform: 'scaleY(-1) rotate(-18.94deg)' },
-  },
-  {
-    source: bannerHead,
-    box: { left: '-0.03px', top: '23.11px', width: '108.866px', height: '118.392px' },
-    image: { width: '87.614px', height: '100.559px', transform: 'scaleY(-1) rotate(166.35deg)' },
-  },
-  {
-    source: bannerLeftJacket,
-    box: { left: '9.7px', top: '92.55px', width: '55.068px', height: '81.123px' },
-    image: { width: '100%', height: '100%' },
-  },
-  {
-    source: bannerRightUpperArm,
-    box: { left: '1.04px', top: '92.42px', width: '63.999px', height: '57.062px' },
-    image: { width: '37.49px', height: '52.846px', transform: 'rotate(63.63deg)' },
-  },
-  {
-    source: bannerRightLowerArm,
-    box: { left: '12.65px', top: '121.12px', width: '47.278px', height: '34.386px' },
-    image: { width: '42.505px', height: '24.638px', transform: 'scaleY(-1) rotate(165.68deg)' },
-  },
-  {
-    source: bannerLeftThumb,
-    box: { left: '66.9px', top: '117.74px', width: '10.179px', height: '9.719px' },
-    image: { width: '8.195px', height: '7.452px', transform: 'rotate(19.06deg)' },
-  },
-  {
-    source: bannerLeftHand,
-    box: { left: '50.79px', top: '110.45px', width: '25.3px', height: '30.331px' },
-    image: { width: '17.807px', height: '25.939px', transform: 'rotate(19.06deg)' },
-  },
-  {
-    source: bannerHandSparkle,
-    box: { left: '102.76px', top: '134.08px', width: '16.757px', height: '15.012px' },
-    image: { width: '100%', height: '100%' },
-  },
-]
 
 // Tier 1 Rail Navigation Items matching Figma Kasir 12
 const railTopItems = [
@@ -872,14 +750,7 @@ function handleDrawerItemClick(groupLabel: string, item: string) {
               <!-- Character Illustration Graphic (SVG vector art) -->
               <div class="proto2-welcome-banner__chars">
                 <div class="proto2-banner-art" aria-hidden="true">
-                  <span
-                    v-for="(layer, index) in welcomeBannerLayers"
-                    :key="index"
-                    class="proto2-banner-art__layer"
-                    :style="layer.box"
-                  >
-                    <img :src="layer.source" :style="layer.image" alt="" />
-                  </span>
+                  <img :src="bannerCharacters" width="236" height="162" alt="" class="proto2-banner-art__svg" />
                 </div>
               </div>
             </div>

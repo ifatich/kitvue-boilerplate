@@ -566,17 +566,10 @@ button {
   overflow: hidden;
 }
 
-.proto2-banner-art__layer {
-  position: absolute;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.proto2-banner-art__layer img {
+.proto2-banner-art__svg {
   display: block;
-  flex: 0 0 auto;
-  max-width: none;
+  width: 236px;
+  height: 162px;
   object-fit: contain;
 }
 
