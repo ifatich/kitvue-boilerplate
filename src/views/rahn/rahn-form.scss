@@ -287,6 +287,8 @@
 
 .rahn-table-scroll {
   width: 100%;
+  min-width: 0;
+  max-width: 100%;
   overflow-x: auto;
   scrollbar-color: var(--g-kit-black-40, #bbbdc0) var(--g-kit-black-10, #f8f8f8);
   scrollbar-width: thin;
@@ -843,7 +845,12 @@
   }
 }
 
-.table-scroll { overflow-x: auto; }
+.table-scroll {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+}
 .text-action {
   display: block;
   padding: 2px 0;

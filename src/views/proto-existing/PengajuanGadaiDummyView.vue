@@ -252,7 +252,7 @@ const fields = reactive({
   width: min(100%, 1312px);
   flex: 1 0 auto;
   margin: 0 auto;
-  // padding: 16px 24px 24px;
+  padding-bottom: 96px;
 }
 
 .pengajuan-gadai-page--launcher .pengajuan-gadai-content {
@@ -384,7 +384,7 @@ const fields = reactive({
 
 .pengajuan-gadai-form-card {
   min-width: 0;
-  overflow: hidden;
+  overflow: visible;
   border: 1px solid var(--g-kit-black-20, #eeeeef);
   border-radius: 8px;
   background: var(--g-kit-white, #ffffff);

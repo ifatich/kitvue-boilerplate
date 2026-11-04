@@ -71,6 +71,8 @@ const removeCollateral = (index: number) => {
 <style scoped lang="scss">
 .rahn-collateral-card {
   min-height: 640px;
+  min-width: 0;
+  max-width: 100%;
   margin-bottom: 0;
   padding: 24px;
 

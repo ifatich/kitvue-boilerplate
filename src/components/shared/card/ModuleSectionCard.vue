@@ -173,6 +173,9 @@ const toggle = () => {
 .section-collapse {
   display: grid;
   grid-template-rows: 0fr;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
   transition: grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
   &.is-expanded {
@@ -182,18 +185,28 @@ const toggle = () => {
   &__inner {
     overflow: hidden;
     min-height: 0;
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.2s ease, visibility 0.25s step-end;
   }
 
   &.is-expanded &__inner {
+    overflow: visible;
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
     opacity: 1;
     visibility: visible;
     transition: opacity 0.25s ease 0.05s, visibility 0s;
   }
 
   &__content {
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
     padding-top: 16px;
   }
 }

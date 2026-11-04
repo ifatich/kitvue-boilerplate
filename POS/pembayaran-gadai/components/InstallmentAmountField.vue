@@ -56,7 +56,7 @@ function handleInput(e: Event) {
         </div>
       </div>
     </div>
-    <p class="pgd-installment-field__helper">Maksimal cicilan {{ maximumLabel }}</p>
     <span v-if="props.error" class="pgd-field-error" role="alert">{{ props.error }}</span>
+    <p v-else class="pgd-installment-field__helper">Maksimal cicilan {{ maximumLabel }}</p>
   </div>
 </template>

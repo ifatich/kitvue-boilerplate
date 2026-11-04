@@ -316,6 +316,12 @@ const calculateLoan = () => {
   isCalculated.value = true
 }
 
+const scrollToSection = (id: string) => {
+  nextTick(() => {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  })
+}
+
 const processApplication = () => {
   isSubmitted.value = true
   submissionError.value = ''
@@ -323,28 +329,30 @@ const processApplication = () => {
   if (!hasValidNik.value) {
     isCustomerOpen.value = true
     customerSearchError.value = 'Nomor induk kependudukan harus 16 digit.'
-    submissionError.value = 'Lengkapi data nasabah sebelum memproses pengajuan.'
+    scrollToSection('gadai-page-customer')
     return
   }
   if (!hasSearchedCustomer.value) {
     isCustomerOpen.value = true
-    submissionError.value = 'Cari data nasabah terlebih dahulu.'
+    customerSearchError.value = 'Cari data nasabah terlebih dahulu.'
+    scrollToSection('gadai-page-customer')
     return
   }
   if (Object.values(fields.value).some((value) => !value)) {
     isApplicationOpen.value = true
     isBeneficialOwnerOpen.value = !fields.value.beneficialOwner
-    submissionError.value = 'Lengkapi data pengajuan dan beneficial owner.'
+    scrollToSection(fields.value.beneficialOwner ? 'gadai-page-application' : 'gadai-page-beneficial-owner')
     return
   }
   if (!collaterals.value.length) {
     isCollateralOpen.value = true
-    submissionError.value = 'Data jaminan wajib diisi.'
+    scrollToSection('gadai-page-collateral')
     return
   }
   if (!isCalculated.value) {
     isCreditOpen.value = true
-    submissionError.value = 'Hitung fasilitas pinjaman sebelum memproses pengajuan.'
+    calculationError.value = 'Hitung fasilitas pinjaman sebelum memproses pengajuan.'
+    scrollToSection('gadai-page-credit')
     return
   }
   showSubmissionModal.value = true
@@ -673,7 +681,8 @@ const handleModuleBack = () => {
             <div class="gadai-one-page__field">
               <label>Uang Pinjaman Diajukan</label>
               <GInputNominalStart v-model="loanAmount" unit="Rupiah" placeholder="Masukkan nominal" />
-              <span class="gadai-one-page__caption">Nominal diajukan tidak boleh melebihi maksimal pinjaman customer rating / normal.</span>
+              <p v-if="calculationError" class="gadai-one-page__error mt-1" role="alert">{{ calculationError }}</p>
+              <span v-else class="gadai-one-page__caption">Nominal diajukan tidak boleh melebihi maksimal pinjaman customer rating / normal.</span>
             </div>
             <div class="gadai-one-page__field">
               <RahnAutoValueField
@@ -682,7 +691,6 @@ const handleModuleBack = () => {
               />
             </div>
           </div>
-          <p v-if="calculationError" class="gadai-one-page__error" role="alert">{{ calculationError }}</p>
           <div class="gadai-one-page__calculate-action">
             <GButton label="Hitung" type="secondary" size="md" @click="calculateLoan" />
           </div>
@@ -739,9 +747,6 @@ const handleModuleBack = () => {
           </div>
         </ModuleSectionCard>
       </div>
-      <p v-if="submissionError" class="gadai-one-page__error gadai-one-page__submission-error" role="alert">
-        {{ submissionError }}
-      </p>
     </div>
 
     <template #actions>

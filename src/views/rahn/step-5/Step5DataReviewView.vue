@@ -224,6 +224,8 @@ const photosStartingAt = (photos: string[], startIndex: number) => [
 .rahn-review-table-scroll {
   overflow-x: auto;
   width: 100%;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .rahn-review-table-scroll :deep(.rahn-review-table) {

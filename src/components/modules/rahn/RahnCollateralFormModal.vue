@@ -119,6 +119,13 @@ const continueToDetails = () => {
   hasTriedSave.value = true
 }
 
+const descriptionError = computed(() => {
+  if (hasTriedSave.value && draft.description.trim().length < 10) {
+    return 'Minimal 10 karakter.'
+  }
+  return ''
+})
+
 const handlePhotoInput = (file: File | null, index: number) => {
   if (!file) {
     draft.photos.splice(index, 1)
@@ -291,9 +298,14 @@ const saveCollateral = async () => {
               variant="count"
               :max-length="200"
               placeholder="Masukkan keterangan"
-              :error="hasTriedSave && draft.description.trim().length < 10 ? 'Minimal 10 karakter.' : ''"
+              :error="descriptionError"
             />
-            <span class="rahn-collateral-description-hint">Minimal 10 karakter.</span>
+            <span
+              v-if="!descriptionError"
+              class="rahn-collateral-description-hint"
+            >
+              Minimal 10 karakter.
+            </span>
           </div>
 
           <div class="rahn-collateral-photo-field">
