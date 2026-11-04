@@ -52,8 +52,8 @@ const handleBerandaSearchSuccess = () => {
   if (isComparing) {
     showTaskSuccessModal({
       title: 'Task Selesai',
-      taskName: 'Beranda Opsi 1 (Pencarian Pengajuan Gadai)',
-      message: 'Selamat, Anda berhasil menemukan menu Pengajuan Gadai melalui pencarian! Lanjut ke Beranda Opsi 2 untuk membandingkan tampilan.',
+      taskName: 'Beranda Opsi 1 (Pengajuan Gadai)',
+      message: 'Selamat, Anda berhasil menemukan menu Pengajuan Gadai! Lanjut ke Beranda Opsi 2 untuk membandingkan tampilan.',
       confirmLabel: 'Lanjut ke Beranda Opsi 2',
       onConfirm: () => {
         void router.push({
@@ -70,8 +70,8 @@ const handleBerandaSearchSuccess = () => {
   } else {
     showTaskSuccessModal({
       title: 'Task Selesai',
-      taskName: 'Beranda Opsi 1 (Pencarian Pengajuan Gadai)',
-      message: 'Selamat, Anda berhasil menemukan menu Pengajuan Gadai melalui pencarian!',
+      taskName: 'Beranda Opsi 1 (Pengajuan Gadai)',
+      message: 'Selamat, Anda berhasil menemukan menu Pengajuan Gadai!',
       confirmLabel: 'Kembali ke Menu Task',
       onConfirm: returnToTaskMenu,
     })
@@ -112,7 +112,7 @@ const isPengajuanGadaiRoute = computed(() => (
   route.name === 'proto-existing-pengajuan-gadai' || route.name === 'sprint-proto-1-pengajuan-gadai'
 ))
 watch(isPengajuanGadaiRoute, (isRoute) => {
-  if (isRoute && (route.query.viaSearch === '1' || hasSearched.value)) {
+  if (isRoute) {
     if (searchSuccessTimer) clearTimeout(searchSuccessTimer)
     searchSuccessTimer = setTimeout(() => {
       handleBerandaSearchSuccess()
@@ -1221,7 +1221,7 @@ function selectNav(id: string) {
     display: flex;
     flex: 1 1 auto;
     align-items: flex-start;
-    justify-content: center;
+    justify-content: start;
     width: 100%;
   }
 

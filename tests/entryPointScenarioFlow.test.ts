@@ -308,12 +308,12 @@ describe('SPRINT Remote Research Entry Point & Scenario Matrix', () => {
       expect(targetQueryDirect.viaSearch).toBeUndefined()
     })
 
-    it('triggers delayed 5-second success modal only when viaSearch is 1 or hasSearched is true', () => {
+    it('triggers delayed 5-second success modal when entering pengajuan-gadai route (search is optional)', () => {
       let modalCalled = false
       let timerDuration = 0
 
-      function scheduleSuccessModal(isRoute: boolean, viaSearch: string | undefined, hasSearched: boolean) {
-        if (isRoute && (viaSearch === '1' || hasSearched)) {
+      function scheduleSuccessModal(isRoute: boolean) {
+        if (isRoute) {
           timerDuration = 5000
           modalCalled = true
         } else {
@@ -322,13 +322,13 @@ describe('SPRINT Remote Research Entry Point & Scenario Matrix', () => {
         }
       }
 
-      // Valid search -> arrive at pengajuan-gadai
-      scheduleSuccessModal(true, '1', true)
+      // Arrive at pengajuan-gadai via search or direct menu
+      scheduleSuccessModal(true)
       expect(modalCalled).toBe(true)
       expect(timerDuration).toBe(5000)
 
-      // Direct entry without search -> no modal
-      scheduleSuccessModal(true, undefined, false)
+      // Other routes -> no modal
+      scheduleSuccessModal(false)
       expect(modalCalled).toBe(false)
       expect(timerDuration).toBe(0)
     })

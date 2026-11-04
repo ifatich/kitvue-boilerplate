@@ -155,7 +155,8 @@ const customerDirectory: RahnCustomerSummary[] = [{
 
 const loanAmount = ref('')
 const tariffChange = ref('Tidak')
-const tariffRate = ref('')
+const tariffRate = ref('1,2')
+const isCalculated = ref(false)
 const showSubmissionConfirmation = ref(false)
 const submissionModalStep = ref<'confirmation' | 'success'>('confirmation')
 const submissionNumber = '1234 5678 9012 3456'
@@ -332,6 +333,9 @@ const canContinue = computed(() => {
   if (activeStep.value === 3) {
     return collaterals.value.length > 0
   }
+  if (activeStep.value === 4) {
+    return isCalculated.value
+  }
   return true
 })
 
@@ -493,6 +497,7 @@ provide(rahnFlowKey, {
   loanAmount,
   tariffChange,
   tariffRate,
+  isCalculated,
   isMobile,
   isSubmitted,
   isInformasiRahnOpen,
@@ -603,11 +608,13 @@ provide(rahnFlowKey, {
         @update:active-step="handleStepperChange"
       />
 
-      <RahnStep1PengajuanView v-if="activeStep === 1" />
-      <RahnStep2DataNasabahView v-else-if="activeStep === 2" />
-      <RahnStep3DataJaminanView v-else-if="activeStep === 3" />
-      <RahnStep4FasilitasPinjamanView v-else-if="activeStep === 4" />
-      <RahnStep5DataReviewView v-else />
+      <KeepAlive>
+        <RahnStep1PengajuanView v-if="activeStep === 1" />
+        <RahnStep2DataNasabahView v-else-if="activeStep === 2" />
+        <RahnStep3DataJaminanView v-else-if="activeStep === 3" />
+        <RahnStep4FasilitasPinjamanView v-else-if="activeStep === 4" />
+        <RahnStep5DataReviewView v-else />
+      </KeepAlive>
     </div>
 
     <template #actions>

@@ -327,10 +327,10 @@ const fields = reactive({
 }
 
 .pengajuan-gadai-page--launcher :deep(.card.stepper.pengajuan-gadai-stepper) {
-  border: 1px solid var(--g-kit-black-20, #eeeeef);
+  // border: 1px solid var(--g-kit-black-20, #eeeeef);
   border-radius: 8px;
-  background: var(--g-kit-white, #ffffff);
-  box-shadow: var(--g-kit-shadow-card, 0 2px 3px rgba(0, 0, 0, 0.14), 0 0 1px rgba(0, 0, 0, 0.08));
+  background: var(--g-kit-black-10, #f8f8f8);
+  // box-shadow: var(--g-kit-shadow-card, 0 2px 3px rgba(0, 0, 0, 0.14), 0 0 1px rgba(0, 0, 0, 0.08));
 }
 
 :deep(.card.stepper.pengajuan-gadai-stepper .card-body) {
@@ -384,11 +384,12 @@ const fields = reactive({
 
 .pengajuan-gadai-form-card {
   min-width: 0;
-  overflow: visible;
+  overflow: auto;
   border: 1px solid var(--g-kit-black-20, #eeeeef);
   border-radius: 8px;
   background: var(--g-kit-white, #ffffff);
   box-shadow: var(--g-kit-shadow-card, 0 2px 3px rgba(0, 0, 0, 0.14), 0 0 1px rgba(0, 0, 0, 0.08));
+  background: var(--g-kit-black-10)
 }
 
 .pengajuan-gadai-form-card :deep(.module-section-card) {

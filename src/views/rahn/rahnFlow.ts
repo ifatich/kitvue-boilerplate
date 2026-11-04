@@ -106,6 +106,7 @@ export interface RahnFlowContext {
   loanAmount: Ref<string>
   tariffChange: Ref<string>
   tariffRate: Ref<string>
+  isCalculated: Ref<boolean>
   isMobile: ComputedRef<boolean>
   isSubmitted: Ref<boolean>
   isInformasiRahnOpen: Ref<boolean>

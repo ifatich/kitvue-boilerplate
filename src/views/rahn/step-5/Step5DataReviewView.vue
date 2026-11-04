@@ -24,10 +24,13 @@ const totalEstimatedValue = computed(() => flow.collaterals.value.reduce(
   (total, collateral) => total + collateral.estimatedValue,
   0,
 ))
+const tariffPeriod = computed(() => (
+  flow.fields.value.skemaTarif?.includes('10 Hari') ? 'Per 10 Hari' : 'Per 15 Hari'
+))
 const selectedTier = computed(() => getRahnLoanTier(loanAmountValue.value))
 const tariffRate = computed(() => flow.tariffChange.value === 'Iya'
   ? Number(flow.tariffRate.value.replace(',', '.'))
-  : selectedTier.value?.tariffRate ?? Number.NaN)
+  : selectedTier.value?.tariffRate ?? 1.2)
 const loanDurationDays = computed(() => Number.parseInt(flow.fields.value.jangkaWaktu, 10))
 const loanCalculation = computed(() => {
   const result = calculateRahnLoan(
@@ -44,10 +47,10 @@ const amountOrAutomatic = (value: number | undefined) => (
   value === undefined ? 'Terisi otomatis' : formatAmount(value)
 )
 const fixedTariff = computed(() => selectedTier.value
-  ? `${new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 }).format(selectedTier.value.tariffRate)}% Per 15 Hari`
+  ? `${new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 }).format(selectedTier.value.tariffRate)}% ${tariffPeriod.value}`
   : 'Terisi otomatis')
 const specialTariff = computed(() => flow.tariffChange.value === 'Iya'
-  ? `${new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 }).format(tariffRate.value)}% Per 15 Hari`
+  ? `${new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 }).format(tariffRate.value)}% ${tariffPeriod.value}`
   : '-')
 const creditDate = computed(() => flow.akadItems.value.find((item) => item.label === 'Tanggal Kredit')?.value)
 const dueDate = computed(() => flow.akadItems.value.find((item) => item.label === 'Tanggal Jatuh Tempo')?.value)

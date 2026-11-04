@@ -41,4 +41,18 @@ describe('Rahn loan calculation', () => {
       receivedAmount: 5_948_500,
     })
   })
+
+  it('calculates properly with default 1.2 tariff rate when tariff change is disabled', () => {
+    const result = calculateRahnLoan(3_000_000, 10_000_000, 1.2, 120)
+
+    expect(result).toMatchObject({
+      tier: { code: 'B3', administrationFee: 35_000, premium: 1_000 },
+      loanLimit: 5_000_000,
+      periodicRental: 36_000,
+      totalRental: 288_000,
+      administrationFee: 35_000,
+      premiumFee: 1_000,
+      receivedAmount: 2_964_000,
+    })
+  })
 })

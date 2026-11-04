@@ -117,8 +117,8 @@ const handleBerandaSearchSuccess = () => {
   if (isComparing) {
     showTaskSuccessModal({
       title: 'Task Selesai',
-      taskName: 'Beranda Opsi 2 (Pencarian Pengajuan Gadai)',
-      message: 'Selamat, Anda berhasil menemukan menu Pengajuan Gadai melalui pencarian! Lanjut ke Beranda Opsi 1 untuk membandingkan tampilan.',
+      taskName: 'Beranda Opsi 2 (Pengajuan Gadai)',
+      message: 'Selamat, Anda berhasil menemukan menu Pengajuan Gadai! Lanjut ke Beranda Opsi 1 untuk membandingkan tampilan.',
       confirmLabel: 'Lanjut ke Beranda Opsi 1',
       onConfirm: () => {
         void router.push({
@@ -135,8 +135,8 @@ const handleBerandaSearchSuccess = () => {
   } else {
     showTaskSuccessModal({
       title: 'Task Selesai',
-      taskName: 'Beranda Opsi 2 (Pencarian Pengajuan Gadai)',
-      message: 'Selamat, Anda berhasil menemukan menu Pengajuan Gadai melalui pencarian!',
+      taskName: 'Beranda Opsi 2 (Pengajuan Gadai)',
+      message: 'Selamat, Anda berhasil menemukan menu Pengajuan Gadai!',
       confirmLabel: 'Kembali ke Menu Task',
       onConfirm: returnToTaskMenu,
     })
@@ -154,7 +154,7 @@ const isPengajuanGadaiRoute = computed(() => (
   route.name === 'proto-existing-pengajuan-gadai' || route.name === 'sprint-proto-2-pengajuan-gadai'
 ))
 watch(isPengajuanGadaiRoute, (isRoute) => {
-  if (isRoute && (route.query.viaSearch === '1' || hasSearched.value)) {
+  if (isRoute) {
     if (searchSuccessTimer) clearTimeout(searchSuccessTimer)
     searchSuccessTimer = setTimeout(() => {
       handleBerandaSearchSuccess()

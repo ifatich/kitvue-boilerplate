@@ -27,8 +27,14 @@ const dataLoanOpen = ref(true)
 const facilityOpen = ref(true)
 const loanAmountError = ref('')
 const isCalculating = ref(false)
-const isCalculated = ref(false)
-const { loanAmount, tariffChange, tariffRate } = flow
+const { loanAmount, tariffChange, tariffRate, isCalculated } = flow
+
+const tariffPeriodLabel = computed(() => {
+  if (flow.fields.value.skemaTarif?.includes('10 Hari')) {
+    return 'Per 10 Hari'
+  }
+  return 'Per 15 Hari'
+})
 
 const totalEstimatedValue = computed(() => flow.collaterals.value.reduce(
   (total, collateral) => total + collateral.estimatedValue,
@@ -38,16 +44,24 @@ const maximumNormalLoan = computed(() => Math.floor(totalEstimatedValue.value * 
 const maximumRatingLoan = computed(() => getMaximumRahnLoan(totalEstimatedValue.value))
 const loanAmountValue = computed(() => Number(loanAmount.value.replace(/\D/g, '')) || 0)
 const selectedTier = computed(() => getRahnLoanTier(loanAmountValue.value))
-const numericTariffRate = computed(() => tariffRate.value
-  ? Number(tariffRate.value.replace(',', '.'))
-  : Number.NaN)
-const appliedTariffRate = computed(() => tariffChange.value === 'Iya'
-  ? numericTariffRate.value
-  : selectedTier.value?.tariffRate ?? Number.NaN)
-const fixedTariffRate = computed(() => selectedTier.value?.tariffRate)
-const displayedTariffRate = computed(() => tariffChange.value === 'Iya'
-  ? tariffRate.value
-  : String(selectedTier.value?.tariffRate ?? '').replace('.', ','))
+const numericTariffRate = computed(() => {
+  if (!tariffRate.value) return 1.2
+  const parsed = Number(tariffRate.value.replace(',', '.'))
+  return Number.isFinite(parsed) ? parsed : 1.2
+})
+const appliedTariffRate = computed(() => {
+  if (tariffChange.value === 'Iya') {
+    return numericTariffRate.value
+  }
+  return selectedTier.value?.tariffRate ?? 1.2
+})
+const fixedTariffRate = computed(() => selectedTier.value?.tariffRate ?? 1.2)
+const displayedTariffRate = computed(() => {
+  if (tariffChange.value === 'Iya') {
+    return tariffRate.value || '1,2'
+  }
+  return '1,2'
+})
 const selectedTierLabel = computed(() => selectedTier.value
   ? `${selectedTier.value.group} (${selectedTier.value.code})`
   : 'Terisi otomatis')
@@ -59,7 +73,7 @@ const formatTariffRate = (value: number | undefined) => (
     : `${new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 }).format(value)}%`
 )
 const specialTariffLabel = computed(() => tariffChange.value === 'Iya'
-  ? `${formatTariffRate(appliedTariffRate.value)} Per 15 Hari`
+  ? `${formatTariffRate(appliedTariffRate.value)} ${tariffPeriodLabel.value}`
   : '-')
 const autoValue = (value: number | undefined) => (
   value === undefined ? 'Terisi otomatis' : `Rp${formatCurrency(value)}`
@@ -80,17 +94,26 @@ const updateTariffRate = (value: string) => {
   tariffRate.value = value.replace(/[^\d,]/g, '').replace(/(,.*),/g, '$1')
 }
 
-watch([tariffChange, selectedTier], ([value, tier]) => {
-  if (value === 'Iya' && !tariffRate.value && tier) {
-    tariffRate.value = String(tier.tariffRate)
-      .replace('.', ',')
+watch(tariffChange, (newVal) => {
+  if (newVal === 'Tidak') {
+    tariffRate.value = '1,2'
+  } else if (!tariffRate.value) {
+    tariffRate.value = '1,2'
   }
-  if (value === 'Tidak') tariffRate.value = ''
-})
-
-watch([loanAmount, tariffRate, tariffChange], () => {
   isCalculated.value = false
   loanAmountError.value = ''
+})
+
+watch(loanAmount, () => {
+  isCalculated.value = false
+  loanAmountError.value = ''
+})
+
+watch(tariffRate, () => {
+  if (tariffChange.value === 'Iya') {
+    isCalculated.value = false
+    loanAmountError.value = ''
+  }
 })
 
 const calculateLoan = async () => {
@@ -208,7 +231,7 @@ const calculateLoan = async () => {
             <div class="rahn-detail-grid">
               <div class="rahn-info-item">
                 <strong>Tarif Fixed</strong>
-                <span>: {{ formatTariffRate(fixedTariffRate) }} Per 15 Hari</span>
+                <span>: {{ formatTariffRate(fixedTariffRate) }} {{ tariffPeriodLabel }}</span>
               </div>
               <div class="rahn-info-item">
                 <strong class="rahn-special-rate-label">
@@ -250,7 +273,7 @@ const calculateLoan = async () => {
                 <span class="rahn-rate-suffix">%</span>
               </template>
             </GInputText>
-            <span class="rahn-rate-period">Per 15 Hari</span>
+            <span class="rahn-rate-period">{{ tariffPeriodLabel }}</span>
           </div>
 
           <hr class="rahn-facility-divider">
