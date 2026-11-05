@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useTaskSuccessModal } from '../../src/composables/useTaskSuccessModal'
 import PosHeader from '../components/PosHeader.vue'
@@ -90,7 +90,10 @@ const canContinue = computed(() =>
 )
 
 // Reset state when modifying credit number
+let isSearching = false
+
 watch(creditNumber, () => {
+  if (isSearching) return
   creditError.value = ''
   if (hasCredit.value) {
     hasCredit.value = false
@@ -186,6 +189,7 @@ function searchCredit() {
     return
   }
 
+  isSearching = true
   creditNumber.value = digits
   hasCredit.value = true
   creditError.value = ''
@@ -194,6 +198,9 @@ function searchCredit() {
   transactionTypeError.value = ''
   paymentMethodError.value = ''
   installmentAmountError.value = ''
+  void nextTick(() => {
+    isSearching = false
+  })
 }
 
 // Synchronous Form Validation Engine
@@ -376,7 +383,6 @@ onBeforeUnmount(() => {
             <CreditNumberField
               v-model="creditNumber"
               :error="creditError"
-              :disabled="hasCredit"
               @search="searchCredit"
             />
             <div class="pgd-form-card__fields">

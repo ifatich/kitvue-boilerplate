@@ -210,9 +210,9 @@ describe('Tier 5: Milestone 1 Adversarial Hardening & Stress Testing', () => {
 
     it('T5-PKR-02: TransactionTypePicker displays correct mapped label for all 3 transaction types', async () => {
       const mapping = [
-        { val: 'Pelunasan', expected: 'Pelunasan' },
+        { val: 'Pelunasan', expected: 'Pelunasan Gadai' },
         { val: 'Cicil', expected: 'Cicil' },
-        { val: 'Sewa Modal', expected: 'Bayar Sewa Modal' },
+        { val: 'Sewa Modal', expected: 'Perpanjang' },
       ] as const
 
       for (const item of mapping) {

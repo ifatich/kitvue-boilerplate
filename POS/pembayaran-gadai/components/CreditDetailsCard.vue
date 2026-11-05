@@ -27,9 +27,7 @@ const emit = defineEmits<{
   print: []
 }>()
 
-const creditInfoIcon = paymentAsset('credit-info.svg')
 const paymentCopyIcon = paymentAsset('payment-copy.svg')
-const secureTransactionIcon = paymentAsset('secure-transaction.svg')
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat('id-ID', {
@@ -43,12 +41,12 @@ function formatCreditNumber(value: string) {
   return value.replace(/(\d{4})(?=\d)/g, '$1 ')
 }
 
-const transactionLabel = () =>
-  props.mode === 'success' || props.mode === 'failed'
-    ? props.summary.transactionType || '-'
-    : props.summary.transactionType === 'Pelunasan'
-      ? 'Pelunasan Gadai'
-      : props.summary.transactionType || '-'
+const transactionLabel = () => {
+  if (!props.summary.transactionType) return '-'
+  if (props.summary.transactionType === 'Pelunasan') return 'Pelunasan Gadai'
+  if (props.summary.transactionType === 'Sewa Modal') return 'Perpanjang'
+  return props.summary.transactionType
+}
 </script>
 
 <template>
@@ -57,8 +55,11 @@ const transactionLabel = () =>
 
     <!-- Info banner in form stage -->
     <div v-if="props.mode === 'form'" class="pgd-summary-card__notice">
-      <div class="pgd-summary-card__notice-icon">
-        <img :src="creditInfoIcon" alt="" />
+      <div class="pgd-summary-card__notice-icon" aria-hidden="true">
+        <svg viewBox="0 0 20 20" width="20" height="20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="10" cy="10" r="10" fill="#00AB4E" />
+          <path d="M10 6a1 1 0 100-2 1 1 0 000 2zm-1 3v6h2V9H9z" fill="#ffffff" />
+        </svg>
       </div>
       <p>Periksa rincian transaksimu sebelum melanjutkan</p>
     </div>
@@ -96,17 +97,8 @@ const transactionLabel = () =>
       <template v-else>
         <div class="pgd-detail-row">
           <dt>Nomor Kredit</dt>
-          <dd class="pgd-detail-row__copyable">
+          <dd>
             <span>{{ props.hasCredit ? formatCreditNumber(summary.number) : '-' }}</span>
-            <button
-              v-if="props.hasCredit"
-              class="pgd-copy-button"
-              type="button"
-              aria-label="Salin nomor kredit"
-              @click="emit('copy', summary.number)"
-            >
-              <img :src="paymentCopyIcon" alt="" />
-            </button>
           </dd>
         </div>
         <div class="pgd-detail-row">
@@ -118,24 +110,30 @@ const transactionLabel = () =>
           <dd>{{ props.hasCredit ? summary.customer : '-' }}</dd>
         </div>
         <div class="pgd-detail-row">
-          <dt>Uang Pinjaman</dt>
-          <dd>{{ props.hasCredit ? formatCurrency(summary.loanAmount) : '-' }}</dd>
-        </div>
-        <div class="pgd-detail-row">
           <dt>
-            <span>Sewa Modal</span>
-            <span class="pgd-info-icon" title="Sewa modal per hari" aria-label="Sewa modal per hari">
-              <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
-                <circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.5" />
-                <path d="M8 5v.5M8 7.5v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+            <span>Hari Gadai</span>
+            <span class="pgd-info-icon" title="Hari Gadai" aria-label="Hari Gadai">
+              <svg viewBox="0 0 16 16" width="14" height="14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <circle cx="8" cy="8" r="7" stroke="#00AB4E" stroke-width="1.25" />
+                <circle cx="8" cy="5" r="0.75" fill="#00AB4E" />
+                <path d="M8 7v4" stroke="#00AB4E" stroke-width="1.5" stroke-linecap="round" />
               </svg>
             </span>
           </dt>
-          <dd>{{ props.hasCredit ? `${formatCurrency(summary.dailyRent)} / Hari` : '-' }}</dd>
+          <dd>{{ props.hasCredit ? `${summary.rentDays || 60} Hari` : '-' }}</dd>
         </div>
         <div class="pgd-detail-row">
-          <dt>Total Hari Sewa Modal</dt>
-          <dd>{{ props.hasCredit ? `${summary.rentDays} Hari` : '-' }}</dd>
+          <dt>
+            <span>Tarif Sewa Modal</span>
+            <span class="pgd-info-icon" title="Tarif Sewa Modal" aria-label="Tarif Sewa Modal">
+              <svg viewBox="0 0 16 16" width="14" height="14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <circle cx="8" cy="8" r="7" stroke="#00AB4E" stroke-width="1.25" />
+                <circle cx="8" cy="5" r="0.75" fill="#00AB4E" />
+                <path d="M8 7v4" stroke="#00AB4E" stroke-width="1.5" stroke-linecap="round" />
+              </svg>
+            </span>
+          </dt>
+          <dd>{{ props.hasCredit ? (summary.rentRateLabel || 'Rp37.500 / 15 hari') : '-' }}</dd>
         </div>
         <div class="pgd-detail-row">
           <dt>Metode Pembayaran</dt>
@@ -144,7 +142,7 @@ const transactionLabel = () =>
       </template>
     </dl>
 
-    <!-- 4px Section Divider -->
+    <!-- Section Divider -->
     <div class="pgd-section-divider" aria-hidden="true"></div>
 
     <!-- Payment Breakdown -->
@@ -156,12 +154,16 @@ const transactionLabel = () =>
           <dd>{{ formatCurrency(summary.installmentAmount) }}</dd>
         </div>
         <div v-else class="pgd-detail-row">
-          <dt>Sisa Uang Pinjaman</dt>
+          <dt>Uang Pinjaman</dt>
           <dd>{{ props.hasCredit && summary.transactionType !== 'Sewa Modal' ? formatCurrency(summary.loanAmount) : '-' }}</dd>
         </div>
         <div class="pgd-detail-row">
           <dt>Sewa Modal</dt>
           <dd>{{ props.hasCredit && summary.transactionType !== 'Cicil' ? formatCurrency(summary.rentAmount) : '-' }}</dd>
+        </div>
+        <div v-if="props.hasCredit && summary.transactionType" class="pgd-detail-row">
+          <dt>Biaya Admin</dt>
+          <dd>{{ summary.adminFee !== undefined ? formatCurrency(summary.adminFee) : 'Rp1.000' }}</dd>
         </div>
         <div class="pgd-detail-row">
           <dt>Biaya Layanan</dt>
@@ -178,10 +180,15 @@ const transactionLabel = () =>
 
     <!-- Legal disclaimer -->
     <div v-if="props.mode === 'form'" class="pgd-terms">
-      <img class="pgd-terms__icon" :src="secureTransactionIcon" alt="" />
+      <div class="pgd-terms__check" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="none">
+          <path d="M6 14.1271C6 10.5453 6 8.75441 6.4116 8.15185C6.82211 7.55041 8.45871 6.97361 11.733 5.82113L12.3569 5.60161C14.0632 5.00017 14.9158 4.70001 15.8 4.70001C16.6842 4.70001 17.5368 5.00017 19.2431 5.60161L19.867 5.82113C23.1413 6.97361 24.7779 7.55041 25.1884 8.15185C25.6 8.75441 25.6 10.5464 25.6 14.1271V15.8899C25.6 22.2045 20.9842 25.2699 18.0878 26.5703C17.3027 26.9231 16.9107 27.1 15.8 27.1C14.6893 27.1 14.2973 26.9231 13.5122 26.5703C10.6158 25.2688 6 22.2056 6 15.8899V14.1271Z" fill="#00AB4E"/>
+          <path d="M20.5189 12.0999C20.9346 12.481 20.9627 13.1269 20.5817 13.5426L14.9658 19.6689C14.7588 19.8948 14.4613 20.0157 14.1554 19.9984C13.8495 19.9811 13.5676 19.8273 13.3874 19.5795L11.3453 16.7716C11.0136 16.3156 11.1144 15.677 11.5705 15.3453C12.0265 15.0136 12.6651 15.1144 12.9968 15.5705L14.3044 17.3684L19.0763 12.1627C19.4574 11.747 20.1032 11.7189 20.5189 12.0999Z" fill-rule="evenodd" clip-rule="evenodd" fill="white"/>
+        </svg>
+      </div>
       <span>
         Dengan melanjutkan proses ini, kamu menyetujui
-        <a href="#syarat-ketentuan" class="pgd-terms__link" @click.prevent> Syarat &amp; Ketentuan</a>
+        <a href="#syarat-ketentuan" class="pgd-terms__link" @click.prevent>Syarat &amp; Ketentuan</a>
         yang berlaku.
       </span>
     </div>

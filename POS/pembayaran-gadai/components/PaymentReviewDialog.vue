@@ -51,17 +51,18 @@ onBeforeUnmount(() => {
 
 <template>
   <Teleport to="body">
-    <div
-      v-if="props.open"
-      class="pgd-dialog-backdrop pgd-dialog-backdrop--confirmation"
-      @click.self="emit('close')"
-    >
-      <section
-        class="pgd-dialog pgd-dialog--confirmation"
-        role="dialog"
-        aria-modal="true"
-        aria-label="Pastikan Data Sudah Sesuai"
+    <Transition name="pgd-slide-left">
+      <div
+        v-if="props.open"
+        class="pgd-dialog-backdrop pgd-dialog-backdrop--confirmation"
+        @click.self="emit('close')"
       >
+        <section
+          class="pgd-dialog pgd-dialog--confirmation"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Pastikan Data Sudah Sesuai"
+        >
         <header class="pgd-dialog__header">
           <button
             class="pgd-dialog__close"
@@ -120,5 +121,6 @@ onBeforeUnmount(() => {
         </footer>
       </section>
     </div>
+    </Transition>
   </Teleport>
 </template>

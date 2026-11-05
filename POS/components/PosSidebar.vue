@@ -2,6 +2,7 @@
 import dashboardIcon from '../assets/figma/sidebar-dashboard.svg'
 import dashboardInactiveIcon from '../assets/figma/sidebar-dashboard-inactive.svg'
 import paymentIcon from '../assets/figma/sidebar-payment.svg'
+import paymentActiveIcon from '../assets/figma/sidebar-payment-active.svg'
 import goldIcon from '../assets/figma/sidebar-gold.svg'
 import pawnIcon from '../assets/figma/sidebar-pawn.svg'
 import financeIcon from '../assets/figma/sidebar-finance.svg'
@@ -35,7 +36,13 @@ const items: Array<{
     width: 19,
     height: 20,
   },
-  { label: 'Pembayaran', icon: paymentIcon, width: 18.2499, height: 15.6 },
+  {
+    label: 'Pembayaran',
+    icon: paymentIcon,
+    activeIcon: paymentActiveIcon,
+    width: 18.2499,
+    height: 15.6,
+  },
   { label: 'Emas', icon: goldIcon, width: 18, height: 13.7561 },
   { label: 'Gadai', icon: pawnIcon, width: 19.3404, height: 14.6602 },
   { label: 'Pembiayaan', icon: financeIcon, width: 19.2343, height: 13.2 },

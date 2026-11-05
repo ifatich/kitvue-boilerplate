@@ -211,18 +211,19 @@
 
 /* Dividers */
 .pgd-section-divider {
-  width: calc(100% + 32px);
-  height: 4px;
+  width: 100%;
+  height: 1px;
   background: var(--g-kit-black-20);
-  margin: 16px -16px;
+  margin: 16px 0;
   border: 0;
 }
 
 .pgd-item-divider {
   width: 100%;
   height: 1px;
-  background: var(--g-kit-black-30);
-  margin: 8px 0;
+  background: var(--g-kit-black-20);
+  margin: 12px 0 16px;
+  border: 0;
 }
 
 /* Credit Number & Input Boxes */
@@ -509,7 +510,7 @@
 .pgd-dialog-backdrop--confirmation {
   justify-content: flex-end;
   align-items: flex-start;
-  padding: 129px 24px 24px 24px;
+  padding: 72px 24px 24px 24px;
 }
 
 @media (max-width: 768px) {
@@ -554,7 +555,44 @@
   border-radius: 24px;
   height: 100%;
   justify-content: space-between;
-  max-height: 80vh;
+  /* max-height: 80vh; */
+}
+
+/* Slide-in from right to left animation for confirmation modal */
+.pgd-slide-left-enter-active,
+.pgd-slide-left-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.pgd-slide-left-enter-active .pgd-dialog--confirmation,
+.pgd-slide-left-leave-active .pgd-dialog--confirmation {
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease;
+}
+
+.pgd-slide-left-enter-from,
+.pgd-slide-left-leave-to {
+  opacity: 0;
+}
+
+.pgd-slide-left-enter-from .pgd-dialog--confirmation,
+.pgd-slide-left-leave-to .pgd-dialog--confirmation {
+  transform: translateX(100%);
+  opacity: 0;
+}
+
+.pgd-slide-left-enter-to .pgd-dialog--confirmation,
+.pgd-slide-left-leave-from .pgd-dialog--confirmation {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pgd-slide-left-enter-active,
+  .pgd-slide-left-leave-active,
+  .pgd-slide-left-enter-active .pgd-dialog--confirmation,
+  .pgd-slide-left-leave-active .pgd-dialog--confirmation {
+    transition: none !important;
+  }
 }
 
 .pgd-dialog--confirmation .pgd-dialog__header {
@@ -582,6 +620,11 @@
 
 .pgd-dialog--confirmation .pgd-dialog__footer {
   padding: 24px;
+}
+
+.pgd-dialog--payment .pgd-method-panel .pgd-item-divider,
+.pgd-method-panel .pgd-item-divider {
+  background: var(--g-kit-black-30);
 }
 
 .pgd-dialog__header {
@@ -628,6 +671,7 @@
 
 .pgd-dialog__body {
   padding: 16px 24px;
+  padding-top: 0px;
   overflow-y: auto;
 }
 
@@ -640,12 +684,23 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  min-height: 20px;
+  max-width: 20px;
+  max-height: 20px;
+  aspect-ratio: 1 / 1;
   border: 2px solid var(--g-kit-black-50);
   border-radius: 50%;
   background: var(--g-kit-white);
-  flex: 0 0 auto;
+  flex: 0 0 20px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+  line-height: 0;
+  align-self: center;
 }
 
 .pgd-radio--selected {
@@ -653,10 +708,20 @@
 }
 
 .pgd-radio__dot {
+  display: block;
   width: 10px;
   height: 10px;
+  min-width: 10px;
+  min-height: 10px;
+  max-width: 10px;
+  max-height: 10px;
+  aspect-ratio: 1 / 1;
   border-radius: 50%;
+  flex: 0 0 10px;
+  flex-shrink: 0;
+  box-sizing: border-box;
   background: transparent;
+  margin: 0 auto;
 }
 
 .pgd-radio--selected .pgd-radio__dot {
@@ -691,7 +756,7 @@
 .pgd-method-panel {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  /* gap: 16px; */
   padding: 16px;
   background: var(--g-kit-black-20);
   border-radius: 24px;
@@ -714,7 +779,7 @@
   border: 0;
   background: transparent;
   font-size: 14px;
-  font-weight: var(--g-kit-font-weight-title-bold);
+  font-weight: 600;
   line-height: 20px;
   color: var(--g-kit-black-80);
   cursor: pointer;
@@ -812,7 +877,7 @@
 /* Detail Kredit & Summary Card */
 .pgd-summary-card {
   width: 400px;
-  padding: 16px;
+  padding: 24px;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -831,18 +896,25 @@
   font-weight: var(--g-kit-font-weight-title-bold);
   line-height: 24px;
   color: var(--g-kit-black-80);
-  margin-bottom: 1rem !important;
+  margin: 0 0 12px 0 !important;
 }
 
 .pgd-summary-card__notice {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 16px;
-  background: var(--g-kit-teal-10);
-  border-radius: 24px;
+  gap: 10px;
+  padding: 10px 16px;
+  background: var(--g-kit-lime-10);
+  border-radius: 1000px;
   position: relative;
   overflow: hidden;
+}
+
+.pgd-summary-card__notice-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .pgd-summary-card__notice p {
@@ -912,7 +984,10 @@
 
 .pgd-info-icon {
   display: inline-flex;
-  color: var(--g-kit-black-60);
+  align-items: center;
+  justify-content: center;
+  color: var(--g-kit-lime-50);
+  margin-left: 2px;
 }
 
 .pgd-breakdown__total dt,
@@ -925,18 +1000,27 @@
 .pgd-terms {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   font-size: 12px;
   font-weight: var(--g-kit-font-weight-normal);
   line-height: 18px;
-  color: var(--g-kit-black-80);
-  margin-top: 8px;
-  margin-bottom: 8px;
+  color: var(--g-kit-black-60);
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+
+.pgd-terms__check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .pgd-terms__link {
   color: var(--g-kit-lime-50);
   font-weight: 700;
+  font-size: 12px;
+  line-height: 18px;
   text-decoration: none;
 }
 
@@ -1249,7 +1333,47 @@
     min-height: calc(100vh - 72px);
     padding: 0 16px 32px;
   }
+}
 
+@media (min-width: 768px) and (max-width: 1199px) {
+  .pgd-flow-grid {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 16px;
+    width: 100%;
+  }
+
+  .pgd-form-card,
+  .pgd-instruction-card,
+  .pgd-result {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .pgd-summary-card {
+    flex: 0 0 400px;
+    width: 340px;
+    min-width: 320px;
+    max-width: 400px;
+    padding: 20px;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1199px) {
+  .pgd-canvas:not(.pos-canvas--sidebar-collapsed) > .pos-sidebar {
+    width: 224px;
+    padding-right: 16px;
+    padding-left: 24px;
+  }
+
+  .pgd-canvas:not(.pos-canvas--sidebar-collapsed) .pgd-main-panel {
+    left: 240px;
+    right: 24px;
+  }
+}
+
+@media (max-width: 767px) {
   .pgd-flow-grid {
     flex-direction: column;
     gap: 16px;
@@ -1269,19 +1393,6 @@
     width: 100%;
     min-width: 0;
     max-width: 100%;
-  }
-}
-
-@media (min-width: 641px) and (max-width: 1199px) {
-  .pgd-canvas:not(.pos-canvas--sidebar-collapsed) > .pos-sidebar {
-    width: 224px;
-    padding-right: 16px;
-    padding-left: 24px;
-  }
-
-  .pgd-canvas:not(.pos-canvas--sidebar-collapsed) .pgd-main-panel {
-    left: 240px;
-    right: 24px;
   }
 }
 

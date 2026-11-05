@@ -65,4 +65,13 @@ describe('PembayaranMenuPage (Figma Node 484-13592: Bayar & Beli)', () => {
     expect(html).not.toContain('.png')
     expect(html).not.toContain('.jpg')
   })
+
+  it('renders the active green payment icon in the sidebar when activeItem is Pembayaran', async () => {
+    const { app } = createTestApp()
+    const html = await renderToString(app)
+
+    // In SSR/Vite, SVG assets are inlined as data URIs. Verify the active payment icon with #004D43 and #D6C47A is present.
+    expect(html).toContain('%23004D43')
+    expect(html).toContain('%23D6C47A')
+  })
 })

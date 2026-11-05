@@ -5,9 +5,9 @@ import type { TransactionType } from '../payment-types'
 import PaymentDialog from './PaymentDialog.vue'
 
 const transactionLabels: Record<TransactionType, string> = {
-  'Sewa Modal': 'Bayar Sewa Modal',
+  'Sewa Modal': 'Perpanjang',
   Cicil: 'Cicil',
-  Pelunasan: 'Pelunasan',
+  Pelunasan: 'Pelunasan Gadai',
 }
 
 const props = defineProps<{

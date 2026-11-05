@@ -20,6 +20,8 @@ export interface CreditRecord {
   rentDays: number
   rentAmount: number
   serviceFee: number
+  adminFee?: number
+  rentRateLabel?: string
 }
 
 export interface PaymentSummary extends CreditRecord {
