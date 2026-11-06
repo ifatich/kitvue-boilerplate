@@ -34,6 +34,7 @@ interface SprintSearchItem {
 const props = withDefaults(defineProps<{
   embedded?: boolean
   entryLayout?: boolean
+  fixed?: boolean
   profileRole?: string
   showAuthToggle?: boolean
   searchPlaceholder?: string
@@ -45,6 +46,7 @@ const props = withDefaults(defineProps<{
 }>(), {
   embedded: false,
   entryLayout: false,
+  fixed: true,
   profileRole: 'Pimpinan Cabang',
   showAuthToggle: true,
   searchPlaceholder: 'Cari (contoh: pengajuan kredit)',
@@ -221,19 +223,43 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <header
-    ref="navbarElement"
+  <div
     :class="[
-      'sprint-navbar',
+      'sprint-navbar-wrapper',
       {
-        'sprint-navbar--floating': props.embedded,
-        'sprint-navbar--entry-layout': props.entryLayout,
-        'sprint-navbar--mobile-module': props.mobileTitle,
-        'sprint-navbar--search-enabled': props.searchItems.length > 0,
+        'sprint-navbar-wrapper--fixed': props.fixed,
+        'sprint-navbar-wrapper--floating': props.embedded,
       },
     ]"
-    role="banner"
   >
+    <div
+      v-if="props.fixed"
+      class="sprint-navbar-placeholder"
+      :class="{
+        'sprint-navbar-placeholder--floating': props.embedded,
+        'sprint-navbar-placeholder--mobile-module': props.mobileTitle,
+      }"
+      aria-hidden="true"
+    />
+    <div
+      v-if="props.fixed && props.embedded"
+      class="sprint-navbar-top-mask"
+      aria-hidden="true"
+    />
+    <header
+      ref="navbarElement"
+      :class="[
+        'sprint-navbar',
+        {
+          'sprint-navbar--fixed': props.fixed,
+          'sprint-navbar--floating': props.embedded,
+          'sprint-navbar--entry-layout': props.entryLayout,
+          'sprint-navbar--mobile-module': props.mobileTitle,
+          'sprint-navbar--search-enabled': props.searchItems.length > 0,
+        },
+      ]"
+      role="banner"
+    >
     <div v-if="props.embedded" class="sprint-navbar-pattern" :style="{ backgroundImage: `url(${headerPattern})` }" aria-hidden="true" />
     <div v-if="props.mobileTitle" class="sprint-mobile-module-bar">
       <div class="sprint-mobile-module-bar__left">
@@ -514,9 +540,37 @@ onBeforeUnmount(() => {
       </template>
     </div>
   </header>
+  </div>
 </template>
 
 <style scoped>
+.sprint-navbar-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.sprint-navbar-placeholder {
+  width: 100%;
+  height: 64px;
+}
+
+.sprint-navbar-placeholder--floating {
+  width: min(calc(100% - 32px), 1312px);
+  height: 76px;
+  margin: 16px auto 0;
+}
+
+.sprint-navbar-top-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 16px;
+  background-color: var(--sprint-navbar-mask-bg, inherit);
+  z-index: 999;
+  pointer-events: none;
+}
+
 .sprint-navbar {
   width: 100%;
   height: 64px;
@@ -526,6 +580,14 @@ onBeforeUnmount(() => {
   top: 0;
   z-index: 1000;
   box-shadow: 0 2px 10px rgba(0, 40, 32, 0.15);
+}
+
+.sprint-navbar--fixed {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
 }
 
 .sprint-navbar--floating {
@@ -540,6 +602,15 @@ onBeforeUnmount(() => {
   background-position: center;
   box-shadow: var(--bb-elevation-1);
   overflow: visible;
+}
+
+.sprint-navbar--fixed.sprint-navbar--floating {
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(calc(100% - 32px), 1312px);
+  height: 76px;
+  margin: 0;
 }
 
 .sprint-navbar-pattern {
@@ -1129,6 +1200,23 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 900px) {
+  .sprint-navbar-placeholder--floating {
+    width: calc(100% - 24px);
+    height: 64px;
+    margin-top: 12px;
+  }
+
+  .sprint-navbar-top-mask {
+    height: 12px;
+  }
+
+  .sprint-navbar--fixed.sprint-navbar--floating {
+    top: 12px;
+    height: 64px;
+    width: calc(100% - 24px);
+    margin: 0;
+  }
+
   .sprint-navbar--floating { width: calc(100% - 24px); height: 64px; margin-top: 12px; border-radius: 12px; }
   .sprint-navbar--floating .sprint-navbar__container { padding: 0 16px; gap: 14px; }
   .sprint-navbar--floating .sprint-nav-actions { gap: 14px; }
@@ -1155,6 +1243,34 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 767px) {
+  .sprint-navbar-placeholder--floating {
+    width: 100%;
+    height: 120px;
+    margin: 0;
+  }
+
+  .sprint-navbar-placeholder--mobile-module {
+    height: 58px;
+  }
+
+  .sprint-navbar-top-mask {
+    display: none;
+  }
+
+  .sprint-navbar--fixed.sprint-navbar--floating {
+    top: 0;
+    left: 0;
+    transform: none;
+    width: 100%;
+    height: 120px;
+    margin: 0;
+    border-radius: 0;
+  }
+
+  .sprint-navbar--fixed.sprint-navbar--mobile-module {
+    height: 58px;
+  }
+
   .sprint-navbar--floating {
     width: 100%;
     height: 120px;

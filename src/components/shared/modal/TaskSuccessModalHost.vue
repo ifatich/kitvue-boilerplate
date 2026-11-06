@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue'
+import { computed, onMounted, onUnmounted } from 'vue'
 import { useTaskSuccessModal } from '@/composables/useTaskSuccessModal'
 import TaskSuccessModal from './TaskSuccessModal.vue'
 
@@ -16,6 +16,13 @@ const {
   handleConfirm,
   handleSecondary,
 } = useTaskSuccessModal()
+
+const badgeActionLabel = computed(() => {
+  if (modalConfirmLabel.value.toLowerCase().includes('lanjut')) {
+    return 'Lanjut'
+  }
+  return 'Menu Task'
+})
 
 function handleGlobalFooterClick(event: MouseEvent) {
   if (!isDismissedForExploration.value) return
@@ -68,7 +75,7 @@ onUnmounted(() => {
           </svg>
         </span>
         <span class="task-success-badge-text">Task Selesai</span>
-        <span class="task-success-badge-action">Lanjut &rarr;</span>
+        <span class="task-success-badge-action">{{ badgeActionLabel }} &rarr;</span>
       </button>
     </Transition>
   </Teleport>

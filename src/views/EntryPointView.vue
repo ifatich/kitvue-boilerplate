@@ -260,12 +260,22 @@ function getStoredValue(key: string): string | undefined {
   return undefined
 }
 
-function persistResearchContext(teamId: string, cpId: string, roleId: string) {
+function persistResearchContext(teamId: string, cpId: string, roleId: string, nextView?: string, fromCompare?: string) {
   if (typeof window !== 'undefined' && window.sessionStorage) {
     try {
       window.sessionStorage.setItem('sprint_research_team', teamId)
       window.sessionStorage.setItem('sprint_research_cp', cpId)
       window.sessionStorage.setItem('sprint_research_role', roleId)
+      if (nextView) {
+        window.sessionStorage.setItem('sprint_research_next_view', nextView)
+      } else {
+        window.sessionStorage.removeItem('sprint_research_next_view')
+      }
+      if (fromCompare) {
+        window.sessionStorage.setItem('sprint_research_from_compare', fromCompare)
+      } else {
+        window.sessionStorage.removeItem('sprint_research_from_compare')
+      }
     } catch {
       // ignore storage quota / sandbox limits
     }
@@ -318,11 +328,35 @@ const currentTasks = computed<EntryPointOption[]>(() => {
   const branch = selectedBranch.value
   const isLeadership = isLeadershipRole.value
 
+  const leadershipBerandaTask: EntryPointOption = branch.berandaPrimary === 1
+    ? {
+        id: 'task-beranda',
+        label: 'Task 1',
+        badge: 'Task 1',
+        title: 'Beranda Eksisting',
+        subtitle: 'Alur perbandingan (Next view: Beranda Opsi 1 → Beranda Opsi 2)',
+        description: 'Beranda Eksisting (Next view: Beranda Opsi 1 → Beranda Opsi 2)',
+        actionLabel: 'Mulai Task',
+        targetRoute: '/proto-existing?nextView=proto-1',
+        requiresLogin: true,
+      }
+    : {
+        id: 'task-beranda',
+        label: 'Task 1',
+        badge: 'Task 1',
+        title: 'Beranda Eksisting',
+        subtitle: 'Alur perbandingan (Next view: Beranda Opsi 2 → Beranda Opsi 1)',
+        description: 'Beranda Eksisting (Next view: Beranda Opsi 2 → Beranda Opsi 1)',
+        actionLabel: 'Mulai Task',
+        targetRoute: '/proto-existing?nextView=proto-2',
+        requiresLogin: true,
+      }
+
   const berandaTask: EntryPointOption = branch.berandaPrimary === 1
     ? {
         id: 'task-beranda',
-        label: isLeadership ? 'Task 1' : 'Task 2',
-        badge: isLeadership ? 'Task 1' : 'Task 2',
+        label: 'Task 2',
+        badge: 'Task 2',
         title: 'Beranda Opsi 1',
         subtitle: 'Alur perbandingan (Next view: Beranda Opsi 2)',
         description: 'Beranda Opsi 1 (Next view: Beranda Opsi 2)',
@@ -332,8 +366,8 @@ const currentTasks = computed<EntryPointOption[]>(() => {
       }
     : {
         id: 'task-beranda',
-        label: isLeadership ? 'Task 1' : 'Task 2',
-        badge: isLeadership ? 'Task 1' : 'Task 2',
+        label: 'Task 2',
+        badge: 'Task 2',
         title: 'Beranda Opsi 2',
         subtitle: 'Alur perbandingan (Next view: Beranda Opsi 1)',
         description: 'Beranda Opsi 2 (Next view: Beranda Opsi 1)',
@@ -355,7 +389,7 @@ const currentTasks = computed<EntryPointOption[]>(() => {
   }
 
   if (isLeadership) {
-    return [berandaTask, posTask]
+    return [leadershipBerandaTask, posTask]
   }
 
   const gadaiTask: EntryPointOption = branch.gadaiType === 'non-stepper'
@@ -442,7 +476,6 @@ function selectOption(option: EntryPointOption) {
   }
 
   if (props.stage === 'tasks') {
-    persistResearchContext(selectedTeam.value.id, selectedBranch.value.id, currentRole.value.id)
     const rawTargetRoute = option.targetRoute ?? '/sprint-proto-1'
     const [path, queryString] = rawTargetRoute.split('?')
     const extraParams = new URLSearchParams(queryString ?? '')
@@ -454,6 +487,14 @@ function selectOption(option: EntryPointOption) {
     extraParams.forEach((val, key) => {
       targetQuery[key] = val
     })
+
+    persistResearchContext(
+      selectedTeam.value.id,
+      selectedBranch.value.id,
+      currentRole.value.id,
+      targetQuery.nextView,
+      targetQuery.fromCompare,
+    )
 
     if (option.requiresLogin) {
       void router.push({

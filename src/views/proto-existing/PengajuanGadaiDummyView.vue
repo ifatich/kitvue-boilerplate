@@ -1,11 +1,15 @@
 <script setup lang="ts">
 import { computed, reactive } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import DropdownComponent from 'kitvue-public/src/components/Dropdown/InputDropdown.vue'
 import InputTextComponent from 'kitvue-public/src/components/Input/InputText.vue'
 import StepperComponent from 'kitvue-public/src/components/Stepper/Stepper.vue'
 import Breadcrumb from '../../components/shared/breadcrumb/Breadcrumb.vue'
 import ModuleSectionCard from '../../components/shared/card/ModuleSectionCard.vue'
 import arrowLeftGreen from 'kitvue-public/src/assets/images/arrow-left-green.svg'
+
+const route = useRoute()
+const router = useRouter()
 
 const props = withDefaults(defineProps<{
   variant?: 'kasir' | 'launcher' | 'existing'
@@ -17,6 +21,23 @@ const homePath = computed(() => {
   if (props.variant === 'existing') return '/sprint-existing'
   return '/sprint-proto-1'
 })
+const homeTargetUrl = computed(() => {
+  const query = new URLSearchParams()
+  Object.entries(route.query).forEach(([k, v]) => {
+    if (typeof v === 'string') query.set(k, v)
+    else if (Array.isArray(v)) v.forEach((sub) => sub && query.append(k, sub))
+  })
+  const qs = query.toString()
+  return qs ? `${homePath.value}?${qs}` : homePath.value
+})
+
+function handleBack() {
+  if (window.history.length > 1) {
+    router.back()
+  } else {
+    void router.push(homeTargetUrl.value)
+  }
+}
 
 interface DropdownOption {
   label: string
@@ -59,12 +80,12 @@ const fields = reactive({
     <main class="pengajuan-gadai-content">
       <Breadcrumb
         class="pengajuan-gadai-breadcrumb"
-        :items="[{ label: 'Beranda', to: homePath }, 'Pengajuan Gadai']"
+        :items="[{ label: 'Beranda', to: homeTargetUrl }, 'Pengajuan Gadai']"
       />
 
       <section class="section-bg-top">
         <div class="section-bg-top__back">
-          <button class="back-button" type="button" aria-label="Back" @click="$router.back()">
+          <button class="back-button" type="button" aria-label="Back" @click="handleBack">
             <img width="24" height="24" :src="arrowLeftGreen as unknown as string" alt="" aria-hidden="true" />
           </button>
           <h4 v-bind="$attrs" class="text-black-80">Pengajuan Gadai</h4>

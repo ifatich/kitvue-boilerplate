@@ -171,10 +171,10 @@ watch(isSuccessResult, (isSuccess) => {
 }, { immediate: true })
 
 function resetFlowToHome() {
-  if (resultStatus.value === 'success') {
-    triggerSuccessModal()
-    return
-  }
+  // if (resultStatus.value === 'success') {
+  //   triggerSuccessModal()
+  //   return
+  // }
   void router?.push({
     path: `${routePrefix}/pembayaran`,
     query: route.query,

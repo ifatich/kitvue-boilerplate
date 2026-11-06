@@ -27,6 +27,7 @@ const props = withDefaults(
     showAuthToggle?: boolean
     wide?: boolean
     entryNavbar?: boolean
+    fixedNavbar?: boolean
     searchPlaceholder?: string
   }>(),
   {
@@ -36,6 +37,7 @@ const props = withDefaults(
     showAuthToggle: false,
     wide: false,
     entryNavbar: false,
+    fixedNavbar: true,
     searchPlaceholder: 'Cari (contoh: pengajuan kredit)',
   },
 )
@@ -73,6 +75,7 @@ const handleBack = () => {
       :search-placeholder="searchPlaceholder"
       :mobile-title="title"
       :mobile-back-to="backTo"
+      :fixed="fixedNavbar"
       @back="handleBack"
       @info="emit('info')"
     />
@@ -104,6 +107,7 @@ const handleBack = () => {
 
 <style scoped lang="scss">
 .sprint-module-shell {
+  --sprint-navbar-mask-bg: var(--g-kit-white);
   flex: 1 0 auto;
   min-height: 100vh;
   min-height: 100dvh;

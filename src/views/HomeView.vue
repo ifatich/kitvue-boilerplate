@@ -203,6 +203,7 @@ const handleSlideClick = () => {
     <SprintNavbar
       embedded
       entry-layout
+      fixed
       :profile-role="(route.query.role as string) || 'Penaksir'"
       :show-auth-toggle="false"
       :show-mobile-bottom-nav="true"
@@ -682,6 +683,7 @@ const handleSlideClick = () => {
 
 <style lang="scss" scoped>
 .entry-page {
+  --sprint-navbar-mask-bg: var(--g-kit-black-10);
   display: flex;
   flex-direction: column;
   min-height: 100dvh;

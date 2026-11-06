@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import ButtonComponent from 'kitvue-public/src/components/Button/Button.vue'
 import SprintNavbar from '@/components/shared/admin-layout/SprintNavbar.vue'
 import { getPrototypeRoleFromSession } from '@/services/authService'
@@ -7,7 +8,10 @@ import type { PrototypeRole } from '@/types/admin'
 import DashboardMetrics from './components/DashboardMetrics.vue'
 import FeatureGroupCard from './components/FeatureGroupCard.vue'
 import TaskListCard from './components/TaskListCard.vue'
-import { featureColumnsByRole } from './feature-data'
+import { featureColumnsByRole, type FeatureMenuItem } from './feature-data'
+
+const router = useRouter()
+const route = useRoute()
 
 const featureGrid = ref<HTMLElement | null>(null)
 const activeRole = computed<PrototypeRole>(() => getPrototypeRoleFromSession() ?? 'Penaksir')
@@ -17,7 +21,6 @@ const searchItems = computed(() => featureColumns.value.flatMap((column) => colu
     group: group.title,
     label: item.label,
     icon: item.icon,
-    to: item.label === 'Pengajuan Gadai' ? '/proto-existing/pengajuan-gadai' : undefined,
   }))
 ))))
 
@@ -25,6 +28,36 @@ const profileRole = computed(() => {
   if (activeRole.value === 'Pinca') return 'Pimpinan Cabang / Pinca'
   return activeRole.value
 })
+
+const homeToUrl = computed(() => {
+  const query = new URLSearchParams()
+  Object.entries(route.query).forEach(([k, v]) => {
+    if (typeof v === 'string') query.set(k, v)
+    else if (Array.isArray(v)) v.forEach((sub) => sub && query.append(k, sub))
+  })
+  const qs = query.toString()
+  return qs ? `/sprint-existing?${qs}` : '/sprint-existing'
+})
+
+const handleFeatureItemClick = (item: FeatureMenuItem) => {
+  if (item.label === 'Pengajuan Gadai') {
+    void router.push({
+      path: '/proto-existing/pengajuan-gadai',
+      query: { ...route.query },
+    })
+  }
+}
+
+const onSearchSelect = (item: { group: string; label: string }) => {
+  if (item.label === 'Pengajuan Gadai') {
+    void router.push({
+      path: '/proto-existing/pengajuan-gadai',
+      query: { ...route.query },
+    })
+    return
+  }
+  focusSearchResult(item)
+}
 
 const focusSearchResult = (item: { group: string; label: string }) => {
   const result = Array.from(
@@ -51,13 +84,14 @@ const focusSearchResult = (item: { group: string; label: string }) => {
     <SprintNavbar
       embedded
       entry-layout
+      fixed
       :profile-role="profileRole"
-      home-to="/sprint-existing"
+      :home-to="homeToUrl"
       :show-auth-toggle="false"
       :show-mobile-bottom-nav="true"
       search-placeholder="Cari (contoh: Pengajuan Gadai/Rahn)"
       :search-items="searchItems"
-      @search-select="focusSearchResult"
+      @search-select="onSearchSelect"
     />
 
     <main class="proto-existing-content">
@@ -89,6 +123,7 @@ const focusSearchResult = (item: { group: string; label: string }) => {
             v-for="group in column"
             :key="group.title"
             :group="group"
+            @select-item="handleFeatureItemClick"
           />
         </div>
       </div>
@@ -102,6 +137,7 @@ const focusSearchResult = (item: { group: string; label: string }) => {
 
 <style lang="scss" scoped>
 .proto-existing-page {
+  --sprint-navbar-mask-bg: var(--g-kit-black-10);
   display: flex;
   flex-direction: column;
   background: var(--g-kit-black-10);

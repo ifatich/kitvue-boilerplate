@@ -127,6 +127,34 @@ describe('useTaskSuccessModal Composable', () => {
     expect(hasCompletedTask.value).toBe(false)
   })
 
+  it('preserves onConfirm callback and executes smoothly after dismissal for exploration', () => {
+    let advancedStep = ''
+    showTaskSuccessModal({
+      title: 'Task Selesai',
+      taskName: 'Beranda Eksisting (Pengajuan Gadai)',
+      confirmLabel: 'Lanjut ke Beranda Opsi 1',
+      onConfirm: () => {
+        advancedStep = '/sprint-proto-1'
+      },
+    })
+
+    // User dismisses to explore
+    dismissToExplore()
+    expect(isDismissedForExploration.value).toBe(true)
+
+    // User clicks floating badge (which reopens the modal first)
+    reopenSuccessModal()
+    expect(isTaskModalOpen.value).toBe(true)
+    expect(isDismissedForExploration.value).toBe(false)
+    expect(modalConfirmLabel.value).toBe('Lanjut ke Beranda Opsi 1')
+
+    // Then user confirms from the modal to advance
+    handleConfirm()
+    expect(advancedStep).toBe('/sprint-proto-1')
+    expect(isTaskModalOpen.value).toBe(false)
+    expect(isDismissedForExploration.value).toBe(false)
+  })
+
   it('navigates to entry-point-tasks using session storage context when query params are absent', () => {
     sessionStorage.setItem('sprint_research_team', 'team-2')
     sessionStorage.setItem('sprint_research_cp', 'dps-cbg-renon')

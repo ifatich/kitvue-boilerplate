@@ -44,36 +44,6 @@ const returnToTaskMenu = () => {
   })
 }
 
-const handleBerandaTaskSuccess = (taskLabel: string) => {
-  const isComparing = route.query.nextView === 'proto-1'
-  if (isComparing) {
-    showTaskSuccessModal({
-      title: 'Task Selesai',
-      taskName: `Beranda Opsi 2 (${taskLabel})`,
-      message: 'Lanjut ke Beranda Opsi 1 untuk membandingkan tampilan.',
-      confirmLabel: 'Lanjut ke Beranda Opsi 1',
-      onConfirm: () => {
-        void router.push({
-          path: '/sprint-proto-1',
-          query: {
-            team: route.query.team as string | undefined,
-            cp: route.query.cp as string | undefined,
-            role: route.query.role as string | undefined,
-            fromCompare: 'proto-2',
-          },
-        })
-      },
-    })
-  } else {
-    showTaskSuccessModal({
-      title: 'Task Selesai',
-      taskName: `Beranda Opsi 2 (${taskLabel})`,
-      message: 'Selamat Anda sudah menyelesaikan task!',
-      confirmLabel: 'Kembali ke Menu Task',
-      onConfirm: returnToTaskMenu,
-    })
-  }
-}
 
 // Drawer open/collapsed state (Figma 525:348350 Group 626388 toggle)
 const isDrawerOpen = ref(false)
@@ -94,8 +64,22 @@ watch(searchDrawer, (val) => {
 
 let searchSuccessTimer: ReturnType<typeof setTimeout> | null = null
 
+const getEffectiveNextView = () => {
+  const queryVal = route.query.nextView as string | undefined
+  if (queryVal) return queryVal
+  if (typeof window !== 'undefined' && window.sessionStorage) {
+    return window.sessionStorage.getItem('sprint_research_next_view') ?? undefined
+  }
+  return undefined
+}
+
 const handleBerandaSearchSuccess = () => {
-  const isComparing = route.query.nextView === 'proto-1'
+  const nextView = getEffectiveNextView()
+  const team = (route.query.team as string | undefined) || (typeof window !== 'undefined' ? window.sessionStorage?.getItem('sprint_research_team') : null) || 'team-1'
+  const cp = (route.query.cp as string | undefined) || (typeof window !== 'undefined' ? window.sessionStorage?.getItem('sprint_research_cp') : null) || 'mks-cbg-talasalapang'
+  const role = (route.query.role as string | undefined) || (typeof window !== 'undefined' ? window.sessionStorage?.getItem('sprint_research_role') : null) || 'Kasir'
+  const isComparing = nextView === 'proto-1'
+
   if (isComparing) {
     showTaskSuccessModal({
       title: 'Task Selesai',
@@ -103,12 +87,16 @@ const handleBerandaSearchSuccess = () => {
       message: 'Selamat, Anda berhasil menemukan menu Pengajuan Gadai! Lanjut ke Beranda Opsi 1 untuk membandingkan tampilan.',
       confirmLabel: 'Lanjut ke Beranda Opsi 1',
       onConfirm: () => {
+        if (typeof window !== 'undefined' && window.sessionStorage) {
+          window.sessionStorage.removeItem('sprint_research_next_view')
+          window.sessionStorage.setItem('sprint_research_from_compare', 'proto-2')
+        }
         void router.push({
           path: '/sprint-proto-1',
           query: {
-            team: route.query.team as string | undefined,
-            cp: route.query.cp as string | undefined,
-            role: route.query.role as string | undefined,
+            team,
+            cp,
+            role,
             fromCompare: 'proto-2',
           },
         })
@@ -514,7 +502,10 @@ function handleRailSelect(id: string) {
   if (id === 'beranda') {
     isDrawerOpen.value = false
     isMobileNavOpen.value = false
-    void router.push({ name: 'service-launcher' })
+    void router.push({
+      name: 'service-launcher',
+      query: { ...route.query },
+    })
   }
 }
 
@@ -534,11 +525,13 @@ function isMenuGroupExpanded(groupLabel: string) {
 }
 
 function toggleMenuGroup(groupLabel: string) {
-  if (expandedMenuGroups.value.has(groupLabel)) {
-    expandedMenuGroups.value.delete(groupLabel)
+  const updated = new Set(expandedMenuGroups.value)
+  if (updated.has(groupLabel)) {
+    updated.delete(groupLabel)
   } else {
-    expandedMenuGroups.value.add(groupLabel)
+    updated.add(groupLabel)
   }
+  expandedMenuGroups.value = updated
 }
 
 function handleDrawerItemClick(groupLabel: string, item: string) {
@@ -1110,7 +1103,7 @@ function handleDrawerItemClick(groupLabel: string, item: string) {
                     <h2 class="proto2-card-title">Tugasku</h2>
                     <span class="proto2-task-count">5</span>
                   </div>
-                  <button type="button" class="proto2-text-button" @click="handleBerandaTaskSuccess('Tugasku')">
+                  <button type="button" class="proto2-text-button">
                     Lihat Semua
                   </button>
                 </header>
@@ -1121,7 +1114,6 @@ function handleDrawerItemClick(groupLabel: string, item: string) {
                     :key="`${t.title}-${idx}`"
                     class="proto2-task-row"
                     style="cursor: pointer;"
-                    @click="handleBerandaTaskSuccess(t.title)"
                   >
                     <span>{{ t.title }}</span>
                     <strong :class="{ 'proto2-task-count--zero': t.count === 0 }">{{ t.count }}</strong>

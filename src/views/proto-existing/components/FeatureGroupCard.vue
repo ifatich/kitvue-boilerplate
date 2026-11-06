@@ -1,10 +1,14 @@
 <script setup lang="ts">
-import type { FeatureGroup } from '../feature-data'
+import type { FeatureGroup, FeatureMenuItem } from '../feature-data'
 
 const compactRowGroups = new Set(['Deposito Emas', 'Program UMK (PUMK)'])
 
 defineProps<{
   group: FeatureGroup
+}>()
+
+const emit = defineEmits<{
+  (e: 'select-item', item: FeatureMenuItem): void
 }>()
 </script>
 
@@ -28,6 +32,7 @@ defineProps<{
         type="button"
         class="feature-menu__item"
         :data-feature-label="item.label"
+        @click="emit('select-item', item)"
       >
         <span class="feature-menu__icon">
           <img :src="item.icon" alt="" aria-hidden="true" />

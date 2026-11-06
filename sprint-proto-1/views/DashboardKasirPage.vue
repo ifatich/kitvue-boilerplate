@@ -47,8 +47,22 @@ const returnToTaskMenu = () => {
   })
 }
 
+const getEffectiveNextView = () => {
+  const queryVal = route.query.nextView as string | undefined
+  if (queryVal) return queryVal
+  if (typeof window !== 'undefined' && window.sessionStorage) {
+    return window.sessionStorage.getItem('sprint_research_next_view') ?? undefined
+  }
+  return undefined
+}
+
 const handleBerandaSearchSuccess = () => {
-  const isComparing = route.query.nextView === 'proto-2'
+  const nextView = getEffectiveNextView()
+  const team = (route.query.team as string | undefined) || (typeof window !== 'undefined' ? window.sessionStorage?.getItem('sprint_research_team') : null) || 'team-1'
+  const cp = (route.query.cp as string | undefined) || (typeof window !== 'undefined' ? window.sessionStorage?.getItem('sprint_research_cp') : null) || 'mks-cbg-talasalapang'
+  const role = (route.query.role as string | undefined) || (typeof window !== 'undefined' ? window.sessionStorage?.getItem('sprint_research_role') : null) || 'Kasir'
+  const isComparing = nextView === 'proto-2'
+
   if (isComparing) {
     showTaskSuccessModal({
       title: 'Task Selesai',
@@ -56,12 +70,16 @@ const handleBerandaSearchSuccess = () => {
       message: 'Selamat, Anda berhasil menemukan menu Pengajuan Gadai! Lanjut ke Beranda Opsi 2 untuk membandingkan tampilan.',
       confirmLabel: 'Lanjut ke Beranda Opsi 2',
       onConfirm: () => {
+        if (typeof window !== 'undefined' && window.sessionStorage) {
+          window.sessionStorage.removeItem('sprint_research_next_view')
+          window.sessionStorage.setItem('sprint_research_from_compare', 'proto-1')
+        }
         void router.push({
           path: '/sprint-proto-2',
           query: {
-            team: route.query.team as string | undefined,
-            cp: route.query.cp as string | undefined,
-            role: route.query.role as string | undefined,
+            team,
+            cp,
+            role,
             fromCompare: 'proto-1',
           },
         })
@@ -78,36 +96,6 @@ const handleBerandaSearchSuccess = () => {
   }
 }
 
-const handleBerandaTaskSuccess = (taskLabel: string) => {
-  const isComparing = route.query.nextView === 'proto-2'
-  if (isComparing) {
-    showTaskSuccessModal({
-      title: 'Task Selesai',
-      taskName: `Beranda Opsi 1 (${taskLabel})`,
-      message: 'Lanjut ke Beranda Opsi 2 untuk membandingkan tampilan.',
-      confirmLabel: 'Lanjut ke Beranda Opsi 2',
-      onConfirm: () => {
-        void router.push({
-          path: '/sprint-proto-2',
-          query: {
-            team: route.query.team as string | undefined,
-            cp: route.query.cp as string | undefined,
-            role: route.query.role as string | undefined,
-            fromCompare: 'proto-1',
-          },
-        })
-      },
-    })
-  } else {
-    showTaskSuccessModal({
-      title: 'Task Selesai',
-      taskName: `Beranda Opsi 1 (${taskLabel})`,
-      message: 'Selamat Anda sudah menyelesaikan task!',
-      confirmLabel: 'Kembali ke Menu Task',
-      onConfirm: returnToTaskMenu,
-    })
-  }
-}
 const isPengajuanGadaiRoute = computed(() => (
   route.name === 'proto-existing-pengajuan-gadai' || route.name === 'sprint-proto-1-pengajuan-gadai'
 ))
@@ -361,7 +349,10 @@ function selectNav(id: string) {
   activeNav.value = id
   isMobileOpen.value = false
   if (id === 'beranda') {
-    void router.push({ name: 'dashboard-kasir' })
+    void router.push({
+      name: 'dashboard-kasir',
+      query: { ...route.query },
+    })
   }
 }
 </script>
@@ -853,7 +844,7 @@ function selectNav(id: string) {
                     5
                   </span>
                 </div>
-                <button class="cms-panel-action" type="button" @click="handleBerandaTaskSuccess('Tugasku')">
+                <button class="cms-panel-action" type="button">
                   Lihat Semua
                 </button>
               </header>
@@ -864,7 +855,6 @@ function selectNav(id: string) {
                   :key="`${t.title}-${idx}`"
                   class="cms-task-row"
                   style="cursor: pointer;"
-                  @click="handleBerandaTaskSuccess(t.title)"
                 >
                   <span style="font-size: 14px; font-weight: 600; color: #252528;">{{ t.title }}</span>
                   <span class="cms-task-row__count">{{ t.count }}</span>

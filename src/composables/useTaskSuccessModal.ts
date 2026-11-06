@@ -85,10 +85,47 @@ export function useTaskSuccessModal() {
       const sessionTeam = typeof window !== 'undefined' ? window.sessionStorage?.getItem('sprint_research_team') : null
       const sessionCp = typeof window !== 'undefined' ? window.sessionStorage?.getItem('sprint_research_cp') : null
       const sessionRole = typeof window !== 'undefined' ? window.sessionStorage?.getItem('sprint_research_role') : null
+      const sessionNextView = typeof window !== 'undefined' ? window.sessionStorage?.getItem('sprint_research_next_view') : null
+      const sessionFromCompare = typeof window !== 'undefined' ? window.sessionStorage?.getItem('sprint_research_from_compare') : null
 
       const team = (currentQuery.team as string | undefined) || sessionTeam || undefined
       const cp = (currentQuery.cp as string | undefined) || sessionCp || undefined
       const role = (currentQuery.role as string | undefined) || sessionRole || undefined
+      const nextView = (currentQuery.nextView as string | undefined) || sessionNextView || undefined
+
+      if (nextView === 'proto-1') {
+        if (typeof window !== 'undefined' && window.sessionStorage) {
+          window.sessionStorage.removeItem('sprint_research_next_view')
+          window.sessionStorage.setItem('sprint_research_from_compare', sessionFromCompare || 'proto-existing')
+        }
+        void router.push({
+          path: '/sprint-proto-1',
+          query: {
+            ...(team ? { team } : {}),
+            ...(cp ? { cp } : {}),
+            ...(role ? { role } : {}),
+            fromCompare: sessionFromCompare || 'proto-existing',
+          },
+        })
+        return
+      }
+
+      if (nextView === 'proto-2') {
+        if (typeof window !== 'undefined' && window.sessionStorage) {
+          window.sessionStorage.removeItem('sprint_research_next_view')
+          window.sessionStorage.setItem('sprint_research_from_compare', sessionFromCompare || 'proto-existing')
+        }
+        void router.push({
+          path: '/sprint-proto-2',
+          query: {
+            ...(team ? { team } : {}),
+            ...(cp ? { cp } : {}),
+            ...(role ? { role } : {}),
+            fromCompare: sessionFromCompare || 'proto-existing',
+          },
+        })
+        return
+      }
 
       if (team && cp) {
         void router.push({

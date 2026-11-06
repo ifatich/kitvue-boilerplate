@@ -108,14 +108,26 @@ describe('SPRINT Remote Research Entry Point & Scenario Matrix', () => {
       const branch = branchesByTeam[teamId].find((b) => b.id === branchId)!
       const isLeadership = role === 'Pinca' || role === 'CRO'
 
+      const leadershipBerandaTask = branch.berandaPrimary === 1
+        ? {
+            label: 'Task 1',
+            description: 'Beranda Eksisting (Next view: Beranda Opsi 1 → Beranda Opsi 2)',
+            targetRoute: '/proto-existing?nextView=proto-1',
+          }
+        : {
+            label: 'Task 1',
+            description: 'Beranda Eksisting (Next view: Beranda Opsi 2 → Beranda Opsi 1)',
+            targetRoute: '/proto-existing?nextView=proto-2',
+          }
+
       const berandaTask = branch.berandaPrimary === 1
         ? {
-            label: isLeadership ? 'Task 1' : 'Task 2',
+            label: 'Task 2',
             description: 'Beranda Opsi 1 (Next view: Beranda Opsi 2)',
             targetRoute: '/sprint-proto-1?nextView=proto-2',
           }
         : {
-            label: isLeadership ? 'Task 1' : 'Task 2',
+            label: 'Task 2',
             description: 'Beranda Opsi 2 (Next view: Beranda Opsi 1)',
             targetRoute: '/sprint-proto-2?nextView=proto-1',
           }
@@ -127,7 +139,7 @@ describe('SPRINT Remote Research Entry Point & Scenario Matrix', () => {
       }
 
       if (isLeadership) {
-        return [berandaTask, posTask]
+        return [leadershipBerandaTask, posTask]
       }
 
       const gadaiTask = branch.gadaiType === 'non-stepper'
@@ -154,11 +166,12 @@ describe('SPRINT Remote Research Entry Point & Scenario Matrix', () => {
       expect(staffTasks[1].targetRoute).toBe('/sprint-proto-1?nextView=proto-2')
       expect(staffTasks[2].description).toBe('PoS')
 
-      // CP Talasalapang (Urban): Leadership -> Beranda 1 (next 2) as Task 1, PoS as Task 2
+      // CP Talasalapang (Urban): Leadership -> Beranda Eksisting (next 1 -> 2) as Task 1, PoS as Task 2
       const leaderTasks = getTasksFor('team-1', 'mks-cbg-talasalapang', 'Pinca')
       expect(leaderTasks).toHaveLength(2)
       expect(leaderTasks[0].label).toBe('Task 1')
-      expect(leaderTasks[0].description).toContain('Beranda Opsi 1')
+      expect(leaderTasks[0].description).toContain('Beranda Eksisting')
+      expect(leaderTasks[0].targetRoute).toBe('/proto-existing?nextView=proto-1')
       expect(leaderTasks[1].label).toBe('Task 2')
       expect(leaderTasks[1].description).toBe('PoS')
 
@@ -180,10 +193,11 @@ describe('SPRINT Remote Research Entry Point & Scenario Matrix', () => {
       expect(renonTasks[0].description).toBe('Pengajuan Gadai Non Stepper')
       expect(renonTasks[1].description).toContain('Beranda Opsi 2')
 
-      // CP Denpasar (Sub Urban): Non Stepper, Beranda 1 (next 2)
+      // CP Denpasar (Sub Urban): Non Stepper, Beranda 1 (next 2) -> Leadership starts with Beranda Eksisting
       const denpasarTasks = getTasksFor('team-2', 'dps-cbg-denpasar', 'CRO')
       expect(denpasarTasks).toHaveLength(2)
-      expect(denpasarTasks[0].description).toContain('Beranda Opsi 1')
+      expect(denpasarTasks[0].description).toContain('Beranda Eksisting')
+      expect(denpasarTasks[0].targetRoute).toBe('/proto-existing?nextView=proto-1')
 
       // CP Ubung (Rural): Stepper, Beranda 2 (next 1)
       const ubungTasks = getTasksFor('team-2', 'dps-cbg-ubung', 'Penaksir')
@@ -369,6 +383,45 @@ describe('SPRINT Remote Research Entry Point & Scenario Matrix', () => {
       const secondProto1 = getModalConfig('proto-1', undefined)
       expect(secondProto1.confirmLabel).toBe('Kembali ke Menu Task')
       expect(secondProto1.nextPath).toBe('/entry-point-tasks')
+    })
+
+    it('handles 3-step sequential comparison for leadership (Existing -> Primary -> Secondary -> Menu)', () => {
+      function getExistingModalConfig(nextView?: string) {
+        if (nextView === 'proto-1') {
+          return {
+            confirmLabel: 'Lanjut ke Beranda Opsi 1',
+            nextPath: '/sprint-proto-1',
+            nextQuery: { nextView: 'proto-2', fromCompare: 'proto-existing' },
+          }
+        }
+        if (nextView === 'proto-2') {
+          return {
+            confirmLabel: 'Lanjut ke Beranda Opsi 2',
+            nextPath: '/sprint-proto-2',
+            nextQuery: { nextView: 'proto-1', fromCompare: 'proto-existing' },
+          }
+        }
+        return {
+          confirmLabel: 'Kembali ke Menu Task',
+          nextPath: '/entry-point-tasks',
+          nextQuery: {},
+        }
+      }
+
+      // Step 1: Existing with nextView=proto-1
+      const step1 = getExistingModalConfig('proto-1')
+      expect(step1.confirmLabel).toBe('Lanjut ke Beranda Opsi 1')
+      expect(step1.nextPath).toBe('/sprint-proto-1')
+      expect(step1.nextQuery.nextView).toBe('proto-2')
+
+      // Step 2: Proto 1 received nextView=proto-2 -> routes to Proto 2
+      expect(step1.nextQuery.nextView).toBe('proto-2')
+
+      // Step 1 alternate: Existing with nextView=proto-2
+      const step1Alt = getExistingModalConfig('proto-2')
+      expect(step1Alt.confirmLabel).toBe('Lanjut ke Beranda Opsi 2')
+      expect(step1Alt.nextPath).toBe('/sprint-proto-2')
+      expect(step1Alt.nextQuery.nextView).toBe('proto-1')
     })
   })
 
