@@ -9,11 +9,11 @@
       "root": "POS",
       "framework": "vite"
     },
-    "sprint-proto-1": {
+    "sprint-proto-one": {
       "root": "sprint-proto-1",
       "framework": "vite"
     },
-    "sprint-proto-2": {
+    "sprint-proto-two": {
       "root": "sprint-proto-2",
       "framework": "vite"
     }
