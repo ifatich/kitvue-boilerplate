@@ -20,7 +20,7 @@ import verificationIconBadge from '../assets/notifications/verification-badge.sv
 import infoCreditDueIcon from '../assets/notifications/info-credit-due.png'
 import infoCashReportIcon from '../assets/notifications/info-cash-report.png'
 
-type SidebarRoleId = 'kasir' | 'pinca' | 'penaksir'
+type SidebarRoleId = 'kasir' | 'pinca' | 'penaksir' | 'cro'
 const chevronRightIconUrl = chevronRightIcon as unknown as string
 const infoIconUrl = infoIcon as unknown as string
 const searchIconUrl = searchIcon as unknown as string
@@ -50,7 +50,33 @@ const isDrawerOpen = ref(false)
 const isMobileNavOpen = ref(false)
 const isTablet = ref(false)
 const activeRailItem = ref('fitur')
-const activeRole = ref<SidebarRoleId>(props.initialRole)
+const resolveInitialRole = (): SidebarRoleId => {
+  const queryRole = route.query.role
+  if (typeof queryRole === 'string') {
+    const normalized = queryRole.toLowerCase()
+    if (normalized === 'cro') return 'cro'
+    if (normalized === 'pinca' || normalized === 'pimpinan cabang / pinca') return 'pinca'
+    if (normalized === 'penaksir') return 'penaksir'
+    if (normalized === 'kasir') return 'kasir'
+  }
+  const sessionResearchRole = typeof window !== 'undefined' ? window.sessionStorage?.getItem('sprint_research_role') : null
+  if (sessionResearchRole) {
+    const normalized = sessionResearchRole.toLowerCase()
+    if (normalized === 'cro') return 'cro'
+    if (normalized === 'pinca') return 'pinca'
+    if (normalized === 'penaksir') return 'penaksir'
+    if (normalized === 'kasir') return 'kasir'
+  }
+  return props.initialRole ?? 'kasir'
+}
+
+const activeRole = ref<SidebarRoleId>(resolveInitialRole())
+watch(
+  () => [route.query.role, props.initialRole],
+  () => {
+    activeRole.value = resolveInitialRole()
+  },
+)
 const isRoleMenuOpen = ref(false)
 const activeNotifTab = ref<'tugasku' | 'informasi'>('tugasku')
 const activeChartFilter = ref<'1 Minggu' | '1 Bulan' | '6 Bulan' | '1 Tahun'>('1 Minggu')
@@ -261,6 +287,59 @@ const sidebarRoles: Record<SidebarRoleId, { label: string; groups: SidebarMenuGr
       { label: 'Prospek', items: ['Daftar Prospek', 'Prospek Baru'] },
       { label: 'Titipan Emas Syariah', items: ['Cetak Dokumen Titipan Emas Syariah', 'Konfirmasi Titipan Emas Syariah', 'Pengajuan Titipan Emas Syariah', 'Persetujuan Titipan Emas Syariah', 'Verifikasi Titipan Emas Syariah'] },
       { label: 'Utilitas', items: ['Tes Print'] },
+    ],
+  },
+  cro: {
+    label: 'CRO',
+    groups: [
+      {
+        label: 'Canvassing',
+        items: [
+          'Prospek Canvassing',
+          'Follow Up Canvassing',
+          'Prospek KCA Take Over',
+          'Follow Up KCA Take Over',
+        ],
+      },
+      {
+        label: 'EGC / OGC',
+        items: [
+          'Daftar Leads EGC - CRM',
+          'EGC Leads Reaktivasi',
+          'Follow Up EGC - CRM',
+          'Input Data EGC/OGC',
+        ],
+      },
+      {
+        label: 'Laporan',
+        items: [
+          'Status Prospek',
+          'Closing Tim Sales',
+          'Closing Aktivitas',
+          'Closing Unit Kerja',
+        ],
+      },
+      {
+        label: 'Utilitas',
+        items: [
+          'Gendis AI',
+        ],
+      },
+      {
+        label: 'Monitoring',
+        items: [
+          'Monitoring Pengajuan Leads CRM',
+        ],
+      },
+      {
+        label: 'Leads',
+        items: [
+          'Daftar Leads CRM',
+          'Riwayat Follow Up CRM',
+          'Daftar Leads Senyum Mobile',
+          'Riwayat Follow Up Senyum Mobile',
+        ],
+      },
     ],
   },
 }
@@ -651,7 +730,7 @@ function handleDrawerItemClick(groupLabel: string, item: string) {
 
       <div v-if="isRoleMenuOpen" class="proto2-role-menu" role="menu" aria-label="Pilih peran">
         <p class="proto2-role-menu__title">Pilih peran</p>
-        <button v-for="role in (['kasir', 'pinca', 'penaksir'] as const)" :key="role"
+        <button v-for="role in (['kasir', 'pinca', 'penaksir', 'cro'] as const)" :key="role"
           class="proto2-role-menu__item" :class="{ 'proto2-role-menu__item--active': activeRole === role }"
           type="button" role="menuitemradio" :aria-checked="activeRole === role"
           @click="selectRole(role)">

@@ -9,23 +9,50 @@ import chartLine from '../assets/dashboard/chart-line.svg'
 import favoriteAddIcon from '../assets/dashboard/add-favorite.svg'
 import taskDivider from '../assets/dashboard/divider.svg'
 
-type SidebarRoleId = 'kasir' | 'pinca' | 'penaksir'
+type SidebarRoleId = 'kasir' | 'pinca' | 'penaksir' | 'cro'
 
 interface SidebarMenuGroup {
   label: string
   items: string[]
 }
 
+const router = useRouter()
+const route = useRoute()
+const { showTaskSuccessModal } = useTaskSuccessModal()
+
 const isMobileOpen = ref(false)
 const activeTab = ref<'1 Minggu' | '1 Bulan' | '6 Bulan' | '1 Tahun'>('1 Minggu')
 const activeNav = ref('beranda')
 const searchMenu = ref('')
-const activeRole = ref<SidebarRoleId>('kasir')
+const resolveInitialRole = (): SidebarRoleId => {
+  const queryRole = route.query.role
+  if (typeof queryRole === 'string') {
+    const normalized = queryRole.toLowerCase()
+    if (normalized === 'cro') return 'cro'
+    if (normalized === 'pinca' || normalized === 'pimpinan cabang / pinca') return 'pinca'
+    if (normalized === 'penaksir') return 'penaksir'
+    if (normalized === 'kasir') return 'kasir'
+  }
+  const sessionResearchRole = typeof window !== 'undefined' ? window.sessionStorage?.getItem('sprint_research_role') : null
+  if (sessionResearchRole) {
+    const normalized = sessionResearchRole.toLowerCase()
+    if (normalized === 'cro') return 'cro'
+    if (normalized === 'pinca') return 'pinca'
+    if (normalized === 'penaksir') return 'penaksir'
+    if (normalized === 'kasir') return 'kasir'
+  }
+  return 'kasir'
+}
+
+const activeRole = ref<SidebarRoleId>(resolveInitialRole())
+watch(
+  () => route.query.role,
+  () => {
+    activeRole.value = resolveInitialRole()
+  },
+)
 const expandedMenuGroups = ref<string[]>([])
 const isRoleMenuOpen = ref(false)
-const router = useRouter()
-const route = useRoute()
-const { showTaskSuccessModal } = useTaskSuccessModal()
 
 const hasSearched = ref(false)
 watch(searchMenu, (val) => {
@@ -200,12 +227,66 @@ const sidebarRoles: Record<SidebarRoleId, { label: string; groups: SidebarMenuGr
       { label: 'Utilitas', items: ['Tes Print'] },
     ],
   },
+  cro: {
+    label: 'CRO',
+    groups: [
+      {
+        label: 'Canvassing',
+        items: [
+          'Prospek Canvassing',
+          'Follow Up Canvassing',
+          'Prospek KCA Take Over',
+          'Follow Up KCA Take Over',
+        ],
+      },
+      {
+        label: 'EGC / OGC',
+        items: [
+          'Daftar Leads EGC - CRM',
+          'EGC Leads Reaktivasi',
+          'Follow Up EGC - CRM',
+          'Input Data EGC/OGC',
+        ],
+      },
+      {
+        label: 'Laporan',
+        items: [
+          'Status Prospek',
+          'Closing Tim Sales',
+          'Closing Aktivitas',
+          'Closing Unit Kerja',
+        ],
+      },
+      {
+        label: 'Utilitas',
+        items: [
+          'Gendis AI',
+        ],
+      },
+      {
+        label: 'Monitoring',
+        items: [
+          'Monitoring Pengajuan Leads CRM',
+        ],
+      },
+      {
+        label: 'Leads',
+        items: [
+          'Daftar Leads CRM',
+          'Riwayat Follow Up CRM',
+          'Daftar Leads Senyum Mobile',
+          'Riwayat Follow Up Senyum Mobile',
+        ],
+      },
+    ],
+  },
 }
 
 const roleOptions: { id: SidebarRoleId; label: string }[] = [
   { id: 'kasir', label: sidebarRoles.kasir.label },
   { id: 'pinca', label: sidebarRoles.pinca.label },
   { id: 'penaksir', label: sidebarRoles.penaksir.label },
+  { id: 'cro', label: sidebarRoles.cro.label },
 ]
 
 const normalizedSearchMenu = computed(() => normalizeMenuSearch(searchMenu.value))
