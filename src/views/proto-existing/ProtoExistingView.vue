@@ -160,10 +160,14 @@ const focusSearchResult = (item: { group: string; label: string }) => {
   --sprint-navbar-mask-bg: var(--g-kit-black-10);
   display: flex;
   flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+  flex: 1;
   background: var(--g-kit-black-10);
 }
 
 .proto-existing-content {
+  flex: 1;
   width: min(calc(100% - 32px), 1312px);
   margin: 24px auto 32px;
 }
@@ -269,8 +273,10 @@ const focusSearchResult = (item: { group: string; label: string }) => {
 }
 
 .proto-existing-footer {
+  margin-top: auto;
   display: flex;
   min-height: 48px;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
   border-top: 1px solid var(--g-kit-black-20);
