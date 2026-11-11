@@ -16,6 +16,10 @@ interface SidebarMenuGroup {
   items: string[]
 }
 
+const router = useRouter()
+const route = useRoute()
+const { showTaskSuccessModal } = useTaskSuccessModal()
+
 const isMobileOpen = ref(false)
 const activeTab = ref<'1 Minggu' | '1 Bulan' | '6 Bulan' | '1 Tahun'>('1 Minggu')
 const activeNav = ref('beranda')
@@ -49,9 +53,6 @@ watch(
 )
 const expandedMenuGroups = ref<string[]>([])
 const isRoleMenuOpen = ref(false)
-const router = useRouter()
-const route = useRoute()
-const { showTaskSuccessModal } = useTaskSuccessModal()
 
 const hasSearched = ref(false)
 watch(searchMenu, (val) => {
