@@ -4,11 +4,11 @@ import ServiceLauncherPage from '../../../sprint-proto-2/views/ServiceLauncherPa
 import { getPrototypeRoleFromSession } from '@/services/authService'
 import type { PrototypeRole } from '@/types/admin'
 
-const roleIdByName: Record<PrototypeRole, 'kasir' | 'pinca' | 'penaksir'> = {
+const roleIdByName: Record<PrototypeRole, 'kasir' | 'pinca' | 'penaksir' | 'cro'> = {
   Kasir: 'kasir',
   Pinca: 'pinca',
   Penaksir: 'penaksir',
-  CRO: 'pinca',
+  CRO: 'cro',
 }
 
 const initialRole = roleIdByName[getPrototypeRoleFromSession() ?? 'Kasir']

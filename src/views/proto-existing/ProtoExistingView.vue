@@ -13,8 +13,28 @@ import { featureColumnsByRole, type FeatureMenuItem } from './feature-data'
 const router = useRouter()
 const route = useRoute()
 
+const resolveRoleFromQueryOrSession = (): PrototypeRole => {
+  const queryRole = route.query.role
+  if (typeof queryRole === 'string') {
+    const normalized = queryRole.toUpperCase()
+    if (normalized === 'CRO') return 'CRO'
+    if (normalized === 'PINCA') return 'Pinca'
+    if (normalized === 'PENAKSIR') return 'Penaksir'
+    if (normalized === 'KASIR') return 'Kasir'
+  }
+  const sessionResearchRole = typeof window !== 'undefined' ? window.sessionStorage?.getItem('sprint_research_role') : null
+  if (sessionResearchRole) {
+    const normalized = sessionResearchRole.toUpperCase()
+    if (normalized === 'CRO') return 'CRO'
+    if (normalized === 'PINCA') return 'Pinca'
+    if (normalized === 'PENAKSIR') return 'Penaksir'
+    if (normalized === 'KASIR') return 'Kasir'
+  }
+  return getPrototypeRoleFromSession() ?? 'Penaksir'
+}
+
 const featureGrid = ref<HTMLElement | null>(null)
-const activeRole = computed<PrototypeRole>(() => getPrototypeRoleFromSession() ?? 'Penaksir')
+const activeRole = computed<PrototypeRole>(() => resolveRoleFromQueryOrSession())
 const featureColumns = computed(() => featureColumnsByRole[activeRole.value])
 const searchItems = computed(() => featureColumns.value.flatMap((column) => column.flatMap((group) => (
   group.items.map((item) => ({

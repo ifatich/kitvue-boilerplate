@@ -64,6 +64,20 @@ import egcReactivation from '@/assets/figma/entry/egc-reactivation.svg'
 import eformManage from '@/assets/figma/entry/eform-manage.svg'
 import eformPrint from '@/assets/figma/entry/eform-print.svg'
 import monitorHomeReport from '@/assets/figma/entry/monitor-home-report.svg'
+import closingAktivitas from './assets/closing-aktivitas.png'
+import closingTimSales from './assets/closing-tim-sales.png'
+import closingUnitKerja from './assets/closing-unit-kerja.svg'
+import daftarLeadsCrm from './assets/daftar-leads-crm.svg'
+import daftarLeadsSenyumMobile from './assets/daftar-leads-senyum-mobile.svg'
+import followUpCanvassing from './assets/follow-up-canvassing.png'
+import followUpKcaTakeOver from './assets/follow-up-kca-take-over.png'
+import gendisAi from './assets/gendis-ai.svg'
+import monitoringPengajuanLeadsCrm from './assets/monitoring-pengajuan-leads-crm.svg'
+import prospekCanvassing from './assets/prospek-canvassing.png'
+import prospekKcaTakeOver from './assets/prospek-kca-take-over.svg'
+import riwayatFollowUpCrm from './assets/riwayat-follow-up-crm.png'
+import riwayatFollowUpSenyumMobile from './assets/riwayat-follow-up-senyum-mobile.png'
+import statusProspek from './assets/status-prospek.png'
 
 const imageUrl = (asset: unknown): string => asset as unknown as string
 
@@ -250,6 +264,24 @@ const existingItemsByLabel = new Map(
   ))),
 )
 
+const croSpecificItems: [string, FeatureMenuItem][] = [
+  ['Prospek Canvassing', item('Prospek Canvassing', prospekCanvassing)],
+  ['Follow Up Canvassing', item('Follow Up Canvassing', followUpCanvassing)],
+  ['Prospek KCA Take Over', item('Prospek KCA Take Over', prospekKcaTakeOver)],
+  ['Follow Up KCA Take Over', item('Follow Up KCA Take Over', followUpKcaTakeOver)],
+  ['Gendis AI', item('Gendis AI', gendisAi)],
+  ['Daftar Leads CRM', item('Daftar Leads CRM', daftarLeadsCrm)],
+  ['Riwayat Follow Up CRM', item('Riwayat Follow Up CRM', riwayatFollowUpCrm)],
+  ['Daftar Leads Senyum Mobile', item('Daftar Leads Senyum Mobile', daftarLeadsSenyumMobile)],
+  ['Riwayat Follow Up Senyum Mobile', item('Riwayat Follow Up Senyum Mobile', riwayatFollowUpSenyumMobile)],
+  ['Status Prospek', item('Status Prospek', statusProspek)],
+  ['Closing Tim Sales', item('Closing Tim Sales', closingTimSales)],
+  ['Closing Aktivitas', item('Closing Aktivitas', closingAktivitas)],
+  ['Closing Unit Kerja', item('Closing Unit Kerja', closingUnitKerja)],
+  ['Monitoring Pengajuan Leads CRM', item('Monitoring Pengajuan Leads CRM', monitoringPengajuanLeadsCrm)],
+]
+croSpecificItems.forEach(([label, feat]) => existingItemsByLabel.set(label, feat))
+
 const groupIconFallbacks: Record<string, string> = {
   'Canvassing': imageUrl(prospekBaru),
   'E-Form': imageUrl(eformManage),
@@ -377,6 +409,41 @@ const pincaFeatureColumns: FeatureGroup[][] = [
     ],
   ]
 
+export const croFeatureColumns: FeatureGroup[][] = [
+  [
+    roleGroup('Canvassing', [
+      'Prospek Canvassing',
+      'Follow Up Canvassing',
+      'Prospek KCA Take Over',
+      'Follow Up KCA Take Over',
+    ]),
+    roleGroup('Utilitas', ['Gendis AI']),
+  ],
+  [
+    roleGroup('Leads', [
+      'Daftar Leads CRM',
+      'Riwayat Follow Up CRM',
+      'Daftar Leads Senyum Mobile',
+      'Riwayat Follow Up Senyum Mobile',
+    ]),
+    roleGroup('EGC / OGC', [
+      'Input Data EGC/OGC',
+      'EGC Leads Reaktivasi',
+      'Daftar Leads EGC - CRM',
+      'Follow Up EGC - CRM',
+    ]),
+  ],
+  [
+    roleGroup('Laporan', [
+      'Status Prospek',
+      'Closing Tim Sales',
+      'Closing Aktivitas',
+      'Closing Unit Kerja',
+    ]),
+    roleGroup('Monitoring', ['Monitoring Pengajuan Leads CRM']),
+  ],
+]
+
 export const featureColumnsByRole: Record<PrototypeRole, FeatureGroup[][]> = {
   Kasir: [
     [
@@ -467,7 +534,7 @@ export const featureColumnsByRole: Record<PrototypeRole, FeatureGroup[][]> = {
     ],
   ],
   Pinca: pincaFeatureColumns,
-  CRO: pincaFeatureColumns,
+  CRO: croFeatureColumns,
   Penaksir: [
     [
       roleGroup('Prospek', ['Prospek Baru', 'Daftar Prospek']),
