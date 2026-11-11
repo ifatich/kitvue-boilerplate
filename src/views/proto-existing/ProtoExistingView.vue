@@ -13,28 +13,8 @@ import { featureColumnsByRole, type FeatureMenuItem } from './feature-data'
 const router = useRouter()
 const route = useRoute()
 
-const resolveRoleFromQueryOrSession = (): PrototypeRole => {
-  const queryRole = route.query.role
-  if (typeof queryRole === 'string') {
-    const normalized = queryRole.toUpperCase()
-    if (normalized === 'CRO') return 'CRO'
-    if (normalized === 'PINCA') return 'Pinca'
-    if (normalized === 'PENAKSIR') return 'Penaksir'
-    if (normalized === 'KASIR') return 'Kasir'
-  }
-  const sessionResearchRole = typeof window !== 'undefined' ? window.sessionStorage?.getItem('sprint_research_role') : null
-  if (sessionResearchRole) {
-    const normalized = sessionResearchRole.toUpperCase()
-    if (normalized === 'CRO') return 'CRO'
-    if (normalized === 'PINCA') return 'Pinca'
-    if (normalized === 'PENAKSIR') return 'Penaksir'
-    if (normalized === 'KASIR') return 'Kasir'
-  }
-  return getPrototypeRoleFromSession() ?? 'Penaksir'
-}
-
 const featureGrid = ref<HTMLElement | null>(null)
-const activeRole = computed<PrototypeRole>(() => resolveRoleFromQueryOrSession())
+const activeRole = computed<PrototypeRole>(() => getPrototypeRoleFromSession() ?? 'Penaksir')
 const featureColumns = computed(() => featureColumnsByRole[activeRole.value])
 const searchItems = computed(() => featureColumns.value.flatMap((column) => column.flatMap((group) => (
   group.items.map((item) => ({
@@ -160,14 +140,10 @@ const focusSearchResult = (item: { group: string; label: string }) => {
   --sprint-navbar-mask-bg: var(--g-kit-black-10);
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
-  min-height: 100dvh;
-  flex: 1;
   background: var(--g-kit-black-10);
 }
 
 .proto-existing-content {
-  flex: 1;
   width: min(calc(100% - 32px), 1312px);
   margin: 24px auto 32px;
 }
@@ -273,10 +249,8 @@ const focusSearchResult = (item: { group: string; label: string }) => {
 }
 
 .proto-existing-footer {
-  margin-top: auto;
   display: flex;
   min-height: 48px;
-  flex-shrink: 0;
   align-items: center;
   justify-content: center;
   border-top: 1px solid var(--g-kit-black-20);
