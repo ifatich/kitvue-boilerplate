@@ -123,6 +123,46 @@ const handleBerandaSearchSuccess = () => {
   }
 }
 
+const handleCroSearchSuccess = () => {
+  const nextView = getEffectiveNextView()
+  const team = (route.query.team as string | undefined) || (typeof window !== 'undefined' ? window.sessionStorage?.getItem('sprint_research_team') : null) || 'team-1'
+  const cp = (route.query.cp as string | undefined) || (typeof window !== 'undefined' ? window.sessionStorage?.getItem('sprint_research_cp') : null) || 'mks-cbg-talasalapang'
+  const role = (route.query.role as string | undefined) || (typeof window !== 'undefined' ? window.sessionStorage?.getItem('sprint_research_role') : null) || 'CRO'
+  const isComparing = nextView === 'proto-2'
+
+  if (isComparing) {
+    showTaskSuccessModal({
+      title: 'Task Selesai',
+      taskName: 'Beranda Opsi 1 (Daftar Leads CRM)',
+      message: 'Selamat, Anda berhasil menemukan menu Daftar Leads CRM! Lanjut ke Beranda Opsi 2 untuk membandingkan tampilan.',
+      confirmLabel: 'Lanjut ke Beranda Opsi 2',
+      onConfirm: () => {
+        if (typeof window !== 'undefined' && window.sessionStorage) {
+          window.sessionStorage.removeItem('sprint_research_next_view')
+          window.sessionStorage.setItem('sprint_research_from_compare', 'proto-1')
+        }
+        void router.push({
+          path: '/sprint-proto-2',
+          query: {
+            team,
+            cp,
+            role,
+            fromCompare: 'proto-1',
+          },
+        })
+      },
+    })
+  } else {
+    showTaskSuccessModal({
+      title: 'Task Selesai',
+      taskName: 'Beranda Opsi 1 (Daftar Leads CRM)',
+      message: 'Selamat, Anda berhasil menemukan menu Daftar Leads CRM!',
+      confirmLabel: 'Kembali ke Menu Task',
+      onConfirm: returnToTaskMenu,
+    })
+  }
+}
+
 const isPengajuanGadaiRoute = computed(() => (
   route.name === 'proto-existing-pengajuan-gadai' || route.name === 'sprint-proto-1-pengajuan-gadai'
 ))
@@ -396,6 +436,11 @@ function toggleMenuGroup(label: string) {
 function selectMenuItem(label: string) {
   activeNav.value = normalizeMenuSearch(label)
   isMobileOpen.value = false
+
+  if (activeRole.value === 'cro' && normalizeMenuSearch(label) === 'daftar leads crm') {
+    handleCroSearchSuccess()
+    return
+  }
 
   if (normalizeMenuSearch(label) === 'pengajuan gadai') {
     const wasViaSearch = hasSearched.value && Boolean(searchMenu.value.trim())

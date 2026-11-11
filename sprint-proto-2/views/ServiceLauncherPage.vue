@@ -138,6 +138,46 @@ const handleBerandaSearchSuccess = () => {
     })
   }
 }
+
+const handleCroSearchSuccess = () => {
+  const nextView = getEffectiveNextView()
+  const team = (route.query.team as string | undefined) || (typeof window !== 'undefined' ? window.sessionStorage?.getItem('sprint_research_team') : null) || 'team-1'
+  const cp = (route.query.cp as string | undefined) || (typeof window !== 'undefined' ? window.sessionStorage?.getItem('sprint_research_cp') : null) || 'mks-cbg-talasalapang'
+  const role = (route.query.role as string | undefined) || (typeof window !== 'undefined' ? window.sessionStorage?.getItem('sprint_research_role') : null) || 'CRO'
+  const isComparing = nextView === 'proto-1'
+
+  if (isComparing) {
+    showTaskSuccessModal({
+      title: 'Task Selesai',
+      taskName: 'Beranda Opsi 2 (Daftar Leads CRM)',
+      message: 'Selamat, Anda berhasil menemukan menu Daftar Leads CRM! Lanjut ke Beranda Opsi 1 untuk membandingkan tampilan.',
+      confirmLabel: 'Lanjut ke Beranda Opsi 1',
+      onConfirm: () => {
+        if (typeof window !== 'undefined' && window.sessionStorage) {
+          window.sessionStorage.removeItem('sprint_research_next_view')
+          window.sessionStorage.setItem('sprint_research_from_compare', 'proto-2')
+        }
+        void router.push({
+          path: '/sprint-proto-1',
+          query: {
+            team,
+            cp,
+            role,
+            fromCompare: 'proto-2',
+          },
+        })
+      },
+    })
+  } else {
+    showTaskSuccessModal({
+      title: 'Task Selesai',
+      taskName: 'Beranda Opsi 2 (Daftar Leads CRM)',
+      message: 'Selamat, Anda berhasil menemukan menu Daftar Leads CRM!',
+      confirmLabel: 'Kembali ke Menu Task',
+      onConfirm: returnToTaskMenu,
+    })
+  }
+}
 const expandedMenuGroups = ref(new Set<string>())
 const activeMenuItem = ref('')
 watch(() => route.name, (name) => {
@@ -618,6 +658,10 @@ function handleDrawerItemClick(groupLabel: string, item: string) {
   isMobileNavOpen.value = false
   if (isTablet.value) {
     isDrawerOpen.value = false
+  }
+  if (activeRole.value === 'cro' && normalizeMenuSearch(item) === 'daftar leads crm') {
+    handleCroSearchSuccess()
+    return
   }
   if (normalizeMenuSearch(item) === 'pengajuan gadai') {
     const wasViaSearch = hasSearched.value && Boolean(searchDrawer.value.trim())

@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import ButtonComponent from 'kitvue-public/src/components/Button/Button.vue'
 import SprintNavbar from '@/components/shared/admin-layout/SprintNavbar.vue'
+import { useTaskSuccessModal } from '@/composables/useTaskSuccessModal'
 import { getPrototypeRoleFromSession } from '@/services/authService'
 import type { PrototypeRole } from '@/types/admin'
 import DashboardMetrics from './components/DashboardMetrics.vue'
@@ -12,6 +13,90 @@ import { featureColumnsByRole, type FeatureMenuItem } from './feature-data'
 
 const router = useRouter()
 const route = useRoute()
+const { showTaskSuccessModal } = useTaskSuccessModal()
+
+const getEffectiveNextView = () => {
+  const queryVal = route.query.nextView as string | undefined
+  if (queryVal) return queryVal
+  if (typeof window !== 'undefined' && window.sessionStorage) {
+    return window.sessionStorage.getItem('sprint_research_next_view') ?? undefined
+  }
+  return undefined
+}
+
+const returnToTaskMenu = () => {
+  const team = (route.query.team as string | undefined) || (typeof window !== 'undefined' ? window.sessionStorage?.getItem('sprint_research_team') : null) || 'team-1'
+  const cp = (route.query.cp as string | undefined) || (typeof window !== 'undefined' ? window.sessionStorage?.getItem('sprint_research_cp') : null) || 'mks-cbg-talasalapang'
+  const role = (route.query.role as string | undefined) || (typeof window !== 'undefined' ? window.sessionStorage?.getItem('sprint_research_role') : null) || 'CRO'
+
+  void router.push({
+    name: 'entry-point-tasks',
+    query: { team, cp, role },
+  })
+}
+
+const triggerCroSuccessModal = () => {
+  const nextView = getEffectiveNextView()
+  const team = (route.query.team as string | undefined) || (typeof window !== 'undefined' ? window.sessionStorage?.getItem('sprint_research_team') : null) || 'team-1'
+  const cp = (route.query.cp as string | undefined) || (typeof window !== 'undefined' ? window.sessionStorage?.getItem('sprint_research_cp') : null) || 'mks-cbg-talasalapang'
+  const role = (route.query.role as string | undefined) || (typeof window !== 'undefined' ? window.sessionStorage?.getItem('sprint_research_role') : null) || 'CRO'
+
+  if (nextView === 'proto-1') {
+    showTaskSuccessModal({
+      title: 'Task Selesai',
+      taskName: 'Beranda Eksisting (Daftar Leads CRM)',
+      message: 'Selamat, Anda berhasil menemukan menu Daftar Leads CRM! Lanjut ke Beranda Opsi 1 untuk membandingkan tampilan.',
+      confirmLabel: 'Lanjut ke Beranda Opsi 1',
+      onConfirm: () => {
+        if (typeof window !== 'undefined' && window.sessionStorage) {
+          window.sessionStorage.setItem('sprint_research_next_view', 'proto-2')
+          window.sessionStorage.setItem('sprint_research_from_compare', 'proto-existing')
+        }
+        void router.push({
+          path: '/sprint-proto-1',
+          query: {
+            team,
+            cp,
+            role,
+            nextView: 'proto-2',
+            fromCompare: 'proto-existing',
+          },
+        })
+      },
+    })
+  } else if (nextView === 'proto-2') {
+    showTaskSuccessModal({
+      title: 'Task Selesai',
+      taskName: 'Beranda Eksisting (Daftar Leads CRM)',
+      message: 'Selamat, Anda berhasil menemukan menu Daftar Leads CRM! Lanjut ke Beranda Opsi 2 untuk membandingkan tampilan.',
+      confirmLabel: 'Lanjut ke Beranda Opsi 2',
+      onConfirm: () => {
+        if (typeof window !== 'undefined' && window.sessionStorage) {
+          window.sessionStorage.setItem('sprint_research_next_view', 'proto-1')
+          window.sessionStorage.setItem('sprint_research_from_compare', 'proto-existing')
+        }
+        void router.push({
+          path: '/sprint-proto-2',
+          query: {
+            team,
+            cp,
+            role,
+            nextView: 'proto-1',
+            fromCompare: 'proto-existing',
+          },
+        })
+      },
+    })
+  } else {
+    showTaskSuccessModal({
+      title: 'Task Selesai',
+      taskName: 'Beranda Eksisting (Daftar Leads CRM)',
+      message: 'Selamat, Anda berhasil menemukan menu Daftar Leads CRM!',
+      confirmLabel: 'Kembali ke Menu Task',
+      onConfirm: returnToTaskMenu,
+    })
+  }
+}
 
 const resolveRoleFromQueryOrSession = (): PrototypeRole => {
   const queryRole = route.query.role
@@ -65,6 +150,11 @@ const handleFeatureItemClick = (item: FeatureMenuItem) => {
       path: '/proto-existing/pengajuan-gadai',
       query: { ...route.query },
     })
+    return
+  }
+
+  if (item.label === 'Daftar Leads CRM') {
+    triggerCroSuccessModal()
   }
 }
 
@@ -76,6 +166,12 @@ const onSearchSelect = (item: { group: string; label: string }) => {
     })
     return
   }
+
+  if (item.label === 'Daftar Leads CRM') {
+    triggerCroSuccessModal()
+    return
+  }
+
   focusSearchResult(item)
 }
 

@@ -64,4 +64,11 @@ describe('CRO Role Menu Configurations', () => {
       expect(item.icon.length).toBeGreaterThan(0)
     }
   })
+
+  it('contains "Daftar Leads CRM" under Leads group for CRO', () => {
+    const columns = featureColumnsByRole['CRO']
+    const leadsGroup = columns.flatMap((col) => col).find((g) => g.title === 'Leads')
+    expect(leadsGroup).toBeDefined()
+    expect(leadsGroup?.items.some((i) => i.label === 'Daftar Leads CRM')).toBe(true)
+  })
 })
